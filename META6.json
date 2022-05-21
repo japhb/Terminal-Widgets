@@ -1,0 +1,25 @@
+{
+  "authors": [
+    "Geoffrey Broadwell"
+  ],
+  "build-depends": [
+  ],
+  "depends": [
+    "Terminal::Print"
+  ],
+  "description": "Basic TUI Widgets",
+  "license": "Artistic-2.0",
+  "name": "Terminal::Widgets",
+  "perl": "6.d",
+  "provides": {
+    "Terminal::Widgets": "lib/Terminal/Widgets.rakumod"
+  },
+  "resources": [
+  ],
+  "source-url": "",
+  "tags": [
+  ],
+  "test-depends": [
+  ],
+  "version": "0.0.1"
+}
