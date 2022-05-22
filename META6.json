@@ -12,7 +12,11 @@
   "name": "Terminal::Widgets",
   "perl": "6.d",
   "provides": {
-    "Terminal::Widgets": "lib/Terminal/Widgets.rakumod"
+    "Terminal::Widgets": "lib/Terminal/Widgets.rakumod",
+    "Terminal::Widgets::Events": "lib/Terminal/Widgets/Events.rakumod",
+    "Terminal::Widgets::Layout": "lib/Terminal/Widgets/Layout.rakumod",
+    "Terminal::Widgets::Utils": "lib/Terminal/Widgets/Utils.rakumod",
+    "Terminal::Widgets::Widget": "lib/Terminal/Widgets/Widget.rakumod"
   },
   "resources": [
   ],

@@ -2,6 +2,10 @@ use v6.d;
 use Test;
 
 use Terminal::Widgets;
+use Terminal::Widgets::Utils;
+use Terminal::Widgets::Events;
+use Terminal::Widgets::Layout;
+use Terminal::Widgets::Widget;
 
 
 pass "all modules loaded successfully";
