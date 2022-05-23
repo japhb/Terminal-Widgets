@@ -3,9 +3,11 @@ use Test;
 
 use Terminal::Widgets;
 use Terminal::Widgets::Utils;
+use Terminal::Widgets::Terminal;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Layout;
 use Terminal::Widgets::Widget;
+use Terminal::Widgets::TopLevel;
 
 
 pass "all modules loaded successfully";
