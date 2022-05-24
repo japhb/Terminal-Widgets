@@ -388,16 +388,16 @@ class Builder {
 #| Role for UI Widgets that are dynamically built using the above system
 role WidgetBuilding {
     # Required methods
-    method ui-tree()                    { ... }
+    method layout-model()               { ... }
     method build-node($node, $geometry) { ... }
 
     #| Compute the UI layout according to its constraints
     method compute-layout() {
-        my $ui-root = self.ui-tree.compute-layout;
-        $ui-root.x  = $.x;
-        $ui-root.y  = $.y;
-        $ui-root.propagate-xy;
-        $ui-root
+        my $layout-root = self.layout-model.compute-layout;
+        $layout-root.x  = $.x;
+        $layout-root.y  = $.y;
+        $layout-root.propagate-xy;
+        $layout-root
     }
 
     #| Build the children of a given layout node
