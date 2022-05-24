@@ -62,6 +62,7 @@ role Dynamic {
     has Style   $.requested;
     has Style   $.computed is rw;
     has Dynamic $.parent   is rw;
+    has         $.widget   is rw;
     has UInt    $.x        is rw;
     has UInt    $.y        is rw;
 
@@ -393,27 +394,47 @@ role WidgetBuilding {
 
     #| Compute the UI layout according to its constraints
     method compute-layout() {
-        my $layout-root = self.layout-model.compute-layout;
+        # Build a layout model (or reuse an existing one) for this Widget
+        # XXXX: $.layout //= ?
+        my $layout-root = $.layout // self.layout-model;
+
+        # Ask the layout model to compute its own layout details and
+        # propagate positioning to children
+        $layout-root.compute-layout;
         $layout-root.x  = $.x;
         $layout-root.y  = $.y;
         $layout-root.propagate-xy;
+
         $layout-root
     }
 
-    #| Build the children of a given layout node
-    method build-children($node, $parent) {
-        # Only Layout::Node subclasses have children
-        return unless $node ~~ Node;
+    #| Build actual Widgets for the children of a given layout-node
+    method build-children($layout-node, $parent) {
+        # Only Layout::Node subclasses have children; a Layout::Leaf does not
+        return unless $layout-node ~~ Node;
 
-        for $node.children {
-            my $geometry = \(:$parent, :x(.x), :y(.y),
+        for $layout-node.children {
+            # Along with computed XYWH, also include child's parent Widget and
+            # child's associated Layout::Dynamic object in the geometry info
+            my $geometry = \(:$parent, :layout($_),
+                             :x(.x), :y(.y),
                              :w(.computed.set-w),
                              :h(.computed.set-h));
-            my $widget   = self.build-node($_, $geometry);
+            .widget = self.build-node($_, $geometry);
 
-            # If the node built a widget, it's the new parent; otherwise it's
-            # an internal node and the current parent should still be used
-            self.build-children($_, $widget // $parent);
+            # If build-node returned a defined widget, it's the new parent for
+            # recursion; otherwise it's just an internal node or a non-Widget
+            # and the current parent widget should still be used
+            self.build-children($_, .widget // $parent);
         }
     }
 }
+
+
+# XXXX: Ideas for allowing resize/reorder/etc.
+#
+# * Each widget keeps a reference to its layout object, and vice versa
+# * When triggering relayout, check top level; if :U, layout from scratch, otherwise update
+# * When rebuilding, check widget ref; if :U, build it, otherwise update
+# * When adding or removing layout node or widget, do the same to its dual
+# * Encode layout constraints as closures that can be rerun for relayout
