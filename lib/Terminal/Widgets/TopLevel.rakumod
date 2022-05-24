@@ -2,10 +2,12 @@
 
 use Terminal::Widgets::Terminal;
 use Terminal::Widgets::Widget;
+use Terminal::Widgets::Layout;
 
 
 #| A top-level full-screen widget with modal access to its controlling terminal
-class Terminal::Widgets::TopLevel
-   is Terminal::Widgets::Widget {
+role Terminal::Widgets::TopLevel
+  is Terminal::Widgets::Widget
+does Terminal::Widgets::Layout::WidgetBuilding {
     has Terminal::Widgets::Terminal:D $.terminal is required;
 }
