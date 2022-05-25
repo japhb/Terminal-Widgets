@@ -408,8 +408,8 @@ role WidgetBuilding {
     #| Compute the UI layout according to its constraints
     method compute-layout() {
         # Build a layout model (or reuse an existing one) for this Widget
-        # XXXX: $.layout //= ?
-        my $layout-root = $.layout // self.layout-model;
+        my $layout-root = $.layout ?? self.updated-layout-model
+                                   !! self.layout-model;
 
         # Ask the layout model to compute its own layout details and
         # propagate positioning to children
