@@ -37,6 +37,8 @@ class Terminal::Widgets::App {
         %!top-level{$moniker} = $class.new;
     }
 
+    # XXXX: Need to be able to dispose of terminals and toplevels as well
+
     # XXXX: Testing the API
     method default-start() {
         my $terminal = self.add-terminal;
