@@ -70,6 +70,14 @@ role Dynamic {
     method compute-layout() { ... }
     method propagate-xy()   { ... }
 
+    method update-requested(*%updates) {
+        self.uncompute;
+        $!requested = $!requested.clone(|%updates);
+    }
+
+    method uncompute() {
+        $!computed = Nil;
+    }
 
     method is-set() {
         $.computed && $.computed.set-w.defined && $.computed.set-h.defined
@@ -175,6 +183,11 @@ class Node does Dynamic {
         "x:{$.x // '*'} y:{$.y // '*' }" ~
         (" :vertical" if $.vertical) ~
         ("\n" ~ @child-gists.join("\n") if @.children)
+    }
+
+    method uncompute() {
+        self.Dynamic::uncompute;
+        .uncompute for @.children;
     }
 
     method all-set(Node:D:) {
