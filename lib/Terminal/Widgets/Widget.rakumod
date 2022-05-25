@@ -16,6 +16,9 @@ class Terminal::Widgets::Widget
     has Int $.x-offset;  #= Cumulative X offset from screen root
     has Int $.y-offset;  #= Cumulative Y offset from screen root
 
+    #| Bootstrapping: Setting TopLevel's layout
+    method set-layout($!layout) { }
+
     #| Update computed upper-left coordinate offsets for self and children
     method recalc-coord-offsets(Int:D $parent-x, Int:D $parent-y) {
         # Recompute offsets for self
