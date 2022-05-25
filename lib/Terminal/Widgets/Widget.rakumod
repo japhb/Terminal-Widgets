@@ -38,8 +38,14 @@ class Terminal::Widgets::Widget
 
         if $w != $.w || $h != $.h {
             # XXXX: Does not currently save old contents at all
-            # XXXX: What if the old grid was $*TERMINAL.current-grid ?
             my $new-grid = $.grid.WHAT.new($w, $h);
+            if $.grid === $*TERMINAL.current-grid {
+                my $name = ~self.WHICH;
+                # XXXX: Old grid leaks in Terminal::Print
+                # XXXX: Need a .replace-grid for T::P as well?
+                $*TERMINAL.add-grid($name, :$new-grid);
+                $*TERMINAL.switch-grid($name);
+            }
             self.replace-grid($new-grid);
         }
 
