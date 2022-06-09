@@ -43,7 +43,6 @@ class Terminal::Widgets::App {
     method default-start() {
         my $terminal = self.add-terminal;
         my $main     = self.add-top-level('main');
-        $terminal.current-top-level = $main;
-        await $terminal.refresh-terminal-size;
+        $terminal.set-toplevel($main);
     }
 }
