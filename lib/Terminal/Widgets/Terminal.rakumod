@@ -22,8 +22,11 @@ class Terminal::Widgets::Terminal
     #| resizing/redrawing the current toplevel widget if any; returns a
     #| Promise that will be kept when the resize completes.
     method refresh-terminal-size() {
-        die "Cannot detect terminal size on closed or redirected I/O handles"
-            unless $.input.t && $.output.t;
+        # XXXX: Cannot use locking I/O methods on $.input here, such as .t or
+        #       .native-descriptor; they will deadlock inside MoarVM with the
+        #       pending $.input.read in RawTerminalInput.start-parser.
+        die "Cannot detect terminal size on closed or non-TTY I/O handles"
+            unless $.input.opened && $.output.t;
 
         self.detect-terminal-size.then: {
             my $size = .result;
