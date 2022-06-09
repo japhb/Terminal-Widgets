@@ -32,9 +32,9 @@ class Terminal::Widgets::App {
 
     #| Create a new top-level widget of a given class, add it to the known
     #| top-level widgets, and return it.
-    method add-top-level(Str:D $moniker,
+    method add-top-level(Str:D $moniker, Str :$title,
                          Terminal::Widgets::TopLevel:U :$class) {
-        %!top-level{$moniker} = $class.new;
+        %!top-level{$moniker} = $class.new(:$title);
     }
 
     # XXXX: Need to be able to dispose of toplevels as well
@@ -59,7 +59,7 @@ class Terminal::Widgets::App {
     # XXXX: Testing the API
     method default-start() {
         my $terminal = self.add-terminal;
-        my $main     = self.add-top-level('main');
+        my $main     = self.add-top-level('main', :title('Main Window'));
         $terminal.set-toplevel($main);
     }
 }

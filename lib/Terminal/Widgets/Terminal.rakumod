@@ -59,6 +59,7 @@ class Terminal::Widgets::Terminal
         # XXXX: Tell previous toplevel to disconnect from terminal?
 
         if $new-toplevel -> $!current-toplevel {
+            $.output.print("\e]2;$_\e\\") with $!current-toplevel.title;
             self.resize-toplevel if $!w && $!h;
         }
     }
