@@ -59,4 +59,20 @@ class Terminal::Widgets::Terminal
             self.resize-toplevel if $!w && $!h;
         }
     }
+
+    #| Shutdown this terminal and close handles (if not standard handles)
+    method shutdown() {
+        # Forget current toplevel window
+        self.set-toplevel(Nil);
+
+        # Clean up terminal raw I/O state
+        self.set-mouse-event-mode(MouseNoEvents) if $.output.opened;
+        self.leave-raw-mode(:!nl)                if  $.input.opened;
+
+        # XXXX: T::P shutdown?
+
+        # Close non-standard handles
+        $.input.close  if  $.input.opened &&  $.input.native-descriptor > 2;
+        $.output.close if $.output.opened && $.output.native-descriptor > 2;
+    }
 }

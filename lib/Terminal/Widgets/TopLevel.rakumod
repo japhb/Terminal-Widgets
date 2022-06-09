@@ -10,4 +10,7 @@ role Terminal::Widgets::TopLevel
   is Terminal::Widgets::Widget
 does Terminal::Widgets::Layout::WidgetBuilding {
     has Terminal::Widgets::Terminal:D $.terminal is required;
+
+    # XXXX: Allow terminal to be disconnected or switched?
+    # XXXX: Does disconnect imply recursive destroy?
 }

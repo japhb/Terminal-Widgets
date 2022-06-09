@@ -37,7 +37,24 @@ class Terminal::Widgets::App {
         %!top-level{$moniker} = $class.new;
     }
 
-    # XXXX: Need to be able to dispose of terminals and toplevels as well
+    # XXXX: Need to be able to dispose of toplevels as well
+
+    #| Shutdown and remove a terminal by terminal moniker
+    multi method remove-terminal(Str:D $moniker) {
+        my $terminal = %!terminal{$moniker}:delete
+             or die "Terminal moniker '$moniker' not found";
+
+        # XXXX: Disconnect/destroy matching toplevels?
+
+        $terminal.shutdown;
+    }
+
+    #| Shutdown and remove a terminal by terminal object
+    multi method remove-terminal(Terminal::Widgets::Terminal:D $terminal) {
+        my $moniker = %!terminal.pairs.first(*.value === $terminal).key
+            or die "Terminal object not known to app";
+        self.remove-terminal($moniker);
+    }
 
     # XXXX: Testing the API
     method default-start() {
