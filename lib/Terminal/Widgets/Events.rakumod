@@ -73,7 +73,10 @@ role EventHandling {
 
     #| Handle TakeFocus events by setting parent's focused-child and bubbling up
     multi method handle-event(TakeFocus:D $event, EventPhase:D $phase) {
-        $.parent.focused-child = self if $.parent && $phase != TrickleDown;
+        if $phase != TrickleDown {
+            $.parent.focused-child = self if $.parent;
+            self.focused-child = Nil if $event.target === self;
+        }
     }
 
 
@@ -100,6 +103,11 @@ role EventHandling {
             @.children ?? ($event, $phase)   !!  # Has children, keep searching
                           (Nil,    BubbleUp)     # Target was not on this branch
         }
+        elsif $event ~~ FocusFollowingEvent {
+            # Stop trickling down if no child has focus
+            my $at-target = $phase == TrickleDown && !$.focused-child;
+            $at-target ?? ($event, AtTarget) !! ($event, $phase)
+        }
         else {
             # Consider leaves to be the "target" for untargeted events
             @.children ?? ($event, $phase) !! ($event, AtTarget)
@@ -116,7 +124,7 @@ role EventHandling {
     method trickle-down(Event:D $event) {
         # Send to focused-child if the event so requests
         if $event ~~ FocusFollowingEvent {
-            $.focused-child.process-event($event, TrickleDown) if $.focused-child;
+            .process-event($event, TrickleDown) with $.focused-child;
         }
         # Or send to overlapping children if localized
         elsif $event ~~ LocalizedEvent {
