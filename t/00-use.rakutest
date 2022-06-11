@@ -10,6 +10,8 @@ use Terminal::Widgets::Widget;
 use Terminal::Widgets::TopLevel;
 use Terminal::Widgets::App;
 
+use Terminal::Widgets::Input::Text;
+
 
 pass "all modules loaded successfully";
 
