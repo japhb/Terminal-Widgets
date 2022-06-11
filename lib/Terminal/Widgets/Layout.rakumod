@@ -408,6 +408,7 @@ class Builder {
 role WidgetBuilding {
     # Required methods
     method layout-model()               { ... }
+    method updated-layout-model()       { ... }
     method build-node($node, $geometry) { ... }
 
     #| Compute the UI layout according to its constraints
