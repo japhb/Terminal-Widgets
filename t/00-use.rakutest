@@ -12,6 +12,8 @@ use Terminal::Widgets::App;
 
 use Terminal::Widgets::Input::Text;
 
+use Terminal::Widgets::StandardWidgetBuilder;
+
 
 pass "all modules loaded successfully";
 

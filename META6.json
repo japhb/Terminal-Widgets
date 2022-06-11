@@ -17,6 +17,7 @@
     "Terminal::Widgets::Events": "lib/Terminal/Widgets/Events.rakumod",
     "Terminal::Widgets::Input::Text": "lib/Terminal/Widgets/Input/Text.rakumod",
     "Terminal::Widgets::Layout": "lib/Terminal/Widgets/Layout.rakumod",
+    "Terminal::Widgets::StandardWidgetBuilder": "lib/Terminal/Widgets/StandardWidgetBuilder.rakumod",
     "Terminal::Widgets::Terminal": "lib/Terminal/Widgets/Terminal.rakumod",
     "Terminal::Widgets::TopLevel": "lib/Terminal/Widgets/TopLevel.rakumod",
     "Terminal::Widgets::Utils": "lib/Terminal/Widgets/Utils.rakumod",
