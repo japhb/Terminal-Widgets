@@ -15,7 +15,7 @@ class Terminal::Widgets::Terminal
     has UInt:D $.h = 0;
 
     # XXXX: Multiple T::P's in an app?
-    has Terminal::Print:D $!terminal-print = $*TERMINAL;
+    has Terminal::Print:D $!terminal-print = $*TERMINAL // Terminal::Print.new;
 
 
     #| Switch to the alternate screen buffer and start the decoder reactor
