@@ -19,6 +19,14 @@ class Terminal::Widgets::Widget
     #| Bootstrapping: Setting TopLevel's layout
     method set-layout($!layout) { }
 
+    #| Find the nearest ancestor (or self) that doesn't have a Widget parent,
+    #| and thus should be the nearest "toplevel" (without use'ing TopLevel)
+    method toplevel() {
+        my $toplevel = self;
+        $toplevel .= parent while $toplevel.parent ~~ Terminal::Widgets::Widget;
+        $toplevel
+    }
+
     #| Update computed upper-left coordinate offsets for self and children
     method recalc-coord-offsets(Int:D $parent-x, Int:D $parent-y) {
         # Recompute offsets for self
