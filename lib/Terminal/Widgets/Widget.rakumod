@@ -19,6 +19,9 @@ class Terminal::Widgets::Widget
     #| Bootstrapping: Setting TopLevel's layout
     method set-layout($!layout) { }
 
+    #| Non-TopLevel Widgets cannot be the terminal's current-toplevel
+    method is-current-toplevel(--> False) { }
+
     #| Find the nearest ancestor (or self) that doesn't have a Widget parent,
     #| and thus should be the nearest "toplevel" (without use'ing TopLevel)
     method toplevel() {
@@ -47,13 +50,6 @@ class Terminal::Widgets::Widget
         if $w != $.w || $h != $.h {
             # XXXX: Does not currently save old contents at all
             my $new-grid = $.grid.WHAT.new($w, $h);
-            if $.grid === $*TERMINAL.current-grid {
-                my $name = ~self.WHICH;
-                # XXXX: Old grid leaks in Terminal::Print
-                # XXXX: Need a .replace-grid for T::P as well?
-                $*TERMINAL.add-grid($name, :$new-grid);
-                $*TERMINAL.switch-grid($name);
-            }
             self.replace-grid($new-grid);
         }
 

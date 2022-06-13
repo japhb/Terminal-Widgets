@@ -1,20 +1,27 @@
 # ABSTRACT: Pausable event pump for parsed and decoded ANSI terminal events
 
+use Terminal::Print;
 use Terminal::LineEditor::RawTerminalInput;
 
-use Terminal::Widgets::Widget;
+use Terminal::Widgets::TopLevel;
 
 
 #| A container for the unique ANSI terminal event pump for a given terminal
 class Terminal::Widgets::Terminal
  does Terminal::LineEditor::RawTerminalIO
  does Terminal::LineEditor::RawTerminalUtils {
-    has Terminal::Widgets::Widget $.current-toplevel;
+    has Terminal::Widgets::TopLevel $.current-toplevel;
     has UInt:D $.w = 0;
     has UInt:D $.h = 0;
 
-    #| Start the decoder reactor as soon as everything else is set up
+    # XXXX: Multiple T::P's in an app?
+    has Terminal::Print:D $!terminal-print = $*TERMINAL;
+
+
+    #| Switch to the alternate screen buffer and start the decoder reactor
+    #| as soon as everything else is set up
     submethod TWEAK() {
+        $!terminal-print.initialize-screen;
         self.start-decoder;
     }
 
@@ -44,7 +51,17 @@ class Terminal::Widgets::Terminal
     method resize-toplevel() {
         with $.current-toplevel {
             # note "Updating toplevel geometry to $size"; $*ERR.flush;
+            my $old-grid = .grid;
             .update-geometry(:$!w, :$!h);
+            my $new-grid = .grid;
+            unless $old-grid === $new-grid {
+                my $name = ~.WHICH;
+                # XXXX: Old grid leaks in Terminal::Print
+                # XXXX: Need a .replace-grid for T::P as well?
+                $!terminal-print.add-grid($name, :$new-grid);
+                $!terminal-print.switch-grid($name);
+            }
+
             # note "Rebuilding layout"; $*ERR.flush;
             .build-layout;
             # note .layout.gist;
@@ -73,10 +90,11 @@ class Terminal::Widgets::Terminal
         self.set-mouse-event-mode(MouseNoEvents) if $.output.opened;
         self.leave-raw-mode(:!nl)                if  $.input.opened;
 
-        # XXXX: T::P shutdown?
+        # Shutdown Terminal::Print instance (returning to normal screen buffer)
+        $!terminal-print.shutdown-screen;
 
         # Close non-standard handles
-        $.input.close  if  $.input.opened &&  $.input.native-descriptor > 2;
-        $.output.close if $.output.opened && $.output.native-descriptor > 2;
+        # $.input.close  if  $.input.opened &&  $.input.native-descriptor > 2;
+        # $.output.close if $.output.opened && $.output.native-descriptor > 2;
     }
 }

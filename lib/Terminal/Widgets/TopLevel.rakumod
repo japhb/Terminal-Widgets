@@ -1,6 +1,5 @@
 # ABSTRACT: A top-level (full-screen) widget
 
-use Terminal::Widgets::Terminal;
 use Terminal::Widgets::Widget;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Layout;
@@ -10,8 +9,13 @@ use Terminal::Widgets::Layout;
 role Terminal::Widgets::TopLevel
   is Terminal::Widgets::Widget
 does Terminal::Widgets::Layout::WidgetBuilding {
-    has Terminal::Widgets::Terminal:D $.terminal is required;
+    has     $.terminal is required;
     has Str $.title;
+
+    #| Check if the Terminal believes this is its current TopLevel
+    method is-current-toplevel(--> Bool:D) {
+        self === $.terminal.current-toplevel
+    }
 
     #| Send an event requesting that a target widget takes focus
     method focus-on(Terminal::Widgets::Widget:D $target) {

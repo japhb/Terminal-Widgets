@@ -1,7 +1,7 @@
 # ABSTRACT: Singleton terminal app object
 
-use Terminal::Widgets::Terminal;
 use Terminal::Widgets::TopLevel;
+use Terminal::Widgets::Terminal;
 
 
 #| A singleton TUI app object, managing Terminal and TopLevel objects
