@@ -2,6 +2,8 @@
 
 unit module Terminal::Widgets::Events;
 
+use Terminal::LineEditor::RawTerminalInput;
+
 
 #| Phases of event processing
 enum EventPhase is export < TrickleDown AtTarget BubbleUp >;
@@ -20,6 +22,28 @@ class FocusFollowingEvent is Event { }
 #| Keyboard events
 class KeyboardEvent is FocusFollowingEvent {
     has $.key is required;
+
+    #| Return a keyname string suitable for looking up in keymaps
+    method keyname() {
+        do given $.key {
+            when Str {
+                my $ord = .ord;
+                $ord <  32  ?? 'Ctrl-' ~ ($ord + 64).chr !!
+                $ord == 127 ?? 'Backspace' !!
+                               $_
+            }
+            when Pair {
+                my $key = .key;
+                $key ~~ Str        ??  $key !!
+                $key ~~ SpecialKey ?? ~$key !!
+                                        ('Meta-'  if $key.meta)
+                                      ~ ('Ctrl-'  if $key.control)
+                                      ~ ('Alt-'   if $key.alt)
+                                      ~ ('Shift-' if $key.shift)
+                                      ~ $key.key
+            }
+        }
+    }
 }
 
 
@@ -43,6 +67,7 @@ class LocalizedEvent is Event {
 class MouseEvent is LocalizedEvent {
     has $.mouse is required;
 
+    #| Determine whether this mouse event overlapped a particular widget
     method overlaps-widget($widget --> Bool:D) {
         my $rel-x = $.mouse.x - 1 - $widget.x-offset;
         my $rel-y = $.mouse.y - 1 - $widget.y-offset;
