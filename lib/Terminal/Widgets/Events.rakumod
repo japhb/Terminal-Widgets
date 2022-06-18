@@ -74,6 +74,14 @@ class MouseEvent is LocalizedEvent {
 
         0 <= $rel-x < $widget.w && 0 <= $rel-y < $widget.h
     }
+
+    #| Compute coordinates relative to a given widget's local origin
+    method relative-to($widget) {
+        my $rel-x = $.mouse.x - 1 - $widget.x-offset;
+        my $rel-y = $.mouse.y - 1 - $widget.y-offset;
+
+        ($rel-x, $rel-y)
+    }
 }
 
 
