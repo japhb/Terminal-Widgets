@@ -439,7 +439,12 @@ role WidgetBuilding {
                              :x(.x), :y(.y),
                              :w(.computed.set-w),
                              :h(.computed.set-h));
-            .widget = self.build-node($_, $geometry);
+            if .widget && .widget.parent === $parent && .widget.layout === $_ {
+                .widget.update-geometry(|$geometry);
+            }
+            else {
+                .widget = self.build-node($_, $geometry);
+            }
 
             # If build-node returned a defined widget, it's the new parent for
             # recursion; otherwise it's just an internal node or a non-Widget
