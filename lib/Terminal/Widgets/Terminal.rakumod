@@ -15,13 +15,16 @@ class Terminal::Widgets::Terminal
     has UInt:D $.h = 0;
 
     # XXXX: Multiple T::P's in an app?
-    has Terminal::Print:D $!terminal-print = $*TERMINAL // Terminal::Print.new;
+    has Terminal::Print:D $!terminal-print = PROCESS::<$TERMINAL> //= Terminal::Print.new;
 
 
     #| Switch to the alternate screen buffer and start the decoder reactor
     #| as soon as everything else is set up
     submethod TWEAK() {
         $!terminal-print.initialize-screen;
+        $!w = $!terminal-print.columns;
+        $!h = $!terminal-print.rows;
+
         self.start-decoder;
     }
 
@@ -50,7 +53,7 @@ class Terminal::Widgets::Terminal
     #| terminal has resized or toplevel has been changed)
     method resize-toplevel() {
         with $.current-toplevel {
-            # note "Updating toplevel geometry to $size"; $*ERR.flush;
+            # note "Updating toplevel geometry to $!w x $!h"; $*ERR.flush;
             my $old-grid = .grid;
             .update-geometry(:$!w, :$!h);
             my $new-grid = .grid;
