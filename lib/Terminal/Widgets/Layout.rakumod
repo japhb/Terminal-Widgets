@@ -350,6 +350,12 @@ class Node does Dynamic {
 #| A visual divider (such as box-drawing lines) between layout nodes
 class Divider is Leaf { }
 
+#| A single checkbox
+class Checkbox is Leaf { }
+
+#| A single radio button
+class RadioButton is Leaf { }
+
 #| A single-line text input field
 class TextInput is Leaf { }
 
@@ -387,12 +393,16 @@ class Widget  is Node {
 #| Helper class for building style/layout trees
 class Builder {
     # Leaf nodes (no children ever)
-    method leaf(       :$extra = \(), *%style) {
-        Leaf.new:      :$extra, requested => Style.new(|%style) }
-    method divider(    :$extra = \(), *%style) {
-        Divider.new:   :$extra, requested => Style.new(|%style) }
-    method text-input( :$extra = \(), *%style) {
-        TextInput.new: :$extra, requested => Style.new(|%style) }
+    method leaf(         :$extra = \(), *%style) {
+        Leaf.new:        :$extra, requested => Style.new(|%style) }
+    method divider(      :$extra = \(), *%style) {
+        Divider.new:     :$extra, requested => Style.new(|%style) }
+    method checkbox(     :$extra = \(), *%style) {
+        Checkbox.new:    :$extra, requested => Style.new(|%style) }
+    method radio-button( :$extra = \(), *%style) {
+        RadioButton.new: :$extra, requested => Style.new(|%style) }
+    method text-input(   :$extra = \(), *%style) {
+        TextInput.new:   :$extra, requested => Style.new(|%style) }
 
     # Nodes with optional children
     method node(    *@children, :$vertical, :$extra = \(), *%style) {
