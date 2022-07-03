@@ -10,6 +10,11 @@ use Terminal::Widgets::TopLevel;
 use Terminal::Widgets::Terminal;
 use Terminal::Widgets::App;
 
+use Terminal::Widgets::Input;
+use Terminal::Widgets::Input::Labeled;
+use Terminal::Widgets::Input::Boolean;
+use Terminal::Widgets::Input::Checkbox;
+use Terminal::Widgets::Input::RadioButton;
 use Terminal::Widgets::Input::Text;
 
 use Terminal::Widgets::StandardWidgetBuilder;
