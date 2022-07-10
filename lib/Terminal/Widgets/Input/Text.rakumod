@@ -6,14 +6,14 @@ use Text::MiscUtils::Layout;
 
 use Terminal::Widgets::Utils;
 use Terminal::Widgets::Events;
-use Terminal::Widgets::Widget;
+use Terminal::Widgets::Input;
 
 
 constant $dim-gray = gray-color(.2);
 
 #| Multiplex all forms of user input, rooted at a control widget
 class Terminal::Widgets::Input::Text
-   is Terminal::Widgets::Widget
+ does Terminal::Widgets::Input
  does Terminal::LineEditor::HistoryTracking
  does Terminal::LineEditor::KeyMappable {
     has $.input-class = Terminal::LineEditor::ScrollingSingleLineInput::ANSI;
@@ -21,7 +21,6 @@ class Terminal::Widgets::Input::Text
 
     has &.process-entry;
 
-    has Bool:D $.enabled is rw = False;
     has Bool:D $!literal-mode  = False;
 
     has Str:D  $.prompt-string = '>';
@@ -44,6 +43,9 @@ class Terminal::Widgets::Input::Text
         $!prompt-color = $_ with $prompt-color;
         self.full-refresh
     }
+
+    # XXXX: HACK: Just call full-refresh for now
+    method refresh-value(|c) { self.full-refresh(|c) }
 
     #| Completely refresh input, including possibly toggling enabled state
     method full-refresh(Str:D $content = '', Bool:D :$print = True) {
