@@ -1,14 +1,20 @@
-# ABSTRACT: Wrapper of Terminal::Print::Widget with EventHandling added
+# ABSTRACT: Wrapper of Terminal::Print::Widget with EventHandling and Animation hooks
 
 use Terminal::Print::Widget;
+use Terminal::Print::Animated;
 
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Layout;
 
 
-#| Extension to Terminal::Print::Widget, with EventHandling
+#| Wrapper of Terminal::Print::FrameInfo
+class Terminal::Widgets::FrameInfo is Terminal::Print::FrameInfo { }
+
+
+#| Extension to Terminal::Print::Widget, Animated and with EventHandling
 class Terminal::Widgets::Widget
    is Terminal::Print::Widget
+ does Terminal::Print::Animated
  does Terminal::Widgets::Events::EventHandling {
     #| Dynamic layout node associated with this widget
     has Terminal::Widgets::Layout::Dynamic $.layout;
@@ -68,9 +74,5 @@ class Terminal::Widgets::Widget
             my $new-grid = $.grid.WHAT.new($w, $h);
             self.replace-grid($new-grid);
         }
-
-        # XXXX: Redraw?
-
-        self
     }
 }
