@@ -17,7 +17,7 @@ class Terminal::Widgets::Input::RadioButton
     #| Refresh just the value, without changing anything else
     method refresh-value(Bool:D :$print = True) {
         $.grid.set-span-text(0, 0, self.button-text);
-        self.compose(:$print);
+        self.composite(:$print);
     }
 
     #| Refresh the whole input
@@ -26,6 +26,6 @@ class Terminal::Widgets::Input::RadioButton
 
         $.grid.clear;
         $.grid.set-span-text(0, 0, $text);
-        self.compose(:$print);
+        self.composite(:$print);
     }
 }
