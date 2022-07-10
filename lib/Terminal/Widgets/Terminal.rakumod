@@ -103,11 +103,13 @@ class Terminal::Widgets::Terminal
     #| terminal has resized or toplevel has been changed)
     method resize-toplevel() {
         with $.current-toplevel {
+            my $is-current-grid = .grid === $!terminal-print.current-grid;
+
             # note "Updating toplevel geometry to $!w x $!h"; $*ERR.flush;
             my $old-grid = .grid;
             .update-geometry(:$!w, :$!h);
             my $new-grid = .grid;
-            unless $old-grid === $new-grid {
+            unless $is-current-grid && $old-grid === $new-grid {
                 my $name = ~.WHICH;
                 # XXXX: Old grid leaks in Terminal::Print
                 # XXXX: Need a .replace-grid for T::P as well?
