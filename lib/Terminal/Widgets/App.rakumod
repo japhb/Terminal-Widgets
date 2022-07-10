@@ -17,7 +17,8 @@ class Terminal::Widgets::App {
         die "Terminal input and output are not both connected to a valid tty"
             unless $input.t && $output.t;
 
-        %!terminal{$tty.path} = Terminal::Widgets::Terminal.new(:$input, :$output)
+        %!terminal{$tty.path} = Terminal::Widgets::Terminal.new(:$input, :$output,
+                                                                :app(self));
     }
 
     #| add-terminal by IO::Path tty object

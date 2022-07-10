@@ -13,6 +13,7 @@ class Terminal::Widgets::Terminal
     has Terminal::Widgets::TopLevel $.current-toplevel;
     has UInt:D $.w = 0;
     has UInt:D $.h = 0;
+    has $.app;
 
     # XXXX: Multiple T::P's in an app?
     has Terminal::Print:D $!terminal-print = PROCESS::<$TERMINAL> //= Terminal::Print.new;
