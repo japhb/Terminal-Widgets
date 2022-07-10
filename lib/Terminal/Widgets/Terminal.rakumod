@@ -71,7 +71,9 @@ class Terminal::Widgets::Terminal
             # note "Rebuilding layout"; $*ERR.flush;
             .build-layout;
             # note .layout.gist;
-            # note "Recomposing toplevel"; $*ERR.flush;
+            # note "Focusing on toplevel"; $*ERR.flush;
+            .gain-focus;
+            # note "Recompositing toplevel"; $*ERR.flush;
             .composite;
             # note "Toplevel resize complete.\n"; $*ERR.flush;
         }
