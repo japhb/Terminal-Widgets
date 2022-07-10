@@ -19,13 +19,15 @@ class Terminal::Widgets::Terminal
     has Terminal::Print:D $!terminal-print = PROCESS::<$TERMINAL> //= Terminal::Print.new;
 
 
-    #| Switch to the alternate screen buffer and start the decoder reactor
-    #| as soon as everything else is set up
+    #| Initialize terminal size to value detected by Terminal::Print at startup
     submethod TWEAK() {
-        $!terminal-print.initialize-screen;
         $!w = $!terminal-print.columns;
         $!h = $!terminal-print.rows;
+    }
 
+    #| Initialize terminal screen and start per-terminal input decoder in background
+    method initialize {
+        $!terminal-print.initialize-screen;
         self.start-decoder;
     }
 
