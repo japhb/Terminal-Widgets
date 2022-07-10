@@ -3,6 +3,7 @@
 use Terminal::Print;
 use Terminal::LineEditor::RawTerminalInput;
 
+use Terminal::Widgets::Events;
 use Terminal::Widgets::TopLevel;
 
 
@@ -11,6 +12,7 @@ class Terminal::Widgets::Terminal
  does Terminal::LineEditor::RawTerminalIO
  does Terminal::LineEditor::RawTerminalUtils {
     has Terminal::Widgets::TopLevel $.current-toplevel;
+    has Channel:D $.control .= new;
     has UInt:D $.w = 0;
     has UInt:D $.h = 0;
     has $.app;
@@ -29,6 +31,51 @@ class Terminal::Widgets::Terminal
     method initialize {
         $!terminal-print.initialize-screen;
         self.start-decoder;
+    }
+
+    #| Enter raw input mode, enable mouse events, and start per-terminal
+    #| event reactor ready to pass events to toplevels
+    method start {
+        self.enter-raw-mode;
+        self.set-mouse-event-mode(MouseNormalEvents);
+
+        react {
+            # Handle events from the control channel
+            whenever $.control {
+                # Handle window size change synchronously, since we have to
+                # query the VT emulator for the new size info
+                when 'refresh-terminal-size' { await self.refresh-terminal-size }
+
+                # Exit terminal reactor when requested
+                when 'done' { done }
+
+                # Something is coded wrong if the control channel hits the default
+                default { !!! "Unknown control channel event: '$_'" }
+            }
+
+            # Send the window resize request to the control channel
+            # and let the signal handler finish
+            whenever signal(SIGWINCH) {
+                $.control.send: 'refresh-terminal-size';
+            }
+
+            # Keyboard and mouse events
+            whenever $.decoded {
+                # End terminal event processing if input ended
+                done unless .defined;
+
+                # Wrap low-level event into higher-level wrapper
+                my $event = $_ ~~ MouseTrackingEvent
+                            ?? Terminal::Widgets::Events::MouseEvent.new(mouse => $_)
+                            !! Terminal::Widgets::Events::KeyboardEvent.new(key => $_);
+                # note $event;
+
+                # Send the high-level event to the current toplevel for processing
+                .process-event($event) with $.current-toplevel;
+            }
+        }
+
+        self.shutdown;
     }
 
     #| Refresh the terminal size (at start or after SIGWINCH/SIGCONT),
