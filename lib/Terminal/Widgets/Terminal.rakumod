@@ -79,12 +79,17 @@ class Terminal::Widgets::Terminal
         # XXXX: Tell previous toplevel to disconnect from terminal?
 
         if $new-toplevel -> $!current-toplevel {
-            $.output.print("\e]2;$_\e\\") with $!current-toplevel.title;
+            self.set-window-title($_) with $!current-toplevel.title;
             self.resize-toplevel if $!w && $!h;
         }
     }
 
-    #| Shutdown this terminal and close handles (if not standard handles)
+    #| Set terminal emulator window title
+    method set-window-title(Str:D $title) {
+        $.output.print("\e]2;$title\e\\");
+    }
+
+    #| Gracefully shutdown this terminal
     method shutdown() {
         # Forget current toplevel window
         self.set-toplevel(Nil);
