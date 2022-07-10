@@ -30,6 +30,22 @@ class Terminal::Widgets::Widget
         $toplevel
     }
 
+    #| Determine default focus point within widget tree
+    method default-focus() {
+        if $.focused-child {
+            $.focused-child.default-focus
+        }
+        else {
+            my $focusable = @.children.first(Terminal::Widgets::Events::EventHandling);
+            $focusable ?? $focusable.default-focus() !! self
+        }
+    }
+
+    #| Gain focus and ensure that proper child is focused
+    method gain-focus() {
+        self.toplevel.focus-on(self.default-focus);
+    }
+
     #| Update computed upper-left coordinate offsets for self and children
     method recalc-coord-offsets(Int:D $parent-x, Int:D $parent-y) {
         # Recompute offsets for self
