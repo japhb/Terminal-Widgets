@@ -11,10 +11,6 @@ class Terminal::Widgets::StandardWidgetBuilder {
     #| Build widgets from the standard widget library based on dynamic layout
     method build-node($node, $geometry) {
         do given $node {
-            when *.widget {
-                # Widget already built, just update its geometry
-                .widget.update-geometry(|$geometry)
-            }
             when Terminal::Widgets::Layout::Divider {
                 if .parent && .parent.vertical {
                     my $x1 = $geometry<x>;
