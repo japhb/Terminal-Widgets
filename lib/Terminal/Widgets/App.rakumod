@@ -61,9 +61,9 @@ class Terminal::Widgets::App {
     }
 
     #| Create a default terminal and initial toplevel, associate them, and
-    #| initialize/start the terminal
-    method default-start(Str:D $toplevel-moniker,
-                         Terminal::Widgets::TopLevel:U $class, |c) {
+    #| initialize the terminal
+    method default-init(Str:D $toplevel-moniker,
+                        Terminal::Widgets::TopLevel:U $class, |c) {
         my $terminal = self.add-terminal;
         my $toplevel = self.add-top-level($toplevel-moniker,
                                           :$class, :$terminal, |c);
