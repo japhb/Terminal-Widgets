@@ -18,6 +18,8 @@ use Terminal::Widgets::Input::RadioButton;
 use Terminal::Widgets::Input::Text;
 
 use Terminal::Widgets::StandardWidgetBuilder;
+use Terminal::Widgets::Simple::TopLevel;
+use Terminal::Widgets::Simple;
 
 
 pass "all modules loaded successfully";
