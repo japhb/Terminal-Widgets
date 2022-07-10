@@ -14,4 +14,10 @@ role Terminal::Widgets::Input
     # Set enabled flag, then refresh
     method set-enabled(Bool:D $!enabled = True) { self.full-refresh }
     method toggle-enabled()                     { self.set-enabled(!$!enabled) }
+
+    # Convert animation drawing to full-refresh
+    method draw-frame() {
+        self.full-refresh;
+        callsame;
+    }
 }

@@ -73,6 +73,8 @@ class Terminal::Widgets::Terminal
             # note .layout.gist;
             # note "Focusing on toplevel"; $*ERR.flush;
             .gain-focus;
+            # note "Redrawing toplevel"; $*ERR.flush;
+            .redraw-all;
             # note "Recompositing toplevel"; $*ERR.flush;
             .composite;
             # note "Toplevel resize complete.\n"; $*ERR.flush;

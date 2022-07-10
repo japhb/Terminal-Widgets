@@ -22,6 +22,12 @@ does Terminal::Widgets::Layout::WidgetBuilding {
         self.process-event(Terminal::Widgets::Events::TakeFocus.new(:$target));
     }
 
+    #| Redraw entire widget tree
+    method redraw-all() {
+        my $frame-info = Terminal::Widgets::FrameInfo.new;
+        self.do-frame($frame-info);
+    }
+
     # XXXX: Allow terminal to be disconnected or switched?
     # XXXX: Does disconnect imply recursive destroy?
 }
