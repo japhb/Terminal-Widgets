@@ -25,7 +25,7 @@ class Terminal::Widgets::Input::Checkbox
         my $text = self.checkbox-text ~ (' ' ~ $.label if $.label);
 
         $.grid.clear;
-        $.grid.set-span-text(0, 0, $text);
+        $.grid.set-span(0, 0, $text, self.current-color);
         self.composite(:$print);
     }
 }
