@@ -52,6 +52,57 @@ class Terminal::Widgets::Widget
         self.toplevel.focus-on(self.default-focus);
     }
 
+    #| Find first matching widget in this subtree, starting with self
+    method first-widget($matcher = { True }) {
+        self ~~ $matcher ?? self !! @.children.first(*.first-widget($matcher))
+    }
+
+    #| Find last matching widget in this subtree, ending with self
+    method last-widget($matcher = { True }) {
+        @.children.reverse.first(*.last-widget($matcher))
+        // (self ~~ $matcher ?? self !! Nil)
+    }
+
+    #| Find next matching widget after self
+    method next-widget($matcher = { True }) {
+        if $.parent {
+            # Check following siblings
+            my $found-self = False;
+            for $.parent.children {
+                if $_ === self {
+                    $found-self = True;
+                }
+                elsif $found-self {
+                    .return with .first-widget($matcher);
+                }
+            }
+
+            # No luck with siblings, go to cousins
+            $.parent.next-widget($matcher)
+        }
+        else { Nil }
+    }
+
+    #| Find previous matching widget before self
+    method prev-widget($matcher = { True }) {
+        if $.parent {
+            # Check leading siblings
+            my $found-self = False;
+            for $.parent.children.reverse {
+                if $_ === self {
+                    $found-self = True;
+                }
+                elsif $found-self {
+                    .return with .last-widget($matcher);
+                }
+            }
+
+            # No luck with siblings, go to cousins
+            $.parent.prev-widget($matcher)
+        }
+        else { Nil }
+    }
+
     #| Update computed upper-left coordinate offsets for self and children
     method recalc-coord-offsets(Int:D $parent-x, Int:D $parent-y) {
         # Recompute offsets for self
