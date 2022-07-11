@@ -20,4 +20,12 @@ role Terminal::Widgets::Input
         self.full-refresh;
         callsame;
     }
+
+    # Move focus to next or previous Input
+    method focus-next-input() {
+        self.toplevel.focus-on($_) with self.next-widget(Terminal::Widgets::Input)
+    }
+    method focus-prev-input() {
+        self.toplevel.focus-on($_) with self.prev-widget(Terminal::Widgets::Input)
+    }
 }
