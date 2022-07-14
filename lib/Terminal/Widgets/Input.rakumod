@@ -23,9 +23,10 @@ role Terminal::Widgets::Input
     method default-colors() {
         my constant %defaults =
             error    => 'red',
-            disabled => gray-color(.5),
-            focused  => 'on_' ~ gray-color(.25),
-            default  => 'on_' ~ gray-color(.1),
+            disabled => gray-color(.5e0),
+            blurred  => 'on_' ~ gray-color(.25e0),
+            focused  => 'on_' ~ rgb-color(.2e0, .2e0, 0e0),  # Dim yellow
+            default  => 'on_' ~ gray-color(.1e0),
         ;
 
         for %defaults.kv -> $state, $color {
@@ -36,11 +37,15 @@ role Terminal::Widgets::Input
     #| Determine proper color based on state variables, taking care to handle
     #| whatever color style mixtures have been requested
     method current-color() {
-        my $focused = $.parent && $.parent.focused-child === self;
+        my $toplevel = self.toplevel;
+        my $focused  = $toplevel.focused-widget === self;
+        my $blurred  = $focused && !($toplevel.is-current-toplevel &&
+                                     $toplevel.terminal.terminal-focused);
 
         # Merge all relevant colors into a single list of attribute requests
         my @colors =  %.color<default>,
                      (%.color<focused>  if     $focused),
+                     (%.color<blurred>  if     $blurred),
                      (%.color<disabled> unless $.enabled),
                      (%.color<error>    if     $.error);
         my @split  = @colors.join(' ').words.reverse;
