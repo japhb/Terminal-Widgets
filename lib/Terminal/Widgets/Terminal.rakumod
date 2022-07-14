@@ -15,6 +15,7 @@ class Terminal::Widgets::Terminal
     has Channel:D $.control .= new;
     has UInt:D $.w = 0;
     has UInt:D $.h = 0;
+    has Bool:D $.terminal-focused = True;
     has $.app;
 
     # XXXX: Multiple T::P's in an app?
@@ -63,6 +64,12 @@ class Terminal::Widgets::Terminal
             whenever $.decoded {
                 # End terminal event processing if input ended
                 done unless .defined;
+
+                # Check for events changing focus of entire terminal window
+                if $_ ~~ Pair && .key ~~ SpecialKey {
+                    if    .key == FocusIn  { $!terminal-focused = True  }
+                    elsif .key == FocusOut { $!terminal-focused = False }
+                }
 
                 # Wrap low-level event into higher-level wrapper
                 my $event = $_ ~~ MouseTrackingEvent
@@ -121,7 +128,7 @@ class Terminal::Widgets::Terminal
             .build-layout;
             # note .layout.gist;
             # note "Focusing on toplevel"; $*ERR.flush;
-            .gain-focus;
+            .gain-focus(:!redraw);
             # note "Redrawing toplevel"; $*ERR.flush;
             .redraw-all;
             # note "Recompositing toplevel"; $*ERR.flush;
