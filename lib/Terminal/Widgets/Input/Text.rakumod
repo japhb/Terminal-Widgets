@@ -9,8 +9,6 @@ use Terminal::Widgets::Events;
 use Terminal::Widgets::Input;
 
 
-constant $dim-gray = gray-color(.2);
-
 #| Multiplex all forms of user input, rooted at a control widget
 class Terminal::Widgets::Input::Text
  does Terminal::Widgets::Input
@@ -21,14 +19,9 @@ class Terminal::Widgets::Input::Text
 
     has &.process-entry;
 
-    has Bool:D $!literal-mode  = False;
-
-    has Str:D  $.prompt-string = '>';
-    has Str:D  $.text-color    = "white on_$dim-gray";
-    has Str:D  $.prompt-color  = "bold $!text-color";
-
+    has Bool:D $!literal-mode    = False;
+    has Str:D  $.prompt-string   = '>';
     has Str:D  $.disabled-string = '';
-    has Str:D  $.disabled-color  = $!text-color;
 
 
     #| Set $!input-field, with both compile-time and runtime type checks
@@ -38,9 +31,8 @@ class Terminal::Widgets::Input::Text
         $!input-field = $new-field;
     }
 
-    #| Set current prompt-string and (optionally) prompt-color
-    method set-prompt(Str:D $!prompt-string, Str $prompt-color?) {
-        $!prompt-color = $_ with $prompt-color;
+    #| Set current prompt-string
+    method set-prompt(Str:D $!prompt-string) {
         self.full-refresh
     }
 
@@ -70,7 +62,7 @@ class Terminal::Widgets::Input::Text
     method show-disabled(Bool:D :$print = True) {
         $.grid.clear;
         $.grid.set-span-text(0, 0, $.disabled-string);
-        $.grid.set-span-color(0, $.w - 1, 0, $.disabled-color);
+        $.grid.set-span-color(0, $.w - 1, 0, self.current-color);
         self.composite(:$print);
     }
 
@@ -86,15 +78,16 @@ class Terminal::Widgets::Input::Text
 
     #| Refresh widget in input field mode
     method refresh-input-field(Bool:D $edited = True) {
+        my $color   = self.current-color;
         my $refresh = $.input-field.render(:$edited);
         my $start   = $.input-field.field-start;
         my $pos     = $start
                     + $.input-field.left-mark-width
                     + $.input-field.scroll-to-insert-width;
 
-        $.grid.set-span(0,      0, $.prompt-string, $.prompt-color);
-        $.grid.set-span($start, 0, $refresh, $.text-color);
-        $.grid.set-span-color($pos, $pos, 0, 'inverse');
+        $.grid.set-span(0,      0, $.prompt-string, "$color bold");
+        $.grid.set-span($start, 0, $refresh, $color);
+        $.grid.set-span-color($pos, $pos, 0, "$color inverse");
     }
 
     #| Dispatch a key event when enabled for editing
