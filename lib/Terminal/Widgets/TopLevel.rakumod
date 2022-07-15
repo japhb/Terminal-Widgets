@@ -9,9 +9,21 @@ use Terminal::Widgets::Layout;
 role Terminal::Widgets::TopLevel
   is Terminal::Widgets::Widget
 does Terminal::Widgets::Layout::WidgetBuilding {
-    has                           $.terminal is required;
+    has         $.terminal is required;
+    has Str     $.title;
+    has Array:D %.named-group;
+
     has Terminal::Widgets::Widget $.focused-widget;
-    has Str                       $.title;
+
+    #| Add a widget to a named group
+    method add-to-group(Terminal::Widgets::Widget:D $widget, Str:D $group) {
+        %!named-group{$group}.push($widget);
+    }
+
+    #| Remove a widget from a named group
+    method remove-from-group(Terminal::Widgets::Widget:D $widget, Str:D $group) {
+        %!named-group{$group} .= grep(* !=== $widget);
+    }
 
     #| Check if the Terminal believes this is its current TopLevel
     method is-current-toplevel(--> Bool:D) {

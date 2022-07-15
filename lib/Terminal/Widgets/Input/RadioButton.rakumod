@@ -8,6 +8,23 @@ use Terminal::Widgets::Input::Labeled;
 class Terminal::Widgets::Input::RadioButton
  does Terminal::Widgets::Input::Boolean
  does Terminal::Widgets::Input::Labeled {
+    has Str:D $.group is required;
+
+    #| Make sure radio button is added to group within toplevel
+    submethod TWEAK() {
+        self.Terminal::Widgets::Input::TWEAK;
+        self.toplevel.add-to-group(self, $!group);
+    }
+
+    #| If setting this button, unset remainder in group
+    method set-state(Bool:D $state) {
+        self.Terminal::Widgets::Input::Boolean::set-state($state);
+        if $state {
+            my @others = self.toplevel.named-group{$.group}.grep(* !=== self);
+            .set-state(False) for @others;
+        }
+    }
+
     #| Radio button glyphs
     method button-text() {
         # $.state ?? '(*)' !! '( )'
