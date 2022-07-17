@@ -70,6 +70,8 @@ role Dynamic {
     method compute-layout() { ... }
     method propagate-xy()   { ... }
 
+    method default-styles() { hash() }
+
     method update-requested(*%updates) {
         self.uncompute;
         $!requested = $!requested.clone(|%updates);
@@ -347,20 +349,28 @@ class Node does Dynamic {
     }
 }
 
+
 #| A visual divider (such as box-drawing lines) between layout nodes
 class Divider is Leaf { }
 
+
+#| Single line inputs
+class SingleLineInput is Leaf {
+    method default-styles { hash(set-h => 1) }
+}
+
 #| A single button
-class Button is Leaf { }
+class Button is SingleLineInput { }
 
 #| A single checkbox
-class Checkbox is Leaf { }
+class Checkbox is SingleLineInput { }
 
 #| A single radio button
-class RadioButton is Leaf { }
+class RadioButton is SingleLineInput { }
 
 #| A single-line text input field
-class TextInput is Leaf { }
+class TextInput is SingleLineInput { }
+
 
 #| A framing node
 # class Frame   is Node { }
@@ -397,25 +407,37 @@ class Widget  is Node {
 class Builder {
     # Leaf nodes (no children ever)
     method leaf(         :$extra = \(), *%style) {
-        Leaf.new:        :$extra, requested => Style.new(|%style) }
+        my $default      = Leaf.default-styles;
+        Leaf.new:        :$extra, requested => Style.new(|$default, |%style) }
     method divider(      :$extra = \(), *%style) {
-        Divider.new:     :$extra, requested => Style.new(|%style) }
+        my $default      = Divider.default-styles;
+        Divider.new:     :$extra, requested => Style.new(|$default, |%style) }
     method button(       :$extra = \(), *%style) {
-        Button.new:      :$extra, requested => Style.new(|%style) }
+        my $default      = Button.default-styles;
+        Button.new:      :$extra, requested => Style.new(|$default, |%style) }
     method checkbox(     :$extra = \(), *%style) {
-        Checkbox.new:    :$extra, requested => Style.new(|%style) }
+        my $default      = Checkbox.default-styles;
+        Checkbox.new:    :$extra, requested => Style.new(|$default, |%style) }
     method radio-button( :$extra = \(), *%style) {
-        RadioButton.new: :$extra, requested => Style.new(|%style) }
+        my $default      = RadioButton.default-styles;
+        RadioButton.new: :$extra, requested => Style.new(|$default, |%style) }
     method text-input(   :$extra = \(), *%style) {
-        TextInput.new:   :$extra, requested => Style.new(|%style) }
+        my $default      = TextInput.default-styles;
+        TextInput.new:   :$extra, requested => Style.new(|$default, |%style) }
 
     # Nodes with optional children
     method node(    *@children, :$vertical, :$extra = \(), *%style) {
-        Node.new:   :@children, :$vertical, :$extra, requested => Style.new(|%style) }
+        my $default = Node.default-styles;
+        Node.new:   :@children, :$vertical, :$extra,
+                    requested => Style.new(|$default, |%style) }
     # method frame(   *@children, :$vertical, :$extra = \(), *%style) {
-    #     Frame.new:  :@children, :$vertical, :$extra, requested => Style.new(|%style) }
+    #     my $default = Frame.default-styles;
+    #     Frame.new:  :@children, :$vertical, :$extra,
+    #                 requested => Style.new(|$default, |%style) }
     method widget(  *@children, :$vertical, :$extra = \(), *%style) {
-        Widget.new: :@children, :$vertical, :$extra, requested => Style.new(|%style) }
+        my $default = Widget.default-styles;
+        Widget.new: :@children, :$vertical, :$extra,
+                    requested => Style.new(|$default, |%style) }
 }
 
 

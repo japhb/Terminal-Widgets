@@ -7,15 +7,14 @@ use Terminal::Widgets::Simple;
 class FormUI is TopLevel {
     method initial-layout($builder, $width, $height) {
         with $builder {
-            .checkbox(    set-h => 1, extra => \( label => "It's a checkbox" )),
-            .checkbox(    set-h => 1, extra => \( label => "It's another checkbox" )),
-            .radio-button(set-h => 1, extra => \( label => "It's a radio button",
-                                                  group => 'my-radios')),
-            .radio-button(set-h => 1, extra => \( label => "It's a second radio button",
-                                                  group => 'my-radios')),
-            .text-input,
-            .button(set-h => 1, extra => \( label => 'quit',
-                                            on-click => { self.quit })),
+            .checkbox(    extra => \( label => "It's a checkbox" )),
+            .checkbox(    extra => \( label => "It's another checkbox" )),
+            .radio-button(extra => \( label => "It's a radio button",
+                                      group => 'my-radios')),
+            .radio-button(extra => \( label => "It's a second radio button",
+                                      group => 'my-radios')),
+            .text-input(set-h => Nil),
+            .button(extra => \( label => 'quit', on-click => { self.quit })),
         }
     }
 
