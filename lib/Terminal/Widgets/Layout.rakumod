@@ -350,6 +350,9 @@ class Node does Dynamic {
 #| A visual divider (such as box-drawing lines) between layout nodes
 class Divider is Leaf { }
 
+#| A single button
+class Button is Leaf { }
+
 #| A single checkbox
 class Checkbox is Leaf { }
 
@@ -397,6 +400,8 @@ class Builder {
         Leaf.new:        :$extra, requested => Style.new(|%style) }
     method divider(      :$extra = \(), *%style) {
         Divider.new:     :$extra, requested => Style.new(|%style) }
+    method button(       :$extra = \(), *%style) {
+        Button.new:      :$extra, requested => Style.new(|%style) }
     method checkbox(     :$extra = \(), *%style) {
         Checkbox.new:    :$extra, requested => Style.new(|%style) }
     method radio-button( :$extra = \(), *%style) {

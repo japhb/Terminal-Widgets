@@ -7,6 +7,7 @@ use Terminal::Widgets::Utils;
 role Terminal::Widgets::Input
   is Terminal::Widgets::Widget {
     has Bool:D $.enabled = True;
+    has Bool:D $!active  = False;   # XXXX: Handle this for all inputs?
     has        $.error;
     has        %.color;
 
@@ -24,6 +25,7 @@ role Terminal::Widgets::Input
         my constant %defaults =
             error    => 'red',
             disabled => gray-color(.5e0),
+            active   => 'bold inverse',
             blurred  => 'on_' ~ gray-color(.25e0),
             focused  => 'on_' ~ rgb-color(.2e0, .2e0, 0e0),  # Dim yellow
             default  => 'on_' ~ gray-color(.1e0),
@@ -46,6 +48,7 @@ role Terminal::Widgets::Input
         my @colors =  %.color<default>,
                      (%.color<focused>  if     $focused),
                      (%.color<blurred>  if     $blurred),
+                     (%.color<active>   if     $!active),
                      (%.color<disabled> unless $.enabled),
                      (%.color<error>    if     $.error);
         my @split  = @colors.join(' ').words.reverse;

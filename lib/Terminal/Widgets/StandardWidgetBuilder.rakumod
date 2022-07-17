@@ -1,6 +1,7 @@
 # ABSTRACT: Base class for dynamically building standard widgets
 
 use Terminal::Widgets::Layout;
+use Terminal::Widgets::Input::Button;
 use Terminal::Widgets::Input::Checkbox;
 use Terminal::Widgets::Input::RadioButton;
 use Terminal::Widgets::Input::Text;
@@ -24,6 +25,9 @@ class Terminal::Widgets::StandardWidgetBuilder {
                     my $y2 = $y1 + $geometry<h> - 1;
                     $geometry<parent>.draw-vline($x, $y1, $y2, |.extra);
                 }
+            }
+            when Terminal::Widgets::Layout::Button {
+                Terminal::Widgets::Input::Button.new(|$geometry, |.extra)
             }
             when Terminal::Widgets::Layout::Checkbox {
                 Terminal::Widgets::Input::Checkbox.new(|$geometry, |.extra)

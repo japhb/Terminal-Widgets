@@ -18,6 +18,7 @@
     "Terminal::Widgets::Events": "lib/Terminal/Widgets/Events.rakumod",
     "Terminal::Widgets::Input": "lib/Terminal/Widgets/Input.rakumod",
     "Terminal::Widgets::Input::Boolean": "lib/Terminal/Widgets/Input/Boolean.rakumod",
+    "Terminal::Widgets::Input::Button": "lib/Terminal/Widgets/Input/Button.rakumod",
     "Terminal::Widgets::Input::Checkbox": "lib/Terminal/Widgets/Input/Checkbox.rakumod",
     "Terminal::Widgets::Input::Labeled": "lib/Terminal/Widgets/Input/Labeled.rakumod",
     "Terminal::Widgets::Input::RadioButton": "lib/Terminal/Widgets/Input/RadioButton.rakumod",
