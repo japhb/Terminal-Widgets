@@ -58,7 +58,7 @@ class Style {
 
 #| Role for dynamic layout nodes, tracking both requested and computed styles
 role Dynamic {
-    has Capture $.extra;
+    has         %.extra;
     has Style   $.requested;
     has Style   $.computed is rw;
     has Dynamic $.parent   is rw;
@@ -406,37 +406,37 @@ class Widget  is Node {
 #| Helper class for building style/layout trees
 class Builder {
     # Leaf nodes (no children ever)
-    method leaf(         :$extra = \(), *%style) {
+    method leaf(         :%style, *%extra) {
         my $default      = Leaf.default-styles;
-        Leaf.new:        :$extra, requested => Style.new(|$default, |%style) }
-    method divider(      :$extra = \(), *%style) {
+        Leaf.new:        :%extra, requested => Style.new(|$default, |%style) }
+    method divider(      :%style, *%extra) {
         my $default      = Divider.default-styles;
-        Divider.new:     :$extra, requested => Style.new(|$default, |%style) }
-    method button(       :$extra = \(), *%style) {
+        Divider.new:     :%extra, requested => Style.new(|$default, |%style) }
+    method button(       :%style, *%extra) {
         my $default      = Button.default-styles;
-        Button.new:      :$extra, requested => Style.new(|$default, |%style) }
-    method checkbox(     :$extra = \(), *%style) {
+        Button.new:      :%extra, requested => Style.new(|$default, |%style) }
+    method checkbox(     :%style, *%extra) {
         my $default      = Checkbox.default-styles;
-        Checkbox.new:    :$extra, requested => Style.new(|$default, |%style) }
-    method radio-button( :$extra = \(), *%style) {
+        Checkbox.new:    :%extra, requested => Style.new(|$default, |%style) }
+    method radio-button( :%style, *%extra) {
         my $default      = RadioButton.default-styles;
-        RadioButton.new: :$extra, requested => Style.new(|$default, |%style) }
-    method text-input(   :$extra = \(), *%style) {
+        RadioButton.new: :%extra, requested => Style.new(|$default, |%style) }
+    method text-input(   :%style, *%extra) {
         my $default      = TextInput.default-styles;
-        TextInput.new:   :$extra, requested => Style.new(|$default, |%style) }
+        TextInput.new:   :%extra, requested => Style.new(|$default, |%style) }
 
     # Nodes with optional children
-    method node(    *@children, :$vertical, :$extra = \(), *%style) {
+    method node(    *@children, :$vertical, :%style, *%extra) {
         my $default = Node.default-styles;
-        Node.new:   :@children, :$vertical, :$extra,
+        Node.new:   :@children, :$vertical, :%extra,
                     requested => Style.new(|$default, |%style) }
-    # method frame(   *@children, :$vertical, :$extra = \(), *%style) {
+    # method frame(   *@children, :$vertical, :%style, *%extra) {
     #     my $default = Frame.default-styles;
-    #     Frame.new:  :@children, :$vertical, :$extra,
+    #     Frame.new:  :@children, :$vertical, :%extra,
     #                 requested => Style.new(|$default, |%style) }
-    method widget(  *@children, :$vertical, :$extra = \(), *%style) {
+    method widget(  *@children, :$vertical, :%style, *%extra) {
         my $default = Widget.default-styles;
-        Widget.new: :@children, :$vertical, :$extra,
+        Widget.new: :@children, :$vertical, :%extra,
                     requested => Style.new(|$default, |%style) }
 }
 
