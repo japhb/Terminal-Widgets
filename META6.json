@@ -5,6 +5,7 @@
   "build-depends": [
   ],
   "depends": [
+    "Terminal::LineEditor:ver<0.0.12>",
     "Terminal::Print"
   ],
   "description": "Basic TUI Widgets",
