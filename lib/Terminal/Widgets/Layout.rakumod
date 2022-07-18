@@ -103,10 +103,12 @@ role Dynamic {
         my $max-h = $style.max-h;
 
         if $.parent {
-            # Try to pull settings from parent, correcting for box layers
+            # Try to pull settings from parent, correcting for box layers --
+            # this widget's MarginBox needs to fit in the parent's ContentBox
             my $pc = $.parent.computed;
             if $.parent.vertical {
-                my $correction = $style.width-correction(MarginBox);
+                my $correction =    $pc.width-correction(ContentBox)
+                               + $style.width-correction(MarginBox);
                 my $pc-smw     = $pc.set-w // $pc.max-w;
 
                 $min-w //= max 0, $pc.min-w - $correction if $pc.min-w.defined;
@@ -114,7 +116,8 @@ role Dynamic {
                 $max-w //= max 0, $pc-smw   - $correction if $pc-smw.defined;
             }
             else {
-                my $correction = $style.height-correction(MarginBox);
+                my $correction =    $pc.height-correction(ContentBox)
+                               + $style.height-correction(MarginBox);
                 my $pc-smh     = $pc.set-h // $pc.max-h;
 
                 $min-h //= max 0, $pc.min-h - $correction if $pc.min-h.defined;
@@ -215,30 +218,38 @@ class Node does Dynamic {
 
         # note "\n", self;
 
+        # Cache box model corrections for our ContentBox
+        my $cwc = $!computed.width-correction( ContentBox);
+        my $chc = $!computed.height-correction(ContentBox);
+
         # Incorporate already-known children's settings into current where possible
         my @child-style = @.children.map(*.computed);
 
         # Minimums: always useful, though calculation varies by orientation
-        my @child-min-w = @child-style.map: { .min-w // 0 };
-        my @child-min-h = @child-style.map: { .min-h // 0 };
+        my @child-min-w = @child-style.map:
+                          { (.min-w // 0) + .width-correction( MarginBox) };
+        my @child-min-h = @child-style.map:
+                          { (.min-h // 0) + .height-correction(MarginBox) };
         my $child-min-w = $.vertical ?? @child-min-w.max !! @child-min-w.sum;
         my $child-min-h = $.vertical ?? @child-min-h.sum !! @child-min-h.max;
-        $min-w max= $child-min-w;
-        $min-h max= $child-min-h;
+        $min-w max= $child-min-w - $cwc;
+        $min-h max= $child-min-h - $chc;
 
         # Maximums: only useful if all non-minimized children have the value defined
         #           for a particular measure *and* that result is >= than the min
         my &child-max-w = $.vertical ?? {.max-w.defined || !.minimize-w} !! { True };
-        my @child-max-w = @child-style.grep(&child-max-w).map(*.max-w);
+        my @child-max-w = @child-style.grep(&child-max-w).map:
+            { .max-w.defined ?? .max-w + .width-correction(MarginBox) !! .max-w };
         unless @child-max-w.grep(!*.defined) {
             my $child-max-w = $.vertical ?? @child-max-w.min !! @child-max-w.sum;
-            $max-w min= $child-max-w if $child-max-w >= $child-min-w;
+            $max-w min= $child-max-w - $cwc if $child-max-w >= $child-min-w;
         }
         my &child-max-h = $.vertical ?? { True } !! {.max-h.defined || !.minimize-h};
-        my @child-max-h = @child-style.grep(&child-max-h).map(*.max-h);
+        my @child-max-h = @child-style.grep(&child-max-h).map:
+            { .max-h.defined ?? .max-h + .height-correction(MarginBox) !! .max-h };
         unless @child-max-h.grep(!*.defined) {
             my $child-max-h = $.vertical ?? @child-max-h.sum !! @child-max-h.min;
-            $max-h min= $child-max-h if $child-max-h >= $child-min-h;
+            $max-h min= $child-max-h - $cwc if $child-max-h >= $child-min-h;
         }
 
         # Check whether min/max are equal (and thus force set to be the same)
@@ -255,55 +266,67 @@ class Node does Dynamic {
         }
 
         # Set values: subtract out and see what's left
-        my @child-set-w = @child-style.map(*.set-w).grep(*.defined);
+        my @child-set-w = @child-style.grep(*.set-w.defined).map:
+            { .set-w + .width-correction(MarginBox) };
         my $child-set-w = $.vertical
                           ?? (@child-set-w ?? @child-set-w.max !! 0)
                           !!  @child-set-w.sum;
 
         if @.children == @child-set-w {
             fail "Set width in parent ($set-w) does not match width of children ($child-set-w)"
-                if $set-w.defined && $set-w != $child-set-w;
-            $set-w = $child-set-w;
+                if $set-w.defined && $set-w != $child-set-w - $cwc;
+            $set-w = $child-set-w - $cwc;
         }
         elsif $set-w.defined {
-            my $remain-w = $set-w - $child-set-w;
+            my $remain-w = $set-w + $cwc - $child-set-w;
             # note "Distribute remaining width from set ($remain-w) (child: $child-set-w)";
+
+            # Need to use @.children instead of @.child-style because will need to
+            # recompute .computed in the while loop below
             my @unset-w = @.children.grep(!*.computed.set-w.defined).sort(-*.computed.minimize-w);
             while @unset-w {
                 fail "Negative remaining width to distribute" if $remain-w < 0;
                 my $share  = floor $remain-w / @unset-w;
                 my $node   = @unset-w.shift;
-                $share  min= 0                    if $node.computed.minimize-w;
+                my $correction = $node.computed.width-correction(MarginBox);
+                $share     = 0                    if $node.computed.minimize-w;
                 $share  max= $node.computed.min-w if $node.computed.min-w.defined;
+                $share    += $correction;
                 $remain-w -= $share;
 
-                $node.computed = $node.computed.clone(:set-w($share));
+                $node.computed = $node.computed.clone(:set-w($share - $correction));
                 $node.compute-layout;
             }
         }
 
-        my @child-set-h = @.children.map(*.computed.set-h).grep(*.defined);
+        my @child-set-h = @child-style.grep(*.set-h.defined).map:
+            { .set-h + .height-correction(MarginBox) };
         my $child-set-h = $.vertical   ?? @child-set-h.sum !!
                           @child-set-h ?? @child-set-h.max !! 0;
 
         if @.children == @child-set-h {
             fail "Set height in parent ($set-h) does not match height of children ($child-set-h)"
-                if $set-h.defined && $set-h != $child-set-h;
-            $set-h = $child-set-h;
+                if $set-h.defined && $set-h != $child-set-h - $chc;
+            $set-h = $child-set-h - $chc;
         }
         elsif $set-h.defined {
-            my $remain-h = $set-h - $child-set-h;
+            my $remain-h = $set-h + $chc - $child-set-h;
             # note "Distribute remaining height from set ($remain-h) (child: $child-set-h)";
+
+            # Need to use @.children instead of @.child-style because will need to
+            # recompute .computed in the while loop below
             my @unset-h = @.children.grep(!*.computed.set-h.defined).sort(-*.computed.minimize-h);
             while @unset-h {
                 fail "Negative remaining height to distribute" if $remain-h < 0;
                 my $share  = floor $remain-h / @unset-h;
                 my $node   = @unset-h.shift;
-                $share  min= 0                    if $node.computed.minimize-h;
+                my $correction = $node.computed.height-correction(MarginBox);
+                $share     = 0                    if $node.computed.minimize-h;
                 $share  max= $node.computed.min-h if $node.computed.min-h.defined;
+                $share    += $correction;
                 $remain-h -= $share;
 
-                $node.computed = $node.computed.clone(:set-h($share));
+                $node.computed = $node.computed.clone(:set-h($share - $correction));
                 $node.compute-layout;
             }
         }
