@@ -24,6 +24,7 @@
     "Terminal::Widgets::Input::RadioButton": "lib/Terminal/Widgets/Input/RadioButton.rakumod",
     "Terminal::Widgets::Input::Text": "lib/Terminal/Widgets/Input/Text.rakumod",
     "Terminal::Widgets::Layout": "lib/Terminal/Widgets/Layout.rakumod",
+    "Terminal::Widgets::Layout::BoxModel": "lib/Terminal/Widgets/Layout/BoxModel.rakumod",
     "Terminal::Widgets::Simple": "lib/Terminal/Widgets/Simple.rakumod",
     "Terminal::Widgets::Simple::TopLevel": "lib/Terminal/Widgets/Simple/TopLevel.rakumod",
     "Terminal::Widgets::StandardWidgetBuilder": "lib/Terminal/Widgets/StandardWidgetBuilder.rakumod",
