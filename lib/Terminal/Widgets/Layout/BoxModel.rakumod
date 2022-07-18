@@ -74,4 +74,16 @@ role BoxModel {
         + ($!bt + $!bb) * ((BorderBox  > $!sizing-box) - (BorderBox  > $box))
         + ($!mt + $!mb) * ((MarginBox  > $!sizing-box) - (MarginBox  > $box))
     }
+
+    method left-correction(SizingBox:D $box) {
+          $!pl * ((PaddingBox > $!sizing-box) - (PaddingBox > $box))
+        + $!bl * ((BorderBox  > $!sizing-box) - (BorderBox  > $box))
+        + $!ml * ((MarginBox  > $!sizing-box) - (MarginBox  > $box))
+    }
+
+    method top-correction(SizingBox:D $box) {
+          $!pt * ((PaddingBox > $!sizing-box) - (PaddingBox > $box))
+        + $!bt * ((BorderBox  > $!sizing-box) - (BorderBox  > $box))
+        + $!mt * ((MarginBox  > $!sizing-box) - (MarginBox  > $box))
+    }
 }

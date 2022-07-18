@@ -350,23 +350,25 @@ class Node does Dynamic {
         return unless $.x.defined && $.y.defined;
 
         if $.vertical {
-            my $y = $.y;
+            my $x = $.x + $.computed.left-correction(ContentBox);
+            my $y = $.y + $.computed.top-correction( ContentBox);
             for @.children {
-                .x = $.x;
+                .x = $x;
                 .y = $y;
                 .propagate-xy;
                 last without my $h = .computed.set-h;
-                $y += $h;
+                $y += $h + .height-correction(MarginBox);
             }
         }
         else {
-            my $x = $.x;
+            my $x = $.x + $.computed.left-correction(ContentBox);
+            my $y = $.y + $.computed.top-correction( ContentBox);
             for @.children {
                 .x = $x;
-                .y = $.y;
+                .y = $y;
                 .propagate-xy;
                 last without my $w = .computed.set-w;
-                $x += $w;
+                $x += $w + .width-correction(MarginBox);
             }
         }
     }
@@ -403,23 +405,25 @@ class TextInput is SingleLineInput { }
 class Widget  is Node {
     method propagate-xy() {
         if $.vertical {
-            my $y = 0;
+            my $x = $.computed.left-correction(ContentBox);
+            my $y = $.computed.top-correction( ContentBox);
             for @.children {
-                .x = 0;
+                .x = $x;
                 .y = $y;
                 .propagate-xy;
                 last without my $h = .computed.set-h;
-                $y += $h;
+                $y += $h + .computed.height-correction(MarginBox);
             }
         }
         else {
-            my $x = 0;
+            my $x = $.computed.left-correction(ContentBox);
+            my $y = $.computed.top-correction( ContentBox);
             for @.children {
                 .x = $x;
-                .y = 0;
+                .y = $y;
                 .propagate-xy;
                 last without my $w = .computed.set-w;
-                $x += $w;
+                $x += $w + .computed.width-correction(MarginBox);
             }
         }
     }
