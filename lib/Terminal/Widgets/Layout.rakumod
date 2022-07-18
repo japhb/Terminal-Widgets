@@ -2,9 +2,12 @@
 
 unit module Terminal::Widgets::Layout;
 
+use Terminal::Widgets::Layout::BoxModel;
+
 
 #| Style information (either requested or computed) for a layout node/leaf
-class Style {
+class Style
+ does Terminal::Widgets::Layout::BoxModel::BoxModel {
     # NOTE: Since Style is immutable we can assume that once instantiated, if
     #       set-* is defined, then min-* and max-* must be as well; likewise,
     #       if min-* and max-* are both defined and the same, then set-* is
@@ -20,6 +23,8 @@ class Style {
     has Bool $.minimize-h;
 
     submethod TWEAK() {
+        self.Terminal::Widgets::Layout::BoxModel::BoxModel::TWEAK;
+
         $!min-w //= $!set-w;
         $!max-w //= $!set-w;
         $!min-h //= $!set-h;
@@ -44,6 +49,7 @@ class Style {
     }
 
     multi method gist(Style:D:) {
+        $.sizing-box ~ ' ' ~
         'w:(' ~ ($.min-w, $.set-w, $.max-w).map({ $_ // '*'}).join(':')
          ~ (' min' if $.minimize-w) ~ ') ' ~
         'h:(' ~ ($.min-h, $.set-h, $.max-h).map({ $_ // '*'}).join(':')
@@ -95,21 +101,25 @@ role Dynamic {
         my $min-h = $style.min-h;
         my $set-h = $style.set-h;
         my $max-h = $style.max-h;
-        my $minimize-w = ?$style.minimize-w;
-        my $minimize-h = ?$style.minimize-h;
 
         if $.parent {
-            # Try to pull settings from parent
+            # Try to pull settings from parent, correcting for box layers
             my $pc = $.parent.computed;
             if $.parent.vertical {
-                $min-w //= $pc.min-w;
-                $set-w //= $pc.set-w;
-                $max-w //= $pc.set-w // $pc.max-w;
+                my $correction = $style.width-correction(MarginBox);
+                my $pc-smw     = $pc.set-w // $pc.max-w;
+
+                $min-w //= max 0, $pc.min-w - $correction if $pc.min-w.defined;
+                $set-w //= max 0, $pc.set-w - $correction if $pc.set-w.defined;
+                $max-w //= max 0, $pc-smw   - $correction if $pc-smw.defined;
             }
             else {
-                $min-h //= $pc.min-h;
-                $set-h //= $pc.set-h;
-                $max-h //= $pc.set-h // $pc.max-h;
+                my $correction = $style.height-correction(MarginBox);
+                my $pc-smh     = $pc.set-h // $pc.max-h;
+
+                $min-h //= max 0, $pc.min-h - $correction if $pc.min-h.defined;
+                $set-h //= max 0, $pc.set-h - $correction if $pc.set-h.defined;
+                $max-h //= max 0, $pc-smh   - $correction if $pc-smh.defined;
             }
         }
         else {
@@ -122,9 +132,9 @@ role Dynamic {
         $min-w //= 0;
         $min-h //= 0;
 
-        ($min-w, $set-w, $max-w,
-         $min-h, $set-h, $max-h,
-         $minimize-w, $minimize-h)
+        ($style.clone(:$min-w, :$set-w, :$max-w, :$min-h, :$set-h, :$max-h),
+         $min-w, $set-w, $max-w,
+         $min-h, $set-h, $max-h)
     }
 }
 
@@ -145,16 +155,9 @@ class Leaf does Dynamic {
     method all-set(Leaf:D:) { self.is-set }
 
     multi method compute-layout(Leaf:D:) {
-        # Do initial DWIM computations
-        my ($min-w, $set-w, $max-w,
-            $min-h, $set-h, $max-h,
-            $minimize-w, $minimize-h) = self.initial-compute;
-
-        # Assign final computed style
-        $!computed = Style.new(:$min-w, :$set-w, :$max-w,
-                               :$min-h, :$set-h, :$max-h,
-                               :$minimize-w, :$minimize-h);
-        # note "leaf: ", $.computed;
+        # Use initial DWIM computations for final computed style
+        $!computed = self.initial-compute[0];
+        # note "leaf: ", $!computed;
 
         self
     }
@@ -198,14 +201,12 @@ class Node does Dynamic {
 
     multi method compute-layout(Node:D:) {
         # Do initial DWIM computations
-        my ($min-w, $set-w, $max-w,
-            $min-h, $set-h, $max-h,
-            $minimize-w, $minimize-h) = self.initial-compute;
+        my ($style,
+            $min-w, $set-w, $max-w,
+            $min-h, $set-h, $max-h) = self.initial-compute;
 
         # Assign *partially* computed style to allow children to introspect this node
-        $!computed = Style.new(:$min-w, :$set-w, :$max-w,
-                               :$min-h, :$set-h, :$max-h,
-                               :$minimize-w, :$minimize-h);
+        $!computed = $style;
         # note "partial: ", $!computed;
         return unless @.children;
 
@@ -314,9 +315,8 @@ class Node does Dynamic {
         #       :$minimize-w, :$minimize-h);
 
         # Assign final computed style
-        $!computed = Style.new(:$min-w, :$set-w, :$max-w,
-                               :$min-h, :$set-h, :$max-h,
-                               :$minimize-w, :$minimize-h);
+        $!computed .= clone(:$min-w, :$set-w, :$max-w,
+                            :$min-h, :$set-h, :$max-h);
         # note "node: ", $!computed;
 
         self
