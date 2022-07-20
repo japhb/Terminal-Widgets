@@ -160,7 +160,6 @@ class Leaf does Dynamic {
     multi method compute-layout(Leaf:D:) {
         # Use initial DWIM computations for final computed style
         $!computed = self.initial-compute[0];
-        # note "leaf: ", $!computed;
 
         self
     }
@@ -210,13 +209,10 @@ class Node does Dynamic {
 
         # Assign *partially* computed style to allow children to introspect this node
         $!computed = $style;
-        # note "partial: ", $!computed;
         return unless @.children;
 
         # Compute all children based on partial info so far
         .compute-layout for @.children;
-
-        # note "\n", self;
 
         # Cache box model corrections for our ContentBox
         my $cwc = $!computed.width-correction( ContentBox);
@@ -279,7 +275,6 @@ class Node does Dynamic {
         }
         elsif $set-w.defined {
             my $remain-w = $set-w + $cwc - $child-set-w;
-            # note "Distribute remaining width from set ($remain-w) (child: $child-set-w)";
 
             # Need to use @.children instead of @.child-style because will need to
             # recompute .computed in the while loop below
@@ -311,7 +306,6 @@ class Node does Dynamic {
         }
         elsif $set-h.defined {
             my $remain-h = $set-h + $chc - $child-set-h;
-            # note "Distribute remaining height from set ($remain-h) (child: $child-set-h)";
 
             # Need to use @.children instead of @.child-style because will need to
             # recompute .computed in the while loop below
@@ -331,16 +325,9 @@ class Node does Dynamic {
             }
         }
 
-        # note "\nAbout to set:\n", self;
-        # note "Expected new values:\n",
-        #      (:$min-w, :$set-w, :$max-w,
-        #       :$min-h, :$set-h, :$max-h,
-        #       :$minimize-w, :$minimize-h);
-
         # Assign final computed style
         $!computed .= clone(:$min-w, :$set-w, :$max-w,
                             :$min-h, :$set-h, :$max-h);
-        # note "node: ", $!computed;
 
         self
     }
