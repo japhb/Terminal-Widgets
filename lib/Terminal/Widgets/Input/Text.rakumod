@@ -18,6 +18,10 @@ class Terminal::Widgets::Input::Text
     has $.input-field;
 
     has &.process-entry;
+    has &.get-completions;
+
+    has      $!completions;
+    has UInt $!completion-index;
 
     has Bool:D $!literal-mode    = False;
     has Str:D  $.prompt-string   = '>';
@@ -90,6 +94,45 @@ class Terminal::Widgets::Input::Text
         $.grid.set-span-color($pos, $pos, 0, "$color inverse");
     }
 
+    #| Fetch completions based on current buffer contents and cursor pos
+    method fetch-completions() {
+        with &.get-completions {
+            my $contents = $.input-field.buffer.contents;
+            my $pos      = $.input-field.insert-cursor.pos;
+            $_(:$contents, :$pos, :input(self));
+        }
+        else { Empty }
+    }
+
+    #| Edit with next available completion
+    method do-complete(Bool:D :$print = True) {
+        if $!completions {
+            # Undo previous completion if any
+            my $max = $!completions.elems;
+            self.do-edit('undo') if $!completion-index < $max;
+
+            # Revert to non-completion if at end
+            return if ++$!completion-index == $max;
+
+            $!completion-index = 0 if $!completion-index > $max;
+        }
+        else {
+            $!completions      = self.fetch-completions or return;
+            $!completion-index = 0;
+        }
+
+        my $edited = $.input-field.buffer.replace(0, $.input-field.insert-cursor.pos,
+                                                  $!completions[$!completion-index]);
+        self.refresh-input-field($edited);
+        self.composite(:$print);
+    }
+
+    #| If not currently completing, all other actions should reset-completions
+    method reset-completions() {
+        $!completions      = Nil;
+        $!completion-index = Nil;
+    }
+
     #| Dispatch a key event when enabled for editing
     multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D
                               $event where *.key.defined, AtTarget) {
@@ -103,11 +146,11 @@ class Terminal::Widgets::Input::Text
             my $key = self.decode-keyname($raw-key);
             if !$key {
                 self.do-edit('insert-string', $raw-key);
-                # reset-completions;
+                self.reset-completions;
             }
             orwith $key && %.keymap{$key} {
-                # when 'complete'        { do-complete }
-                # reset-completions;
+                when 'complete'        { self.do-complete }
+                self.reset-completions;
 
                 when 'literal-next'    { $!literal-mode = True }
                 # XXXX: Disable history when in masked (password/secret) mode
