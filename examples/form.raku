@@ -14,11 +14,9 @@ class FormUI is TopLevel {
             .radio-button(label => "It's a second radio button",
                           group => 'my-radios'),
             .text-input(  style => %(set-h => UInt)),
-            .button(      label => 'quit', on-click => { self.quit }),
+            .button(      label => 'quit', on-click => { $.terminal.quit }),
         }
     }
-
-    method quit() { $.terminal.control.send: 'done' }
 }
 
 

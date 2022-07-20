@@ -152,6 +152,12 @@ class Terminal::Widgets::Terminal
         $.output.print("\e]2;$title\e\\");
     }
 
+    #| Exit from various per-terminal reactors and allow shutdown to proceed
+    method quit() {
+        self.set-done;            # Stop input parser reactor
+        $.control.send: 'done';   # Stop main event reactor
+    }
+
     #| Gracefully shutdown this terminal
     method shutdown() {
         # Forget current toplevel window
