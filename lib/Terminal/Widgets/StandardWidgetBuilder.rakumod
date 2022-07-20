@@ -13,17 +13,18 @@ class Terminal::Widgets::StandardWidgetBuilder {
     method build-node($node, $geometry) {
         do given $node {
             when Terminal::Widgets::Layout::Divider {
+                my $style = .extra<line-style> || $geometry<parent>.default-box-style;
                 if .parent && .parent.vertical {
                     my $x1 = $geometry<x>;
                     my $x2 = $x1 + $geometry<w> - 1;
                     my $y  = $geometry<y>;
-                    $geometry<parent>.draw-hline($x1, $x2, $y, |.extra);
+                    $geometry<parent>.draw-hline($x1, $x2, $y, :$style);
                 }
                 else {
                     my $x  = $geometry<x>;
                     my $y1 = $geometry<y>;
                     my $y2 = $y1 + $geometry<h> - 1;
-                    $geometry<parent>.draw-vline($x, $y1, $y2, |.extra);
+                    $geometry<parent>.draw-vline($x, $y1, $y2, :$style);
                 }
             }
             when Terminal::Widgets::Layout::Button {

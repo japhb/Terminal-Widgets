@@ -283,7 +283,7 @@ class Node does Dynamic {
 
             # Need to use @.children instead of @.child-style because will need to
             # recompute .computed in the while loop below
-            my @unset-w = @.children.grep(!*.computed.set-w.defined).sort(-*.computed.minimize-w);
+            my @unset-w = @.children.grep(!*.computed.set-w.defined).sort(-?*.computed.minimize-w);
             while @unset-w {
                 fail "Negative remaining width to distribute" if $remain-w < 0;
                 my $share  = floor $remain-w / @unset-w;
@@ -315,7 +315,7 @@ class Node does Dynamic {
 
             # Need to use @.children instead of @.child-style because will need to
             # recompute .computed in the while loop below
-            my @unset-h = @.children.grep(!*.computed.set-h.defined).sort(-*.computed.minimize-h);
+            my @unset-h = @.children.grep(!*.computed.set-h.defined).sort(-?*.computed.minimize-h);
             while @unset-h {
                 fail "Negative remaining height to distribute" if $remain-h < 0;
                 my $share  = floor $remain-h / @unset-h;
@@ -357,7 +357,7 @@ class Node does Dynamic {
                 .y = $y;
                 .propagate-xy;
                 last without my $h = .computed.set-h;
-                $y += $h + .height-correction(MarginBox);
+                $y += $h + .computed.height-correction(MarginBox);
             }
         }
         else {
@@ -368,7 +368,7 @@ class Node does Dynamic {
                 .y = $y;
                 .propagate-xy;
                 last without my $w = .computed.set-w;
-                $x += $w + .width-correction(MarginBox);
+                $x += $w + .computed.width-correction(MarginBox);
             }
         }
     }
@@ -378,10 +378,9 @@ class Node does Dynamic {
 #| A visual divider (such as box-drawing lines) between layout nodes
 class Divider is Leaf { }
 
-
 #| Single line inputs
 class SingleLineInput is Leaf {
-    method default-styles { hash(set-h => 1) }
+    method default-styles() { hash(set-h => 1) }
 }
 
 #| A single button
