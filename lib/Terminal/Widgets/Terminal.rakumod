@@ -12,11 +12,15 @@ class Terminal::Widgets::Terminal
  does Terminal::LineEditor::RawTerminalIO
  does Terminal::LineEditor::RawTerminalUtils {
     has Terminal::Widgets::TopLevel $.current-toplevel;
-    has Channel:D $.control .= new;
-    has UInt:D $.w = 0;
-    has UInt:D $.h = 0;
-    has Bool:D $.terminal-focused = True;
-    has $.app;
+    has Channel:D $.control         .= new;
+    has Promise:D $.has-started     .= new;
+    has Promise:D $.has-shutdown    .= new;
+    has           $!started-vow      = $!has-started.vow;
+    has           $!shutdown-vow     = $!has-shutdown.vow;
+    has Bool:D    $.terminal-focused = True;
+    has UInt:D    $.w = 0;
+    has UInt:D    $.h = 0;
+    has           $.app;
 
     # XXXX: Multiple T::P's in an app?
     has Terminal::Print:D $!terminal-print = PROCESS::<$TERMINAL> //= Terminal::Print.new;
@@ -80,6 +84,9 @@ class Terminal::Widgets::Terminal
                 # Send the high-level event to the current toplevel for processing
                 .process-event($event) with $.current-toplevel;
             }
+
+            # Let watchers know the terminal reactor has started
+            $!started-vow.keep(True);
         }
 
         self!shutdown;
@@ -154,8 +161,13 @@ class Terminal::Widgets::Terminal
 
     #| Exit from various per-terminal reactors and allow shutdown to proceed
     method quit() {
-        self.set-done;            # Stop input parser reactor
-        $.control.send: 'done';   # Stop main event reactor
+        if $.has-started {
+            self.set-done;            # Stop input parser reactor
+            $.control.send: 'done';   # Stop main event reactor
+        }
+        else {
+            self!shutdown;
+        }
     }
 
     #| Gracefully shutdown this terminal; users should use .quit() instead
@@ -174,5 +186,8 @@ class Terminal::Widgets::Terminal
         # Close non-standard handles
         $.input.close  if  $.input.opened &&  $.input.native-descriptor > 2;
         $.output.close if $.output.opened && $.output.native-descriptor > 2;
+
+        # Let watchers know the terminal has fully shut down
+        $!shutdown-vow.keep(True);
     }
 }
