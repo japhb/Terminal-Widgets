@@ -50,7 +50,7 @@ class Terminal::Widgets::App {
 
         # XXXX: Disconnect/destroy matching toplevels?
 
-        $terminal.shutdown;
+        $terminal.quit;
     }
 
     #| Shutdown and remove a terminal by terminal object

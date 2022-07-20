@@ -82,7 +82,7 @@ class Terminal::Widgets::Terminal
             }
         }
 
-        self.shutdown;
+        self!shutdown;
     }
 
     #| Refresh the terminal size (at start or after SIGWINCH/SIGCONT),
@@ -158,8 +158,9 @@ class Terminal::Widgets::Terminal
         $.control.send: 'done';   # Stop main event reactor
     }
 
-    #| Gracefully shutdown this terminal
-    method shutdown() {
+    #| Gracefully shutdown this terminal; users should use .quit() instead
+    #| so that the per-terminal reactors are exited *first*
+    method !shutdown() {
         # Forget current toplevel window
         self.set-toplevel(Nil);
 
@@ -171,7 +172,7 @@ class Terminal::Widgets::Terminal
         $!terminal-print.shutdown-screen;
 
         # Close non-standard handles
-        # $.input.close  if  $.input.opened &&  $.input.native-descriptor > 2;
-        # $.output.close if $.output.opened && $.output.native-descriptor > 2;
+        $.input.close  if  $.input.opened &&  $.input.native-descriptor > 2;
+        $.output.close if $.output.opened && $.output.native-descriptor > 2;
     }
 }
