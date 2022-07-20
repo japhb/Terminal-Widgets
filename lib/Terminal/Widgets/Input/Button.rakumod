@@ -10,12 +10,6 @@ class Terminal::Widgets::Input::Button
  does Terminal::Widgets::Input::Labeled {
     has &.on-click;
 
-    #| Refresh just the "value" (active state)
-    method refresh-value(Bool:D :$print = True) {
-        # For now, just force a full-refresh
-        self.full-refresh(:$print);
-    }
-
     #| Refresh the whole input
     method full-refresh(Bool:D :$print = True) {
         # my $text = '[' ~ (self.label || 'Button') ~ ']';

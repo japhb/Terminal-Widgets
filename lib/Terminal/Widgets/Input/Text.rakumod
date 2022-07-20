@@ -40,9 +40,6 @@ class Terminal::Widgets::Input::Text
         self.full-refresh
     }
 
-    # XXXX: HACK: Just call full-refresh for now
-    method refresh-value(|c) { self.full-refresh(|c) }
-
     #| Completely refresh input, including possibly toggling enabled state
     method full-refresh(Str:D $content = '', Bool:D :$print = True) {
         if $.enabled {

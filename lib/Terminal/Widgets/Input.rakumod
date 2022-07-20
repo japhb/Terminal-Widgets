@@ -11,9 +11,17 @@ role Terminal::Widgets::Input
     has        $.error;
     has        %.color;
 
-    # Required methods
-    method refresh-value { ... }  # Refresh display for input value changes ONLY
-    method full-refresh  { ... }  # Refresh display of entire input
+    # Refresh methods
+
+    # REQUIRED: Refresh display of entire input
+    method full-refresh { ... }
+
+    # OPTIONAL OPTIMIZATION: Refresh display for input value changes ONLY
+    method refresh-value(Bool:D :$print = True) {
+        # Default to just doing a full-refresh
+        self.full-refresh(:$print)
+    }
+
 
     # Make sure unset colors are defaulted
     submethod TWEAK() {
