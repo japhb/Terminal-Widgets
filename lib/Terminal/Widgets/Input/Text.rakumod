@@ -183,10 +183,8 @@ class Terminal::Widgets::Input::Text
         my $input = $.input-field.buffer.contents.trim;
         self.reset-entry-state;
 
-        if $input {
-            self.add-history($input);
-            $_($input) with &.process-entry;
-        }
+        self.add-history($input) if $input;
+        $_($input) with &.process-entry;
     }
 
     #| Clear entry state, clear input field, and refresh
