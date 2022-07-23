@@ -19,6 +19,8 @@ use Terminal::Widgets::Input::Checkbox;
 use Terminal::Widgets::Input::RadioButton;
 use Terminal::Widgets::Input::Text;
 
+use Terminal::Widgets::Form;
+
 use Terminal::Widgets::StandardWidgetBuilder;
 use Terminal::Widgets::Simple::TopLevel;
 use Terminal::Widgets::Simple;

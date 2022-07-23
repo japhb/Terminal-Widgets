@@ -2,6 +2,7 @@
 
 use Terminal::Widgets::Widget;
 use Terminal::Widgets::Utils;
+use Terminal::Widgets::Form;
 
 
 role Terminal::Widgets::Input
@@ -11,6 +12,9 @@ role Terminal::Widgets::Input
     has        &.process-input;
     has        $.error;
     has        %.color;
+
+    has Terminal::Widgets::Form $.form;
+
 
     # gist that doesn't pull in the widget grid
     method gist() {
@@ -33,9 +37,10 @@ role Terminal::Widgets::Input
     }
 
 
-    # Make sure unset colors are defaulted
+    # Make sure unset colors are defaulted, and optionally add input to a form
     submethod TWEAK() {
         self.default-colors;
+        .add-input(self) with $!form;
     }
 
     # Set color defaults
