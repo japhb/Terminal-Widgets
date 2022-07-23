@@ -1,5 +1,7 @@
 # ABSTRACT: Simplified widgets: basic toplevel
 
+use Terminal::Print::BoxDrawing;
+
 use Terminal::Widgets::StandardWidgetBuilder;
 use Terminal::Widgets::TopLevel;
 
@@ -7,7 +9,8 @@ use Terminal::Widgets::TopLevel;
 #| Very basic toplevel widget class, with simplified hooks for subclasses
 class Terminal::Widgets::Simple::TopLevel
    is Terminal::Widgets::StandardWidgetBuilder
- does Terminal::Widgets::TopLevel {
+ does Terminal::Widgets::TopLevel
+ does Terminal::Print::BoxDrawing {
     has Terminal::Widgets::Layout::Builder:U $.layout-builder-class;
 
     ### Stubbed hooks for subclass

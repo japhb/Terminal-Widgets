@@ -22,6 +22,7 @@ class FormUI is TopLevel {
                 .button(  :$.form, label => 'Quit',
                                    process-input => { $.terminal.quit }),
             ),
+            .divider(line-style => 'light1', style => %(set-h => 1)),
             .node,  # To soak up extra vertical space
         }
     }
