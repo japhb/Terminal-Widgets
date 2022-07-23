@@ -26,6 +26,16 @@ class Terminal::Widgets::Input::Text
     has Str:D  $.prompt-string   = '>';
     has Str:D  $.disabled-string = '';
 
+    # gist that doesn't pull in the widget grid
+    method gist() {
+        my @strings = ('literal-mode' if $!literal-mode),
+        ("prompt:'$!prompt-string'" if $!prompt-string),
+        ("disabled:'$!disabled-string'" if $!disabled-string),
+        ("completion:$!completion-index/$!completions.elems()" if $!completions),
+        ("contents:'$!input-field.buffer.contents()'" if $!input-field);
+
+        self.Terminal::Widgets::Input::gist ~ ',' ~ @strings.join(',')
+    }
 
     #| Set $!input-field, with both compile-time and runtime type checks
     method set-input-field(Terminal::LineEditor::ScrollingSingleLineInput:D $new-field) {

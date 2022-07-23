@@ -12,6 +12,15 @@ role Terminal::Widgets::Input
     has        $.error;
     has        %.color;
 
+    # gist that doesn't pull in the widget grid
+    method gist() {
+        my @flags = ('enabled' if $!enabled),
+                    ('active'  if $!active),
+                    ('ERROR'   if $!error);
+        self.^shortname ~ '|' ~ @flags.join(':')
+    }
+
+
     # Refresh methods
 
     # REQUIRED: Refresh display of entire input
