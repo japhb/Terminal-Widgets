@@ -464,10 +464,26 @@ class Builder {
 
 #| Role for UI Widgets that are dynamically built using the above system
 role WidgetBuilding {
+    has %.by-id;
+
     # Required methods
     method layout-model()               { ... }
     method updated-layout-model()       { ... }
     method build-node($node, $geometry) { ... }
+
+    #| Throw an exception if a widget with a given id is already known
+    method !ensure-new-id($id) {
+        die "This {self.^name} already contains a widget with id '$id'"
+            if %.by-id{$id}:exists;
+    }
+
+    #| Cache the id for a particular widget, erroring if duplicated
+    method cache-widget-id($widget) {
+        if $widget.id -> $id {
+            self!ensure-new-id($id);
+            %!by-id{$id} = $widget;
+        }
+    }
 
     #| Compute the UI layout according to its constraints
     method compute-layout() {
@@ -502,6 +518,7 @@ role WidgetBuilding {
             }
             else {
                 .widget = self.build-node($_, $geometry);
+                self.cache-widget-id(.widget) if .widget;
             }
 
             # If build-node returned a defined widget, it's the new parent for

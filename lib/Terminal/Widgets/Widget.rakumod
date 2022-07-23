@@ -22,6 +22,9 @@ class Terminal::Widgets::Widget
     has Int $.x-offset;  #= Cumulative X offset from screen root
     has Int $.y-offset;  #= Cumulative Y offset from screen root
 
+    has Str:D $.id = ''; #= String ID (must be unique within TopLevel *if* non-empty)
+
+
     #| Bootstrapping: Setting TopLevel's layout
     method set-layout($!layout) { }
 
