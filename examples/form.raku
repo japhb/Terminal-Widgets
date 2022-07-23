@@ -23,14 +23,19 @@ class FormUI is TopLevel {
                                    process-input => { $.terminal.quit }),
             ),
             .divider(line-style => 'light1', style => %(set-h => 1)),
-            .node,  # To soak up extra vertical space
+            .log-viewer,
         }
     }
 
     method show-state() {
+        use Terminal::Widgets::Viewer::Log;
+        my $log-viewer = @.children.first(Terminal::Widgets::Viewer::Log);
+        $log-viewer.add-entry('') if $log-viewer.log;
+
         for $.form.inputs {
-            .note;
+            $log-viewer.add-entry(.gist);
         }
+        $log-viewer.full-refresh;
     }
 }
 

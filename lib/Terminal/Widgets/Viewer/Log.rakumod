@@ -16,7 +16,7 @@ class Terminal::Widgets::Viewer::Log
     }
 
     #| Refresh display
-    method refresh-all() {
+    method full-refresh(Bool:D :$print = True) {
         self.clear-frame;
 
         # Print most recent $.h wrapped lines
@@ -26,5 +26,7 @@ class Terminal::Widgets::Viewer::Log
             my $line = @!log[$top + $_] // '';
             $.grid.set-span-text(0, $_, $line);
         }
+
+        self.composite(:$print);
     }
 }

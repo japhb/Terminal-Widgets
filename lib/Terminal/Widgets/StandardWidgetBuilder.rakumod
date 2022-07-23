@@ -5,6 +5,7 @@ use Terminal::Widgets::Input::Button;
 use Terminal::Widgets::Input::Checkbox;
 use Terminal::Widgets::Input::RadioButton;
 use Terminal::Widgets::Input::Text;
+use Terminal::Widgets::Viewer::Log;
 
 
 #| Base class for dynamically building widgets, with knowledge of standard library
