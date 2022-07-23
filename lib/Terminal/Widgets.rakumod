@@ -1,4 +1,4 @@
-unit class Terminal::Widgets;
+unit class Terminal::Widgets:auth<zef:japhb>:api<0>:ver<0.0.1>;
 
 
 =begin pod
@@ -12,14 +12,27 @@ Terminal::Widgets - Basic TUI Widgets
 
 =begin code :lang<raku>
 
-use Terminal::Widgets;
+# See examples/ directory!
 
 =end code
 
 
 =head1 DESCRIPTION
 
-Terminal::Widgets is basically empty, so far.
+Terminal::Widgets is in a very, I<very> early state, pretty much the minimum
+for which I could write a not-completely-embarassing proof-of-concept working
+script in F<examples/> and on which I could start to port some of my old
+bespoke TUI scripts.
+
+It is B<CERTAIN> that many things will be changing in the near future,
+although finally a few things seem like they aren't terrible and might stick
+around for a while.
+
+B<<<This is not version C<0.0.x> because I'm modest, it's because it really is
+that early!>>>
+
+Not completely scared off yet?  Come visit C<#mugs> on C<libera.chat> IRC and
+feel free to ask questions or offer ideas.
 
 
 =head1 AUTHOR
