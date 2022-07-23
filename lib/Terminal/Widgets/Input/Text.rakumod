@@ -50,7 +50,8 @@ class Terminal::Widgets::Input::Text
     }
 
     #| Completely refresh input, including possibly toggling enabled state
-    method full-refresh(Str:D $content = '', Bool:D :$print = True) {
+    method full-refresh(Str:D $content = $.input-field.?buffer.contents // '',
+                        Bool:D :$print = True) {
         if $.enabled {
             # Determine new field metrics
             my $field-start   = duospace-width($.prompt-string);
