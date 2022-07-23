@@ -8,6 +8,7 @@ role Terminal::Widgets::Input
   is Terminal::Widgets::Widget {
     has Bool:D $.enabled = True;
     has Bool:D $!active  = False;   # XXXX: Handle this for all inputs?
+    has        &.process-input;
     has        $.error;
     has        %.color;
 

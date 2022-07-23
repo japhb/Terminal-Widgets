@@ -17,7 +17,6 @@ class Terminal::Widgets::Input::Text
     has $.input-class = Terminal::LineEditor::ScrollingSingleLineInput::ANSI;
     has $.input-field;
 
-    has &.process-entry;
     has &.get-completions;
 
     has      $!completions;
@@ -184,7 +183,7 @@ class Terminal::Widgets::Input::Text
         self.reset-entry-state;
 
         self.add-history($input) if $input;
-        $_($input) with &.process-entry;
+        $_($input) with &.process-input;
     }
 
     #| Clear entry state, clear input field, and refresh
