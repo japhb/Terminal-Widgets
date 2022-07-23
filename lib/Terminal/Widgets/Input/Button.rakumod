@@ -8,8 +8,6 @@ use Terminal::Widgets::Input::Labeled;
 class Terminal::Widgets::Input::Button
  does Terminal::Widgets::Input
  does Terminal::Widgets::Input::Labeled {
-    has &.on-click;
-
     #| Refresh the whole input
     method full-refresh(Bool:D :$print = True) {
         # my $text = '[' ~ (self.label || 'Button') ~ ']';
@@ -25,7 +23,7 @@ class Terminal::Widgets::Input::Button
         $!active = True;
         self.refresh-value(:$print);
 
-        .(self) with &.on-click;
+        $_(self) with &.process-input;
 
         $!active = False;
         self.refresh-value(:$print);

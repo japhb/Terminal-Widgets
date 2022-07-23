@@ -14,7 +14,8 @@ does Terminal::Widgets::Input {
     }
 
     # Set boolean state, then refresh
-    method set-state(Bool:D $!state) { self.refresh-value }
+    method set-state(Bool:D $!state) { self.refresh-value;
+                                       $_(self) with &.process-input; }
     method toggle-state()            { self.set-state(!$!state) }
 
     # Handle basic events
