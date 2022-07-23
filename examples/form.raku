@@ -23,13 +23,12 @@ class FormUI is TopLevel {
                                    process-input => { $.terminal.quit }),
             ),
             .divider(line-style => 'light1', style => %(set-h => 1)),
-            .log-viewer,
+            .log-viewer(id => 'lv'),
         }
     }
 
     method show-state() {
-        use Terminal::Widgets::Viewer::Log;
-        my $log-viewer = @.children.first(Terminal::Widgets::Viewer::Log);
+        my $log-viewer = %.by-id<lv>;
         $log-viewer.add-entry('') if $log-viewer.log;
 
         for $.form.inputs {
