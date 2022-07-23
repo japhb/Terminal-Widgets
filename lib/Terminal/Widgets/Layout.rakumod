@@ -365,6 +365,9 @@ class Node does Dynamic {
 #| A visual divider (such as box-drawing lines) between layout nodes
 class Divider is Leaf { }
 
+#| A multi-line auto-scrolling log viewer
+class LogViewer is Leaf { }
+
 #| Single line inputs
 class SingleLineInput is Leaf {
     method default-styles() { hash(set-h => 1) }
@@ -418,13 +421,18 @@ class Widget  is Node {
 
 #| Helper class for building style/layout trees
 class Builder {
-    # Leaf nodes (no children ever)
+    # Misc leaf nodes (no children ever)
     method leaf(         :%style, *%extra) {
         my $default      = Leaf.default-styles;
         Leaf.new:        :%extra, requested => Style.new(|$default, |%style) }
     method divider(      :%style, *%extra) {
         my $default      = Divider.default-styles;
         Divider.new:     :%extra, requested => Style.new(|$default, |%style) }
+    method log-viewer(   :%style, *%extra) {
+        my $default      = LogViewer.default-styles;
+        LogViewer.new:   :%extra, requested => Style.new(|$default, |%style) }
+
+    # Input leaf nodes (no children ever)
     method button(       :%style, *%extra) {
         my $default      = Button.default-styles;
         Button.new:      :%extra, requested => Style.new(|$default, |%style) }

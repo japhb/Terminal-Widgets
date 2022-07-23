@@ -32,6 +32,7 @@
     "Terminal::Widgets::Terminal": "lib/Terminal/Widgets/Terminal.rakumod",
     "Terminal::Widgets::TopLevel": "lib/Terminal/Widgets/TopLevel.rakumod",
     "Terminal::Widgets::Utils": "lib/Terminal/Widgets/Utils.rakumod",
+    "Terminal::Widgets::Viewer::Log": "lib/Terminal/Widgets/Viewer/Log.rakumod",
     "Terminal::Widgets::Widget": "lib/Terminal/Widgets/Widget.rakumod"
   },
   "resources": [

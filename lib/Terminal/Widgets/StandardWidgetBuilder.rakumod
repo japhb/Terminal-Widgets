@@ -27,6 +27,9 @@ class Terminal::Widgets::StandardWidgetBuilder {
                     $geometry<parent>.draw-vline($x, $y1, $y2, :$style);
                 }
             }
+            when Terminal::Widgets::Layout::LogViewer {
+                Terminal::Widgets::Viewer::Log.new(|$geometry, |.extra)
+            }
             when Terminal::Widgets::Layout::Button {
                 Terminal::Widgets::Input::Button.new(|$geometry, |.extra)
             }
