@@ -13,8 +13,10 @@ class Terminal::Widgets::Terminal
  does Terminal::LineEditor::RawTerminalUtils {
     has Terminal::Widgets::TopLevel $.current-toplevel;
     has Channel:D $.control         .= new;
+    has Promise:D $.has-initialized .= new;
     has Promise:D $.has-started     .= new;
     has Promise:D $.has-shutdown    .= new;
+    has           $!initialized-vow  = $!has-initialized.vow;
     has           $!started-vow      = $!has-started.vow;
     has           $!shutdown-vow     = $!has-shutdown.vow;
     has Bool:D    $.terminal-focused = True;
@@ -36,6 +38,7 @@ class Terminal::Widgets::Terminal
     method initialize {
         $!terminal-print.initialize-screen;
         self.start-decoder;
+        $!initialized-vow.keep(True);
     }
 
     #| Enter raw input mode, enable mouse events, and start per-terminal
