@@ -15,7 +15,7 @@ class Terminal::Widgets::Simple::TopLevel
 
     ### Stubbed hooks for subclass
 
-    method initial-layout($builder, $max-width, $max-height) { }
+    method initial-layout($builder, $max-width, $max-height) { Empty }
     method update-layout($layout) { }
     method vertical() { True }
 
