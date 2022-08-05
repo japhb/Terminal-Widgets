@@ -201,7 +201,7 @@ class Terminal::Widgets::Input::Text
     method reset-entry-state() {
         $!literal-mode = False;
         $.unfinished-entry = '';
-        self.full-refresh;
+        self.full-refresh('');
     }
 
     # History helpers
