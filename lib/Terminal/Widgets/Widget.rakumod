@@ -19,10 +19,12 @@ class Terminal::Widgets::Widget
     #| Dynamic layout node associated with this widget
     has Terminal::Widgets::Layout::Dynamic $.layout;
 
-    has Int $.x-offset;  #= Cumulative X offset from screen root
-    has Int $.y-offset;  #= Cumulative Y offset from screen root
-
     has Str:D $.id = ''; #= String ID (must be unique within TopLevel *if* non-empty)
+    has Int:D $.z  = 0;  #= Z offset from parent; default = in-plane
+
+    has Int $.x-offset;  #= Cumulative X offset from screen root, + = right
+    has Int $.y-offset;  #= Cumulative Y offset from screen root, + = down
+    has Int $.z-offset;  #= Cumulative Z offset from screen root, + = nearer
 
 
     #| Bootstrapping: Setting TopLevel's layout
@@ -108,13 +110,14 @@ class Terminal::Widgets::Widget
     }
 
     #| Update computed upper-left coordinate offsets for self and children
-    method recalc-coord-offsets(Int:D $parent-x, Int:D $parent-y) {
+    method recalc-coord-offsets(Int:D $parent-x, Int:D $parent-y, Int:D $parent-z) {
         # Recompute offsets for self
         $!x-offset = $.x + $parent-x;
         $!y-offset = $.y + $parent-y;
+        $!z-offset = $.z + $parent-z;
 
         # Ask children to recompute their offsets
-        .recalc-coord-offsets($!x-offset, $!y-offset) for @.children;
+        .recalc-coord-offsets($!x-offset, $!y-offset, $!z-offset) for @.children;
     }
 
     #| Resize or move this widget
