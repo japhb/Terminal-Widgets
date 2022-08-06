@@ -133,4 +133,10 @@ class Terminal::Widgets::Widget
             self.replace-grid($new-grid);
         }
     }
+
+    #| Composite children with painter's algorithm (in Z order, back to front)
+    method draw-frame() {
+        # XXXX: Cache the sorted order?
+        .composite for @.children.sort({ .?z // 0 });
+    }
 }
