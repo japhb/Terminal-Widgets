@@ -120,11 +120,19 @@ class Terminal::Widgets::Widget
         .recalc-coord-offsets($!x-offset, $!y-offset, $!z-offset) for @.children;
     }
 
+    #| After moving, call recalc-coord-offsets on self
+    method move-to($x, $y, $!z = $.z) {
+        callwith($x, $y);
+        self.recalc-coord-offsets($.parent.x-offset,
+                                  $.parent.y-offset,
+                                  $.parent.z-offset) if $.parent;
+    }
+
     #| Resize or move this widget
-    method update-geometry( Int:D :$x = $.x,  Int:D :$y = $.y,
+    method update-geometry( Int:D :$x = $.x,  Int:D :$y = $.y, Int:D :$z = $.z,
                            UInt:D :$w = $.w, UInt:D :$h = $.h) {
-        if $x != $.x || $y != $.y {
-            self.move-to($x, $y);
+        if $x != $.x || $y != $.y || $z != $.z {
+            self.move-to($x, $y, $z);
         }
 
         if $w != $.w || $h != $.h {
