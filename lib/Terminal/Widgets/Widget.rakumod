@@ -123,9 +123,14 @@ class Terminal::Widgets::Widget
     #| After moving, call recalc-coord-offsets on self
     method move-to($x, $y, $!z = $.z) {
         callwith($x, $y);
-        self.recalc-coord-offsets($.parent.x-offset,
-                                  $.parent.y-offset,
-                                  $.parent.z-offset) if $.parent;
+        if $.parent {
+            self.recalc-coord-offsets($.parent.x-offset,
+                                      $.parent.y-offset,
+                                      $.parent.z-offset);
+        }
+        else {
+            self.recalc-coord-offsets(0, 0, 0);
+        }
     }
 
     #| Resize or move this widget
