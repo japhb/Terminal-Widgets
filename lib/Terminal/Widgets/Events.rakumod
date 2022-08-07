@@ -115,6 +115,11 @@ role EventHandling {
 
     ### DEFAULT IMPLEMENTATIONS
 
+    #| Children that understand EventHandling
+    method event-handling-children() {
+        @.children.grep({ $_ ~~ EventHandling })
+    }
+
     #| Process an event, calling pre- and post- hooks
     method process-event(Event:D $event, EventPhase:D $phase = TrickleDown) {
         # Drop if pre-process-event returns undefined event object
@@ -133,7 +138,8 @@ role EventHandling {
             my $at-target = $phase == TrickleDown && $event.target === self;
 
             $at-target ?? ($event, AtTarget) !!  # Found the target, new phase
-            @.children ?? ($event, $phase)   !!  # Has children, keep searching
+            @.event-handling-children
+                       ?? ($event, $phase)   !!  # Has children, keep searching
                           (Nil,    BubbleUp)     # Target was not on this branch
         }
         elsif $event ~~ FocusFollowingEvent {
@@ -143,7 +149,7 @@ role EventHandling {
         }
         else {
             # Consider leaves to be the "target" for untargeted events
-            @.children ?? ($event, $phase) !! ($event, AtTarget)
+            @.event-handling-children ?? ($event, $phase) !! ($event, AtTarget)
         }
     }
 
@@ -159,14 +165,19 @@ role EventHandling {
         if $event ~~ FocusFollowingEvent {
             .process-event($event, TrickleDown) with $.focused-child;
         }
-        # Or send to overlapping children if localized
+        # Or send to overlapping children at nearest Z level if localized
         elsif $event ~~ LocalizedEvent {
-            my @overlapped = @.children.grep({ $event.overlaps-widget($_) });
-            .process-event($event, TrickleDown) for @overlapped;
+            my @overlapped
+                = @.event-handling-children.grep({ $event.overlaps-widget($_) });
+            # XXXX: Use .z-offset instead?
+            # XXXX: Optimize special case when @overlapped == 1?
+            my $max-z = @overlapped.map(*.z).max;
+            my @top   = @overlapped.grep(*.z == $max-z);
+            .process-event($event, TrickleDown) for @top;
         }
-        # Else just send to all children
+        # Else just send to all children that can understand events
         else {
-            .process-event($event, TrickleDown) for @.children;
+            .process-event($event, TrickleDown) for @.event-handling-children;
         }
     }
 
