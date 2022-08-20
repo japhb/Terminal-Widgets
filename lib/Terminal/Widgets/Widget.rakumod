@@ -11,11 +11,41 @@ use Terminal::Widgets::Layout;
 class Terminal::Widgets::FrameInfo is Terminal::Print::FrameInfo { }
 
 
+#| Role for dirty area handling
+role Terminal::Widgets::DirtyAreas {
+    has @!dirty-rects;   #= Dirty rectangles that must be composited into parent
+    has Lock:D $!dirty-lock .= new;  #= Lock on modifications to dirty list
+
+    #| Check if parent exists and is dirtyable
+    method parent-dirtyable() {
+        $.parent && $.parent ~~ Terminal::Widgets::DirtyAreas
+    }
+
+    #| Add a dirty rectangle to be considered during compositing
+    method add-dirty-rect($x, $y, $w, $h) {
+        $!dirty-lock.protect: {
+            @!dirty-rects.push: ($x, $y, $w, $h);
+        }
+    }
+
+    #| Snapshot current dirty areas, clear internal list, and return snapshot
+    method snapshot-dirty-areas() {
+        my @dirty;
+        $!dirty-lock.protect: {
+            @dirty = @!dirty-rects;
+            @!dirty-rects = Empty;
+        }
+        @dirty
+    }
+}
+
+
 #| Extension to Terminal::Print::Widget, Animated and with EventHandling
 class Terminal::Widgets::Widget
    is Terminal::Print::Widget
  does Terminal::Print::Animated
- does Terminal::Widgets::Events::EventHandling {
+ does Terminal::Widgets::Events::EventHandling
+ does Terminal::Widgets::DirtyAreas {
     #| Dynamic layout node associated with this widget
     has Terminal::Widgets::Layout::Dynamic $.layout;
 
@@ -120,10 +150,19 @@ class Terminal::Widgets::Widget
         .recalc-coord-offsets($!x-offset, $!y-offset, $!z-offset) for @.children;
     }
 
-    #| After moving, call recalc-coord-offsets on self
-    method move-to($x, $y, $!z = $.z) {
+    #| After moving, call recalc-coord-offsets on self, and set dirty areas if needed
+    method move-to($x, $y, $!z = $.z, Bool:D :$dirty = True) {
+        my $old-x = $.x;
+        my $old-y = $.y;
         callwith($x, $y);
+
         if $.parent {
+            if $dirty && self.parent-dirtyable {
+                # Dirty the before and after areas
+                $.parent.add-dirty-rect($old-x, $old-y, $.w, $.h);
+                $.parent.add-dirty-rect($x,     $y,     $.w, $.h);
+            }
+
             self.recalc-coord-offsets($.parent.x-offset,
                                       $.parent.y-offset,
                                       $.parent.z-offset);
@@ -136,20 +175,45 @@ class Terminal::Widgets::Widget
     #| Resize or move this widget
     method update-geometry( Int:D :$x = $.x,  Int:D :$y = $.y, Int:D :$z = $.z,
                            UInt:D :$w = $.w, UInt:D :$h = $.h) {
-        if $x != $.x || $y != $.y || $z != $.z {
-            self.move-to($x, $y, $z);
-        }
+        my $pos-changed  = $x != $.x || $y != $.y || $z != $.z;
+        my $size-changed = $w != $.w || $h != $.h;
+        return unless $pos-changed || $size-changed;
 
-        if $w != $.w || $h != $.h {
+        my $add-dirt = self.parent-dirtyable;
+        $.parent.add-dirty-rect($.x, $.y, $.w, $.h) if $add-dirt;
+
+        self.move-to($x, $y, $z, :!dirty) if $pos-changed;
+
+        if $size-changed {
             # XXXX: Does not currently save old contents at all
             my $new-grid = $.grid.WHAT.new($w, $h);
             self.replace-grid($new-grid);
         }
+
+        $.parent.add-dirty-rect($x, $y, $w, $h) if $add-dirt;
     }
 
     #| Composite children with painter's algorithm (in Z order, back to front)
     method draw-frame() {
         # XXXX: Cache the sorted order?
-        .composite for @.children.sort({ .?z // 0 });
+        for @.children.sort({ .?z // 0 }) {
+            .composite;
+
+            # Assume children that don't understand the DirtyAreas protocol
+            # are always completely dirty (otherwise compositing adds dirty
+            # areas as needed)
+            self.add-dirty-rect(.x, .y, .w, .h)
+                unless $_ ~~ Terminal::Widgets::DirtyAreas;
+        }
+    }
+
+    #| Union all dirty areas, update parent's dirty list, and then composite
+    method composite(|) {
+        my @dirty := self.snapshot-dirty-areas;
+
+        # XXXX: HACK, just assumes entire widget is dirty
+        $.parent.add-dirty-rect($.x, $.y, $.w, $.h) if self.parent-dirtyable;
+
+        nextsame;
     }
 }
