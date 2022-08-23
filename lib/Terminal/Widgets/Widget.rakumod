@@ -200,8 +200,8 @@ class Terminal::Widgets::Widget
             .composite;
 
             # Assume children that don't understand the DirtyAreas protocol
-            # are always completely dirty (otherwise compositing adds dirty
-            # areas as needed)
+            # are always completely dirty (DirtyAreas compositing adds dirty
+            # areas as needed, but other children don't know to do so)
             self.add-dirty-rect(.x, .y, .w, .h)
                 unless $_ ~~ Terminal::Widgets::DirtyAreas;
         }
