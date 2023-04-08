@@ -12,6 +12,7 @@ enum EventPhase is export < TrickleDown AtTarget BubbleUp >;
 #| A basic generic event class
 class Event {
     has $.created = now;
+    has %.bubbled-up-to is SetHash;
 }
 
 
@@ -183,6 +184,7 @@ role EventHandling {
 
     #| Bubble an event up to the parent, if any
     method bubble-up(Event:D $event) {
-        $.parent.process-event($event, BubbleUp) if $.parent;
+        $.parent.process-event($event, BubbleUp)
+            if $.parent && !$event.bubbled-up-to{$.parent}++;
     }
 }
