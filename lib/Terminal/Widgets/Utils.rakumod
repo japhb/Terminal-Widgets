@@ -45,7 +45,7 @@ multi gray-color(num $gray) is export {
 #| Convert a text block (a single multiline string) into a T::P::Grid
 sub make-text-grid($text) is export {
     my @lines = $text.lines;
-    my $w     = @lines.map(*.&duospace-width).max;
+    my $w     = @lines.map(&duospace-width).max;
     my $h     = @lines.elems;
     my $grid  = Terminal::Print::Grid.new($w, $h);
 
