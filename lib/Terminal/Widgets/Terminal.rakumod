@@ -5,6 +5,7 @@ use Terminal::LineEditor::RawTerminalInput;
 
 use Terminal::Widgets::Events;
 use Terminal::Widgets::TopLevel;
+use Terminal::Widgets::TerminalCapabilities;
 
 
 #| A container for the unique ANSI terminal event pump for a given terminal
@@ -12,6 +13,7 @@ class Terminal::Widgets::Terminal
  does Terminal::LineEditor::RawTerminalIO
  does Terminal::LineEditor::RawTerminalUtils {
     has Terminal::Widgets::TopLevel $.current-toplevel;
+    has Terminal::Widgets::TerminalCapabilities:D $.caps .= new;
     has Channel:D $.control         .= new;
     has Promise:D $.has-initialized .= new;
     has Promise:D $.has-started     .= new;
