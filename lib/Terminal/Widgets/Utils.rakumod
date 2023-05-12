@@ -24,6 +24,26 @@ multi rgb-color(num $r, num $g, num $b) is export {
 }
 
 
+#| Convert an rgb triplet (each in the 0..1 range) into a single luminance value
+multi rgb-luma(Real:D $r, Real:D $g, Real:D $b) is export {
+    # 1/4, 11/16, 1/16 RGB luma coefficients (chosen to be between coefficients
+    # used by HDTV and HDR standards and also exact with binary arithmetic)
+      .2500e0 * (my num $rn = $r.Num)
+    + .6875e0 * (my num $rg = $g.Num)
+    + .0625e0 * (my num $rb = $b.Num)
+}
+
+
+#| Convert an rgb triplet (each in the 0..1 range) into a single luminance value
+multi rgb-luma(num $r, num $g, num $b) is export {
+    # 1/4, 11/16, 1/16 RGB luma coefficients (chosen to be between coefficients
+    # used by HDTV and HDR standards and also exact with binary arithmetic)
+      .2500e0 * $r
+    + .6875e0 * $g
+    + .0625e0 * $b
+}
+
+
 #| Convert a grayscale value (in the 0..1 range) to a valid cell color
 multi gray-color(Real:D $gray) is export {
     # Use the hi-res gray ramp plus true black and white
@@ -39,6 +59,18 @@ multi gray-color(num $gray) is export {
     $gray <= .012e0 ?? 'black' !!
     $gray >= .953e0 ?? 'white' !!
                        ~(232 + (24e0 * $gray).floor)
+}
+
+
+#| Convert an rgb triplet (each in the 0..1 range) to a grayscale cell color
+multi gray-color(Real:D $r, Real:D $g, Real:D $b) is export {
+    gray-color(rgb-luma($r, $g, $b))
+}
+
+
+#| Convert an rgb triplet (each in the 0..1 range) to a grayscale cell color
+multi gray-color(num $r, num $g, num $b) is export {
+    gray-color(rgb-luma($r, $g, $b))
 }
 
 
