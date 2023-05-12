@@ -14,17 +14,25 @@ class Terminal::Widgets::FrameInfo is Terminal::Print::FrameInfo { }
 #| Role for dirty area handling
 role Terminal::Widgets::DirtyAreas {
     has @!dirty-rects;   #= Dirty rectangles that must be composited into parent
-    has Lock:D $!dirty-lock .= new;  #= Lock on modifications to dirty list
+    has Bool:D $!all-dirty   = True;  #= Whether entire widget is dirty (optimization)
+    has Lock:D $!dirty-lock .= new;   #= Lock on modifications to dirty list/flag
 
     #| Check if parent exists and is dirtyable
     method parent-dirtyable() {
         $.parent && $.parent ~~ Terminal::Widgets::DirtyAreas
     }
 
+    #| Set the all-dirty flag
+    method set-all-dirty(Bool:D $dirty) {
+        $!dirty-lock.protect: {
+            $!all-dirty = $dirty;
+        }
+    }
+
     #| Add a dirty rectangle to be considered during compositing
     method add-dirty-rect($x, $y, $w, $h) {
         $!dirty-lock.protect: {
-            @!dirty-rects.push: ($x, $y, $w, $h);
+            @!dirty-rects.push(($x, $y, $w, $h)) unless $!all-dirty;
         }
     }
 
@@ -32,8 +40,12 @@ role Terminal::Widgets::DirtyAreas {
     method snapshot-dirty-areas() {
         my @dirty;
         $!dirty-lock.protect: {
-            @dirty = @!dirty-rects;
+            @dirty = $!all-dirty ?? ((0, 0, $.w, $.h),) !! @!dirty-rects;
             @!dirty-rects = Empty;
+
+            # Intentionally *NOT* turning off $!all-dirty here; will do that at
+            # composite time instead iff the widget understands how to do so
+            # XXXX: Flag to change this behavior?
         }
         @dirty
     }
@@ -191,6 +203,12 @@ class Terminal::Widgets::Widget
         }
 
         $.parent.add-dirty-rect($x, $y, $w, $h) if $add-dirt;
+    }
+
+    #| Clear the frame and set it all-dirty (so it requires composite)
+    method clear-frame() {
+        $.grid.clear;
+        self.set-all-dirty(True);
     }
 
     #| Composite children with painter's algorithm (in Z order, back to front)
