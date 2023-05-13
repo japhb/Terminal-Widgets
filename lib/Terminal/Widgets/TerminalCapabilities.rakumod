@@ -1,13 +1,13 @@
 # ABSTRACT: Terminal capability and font repertoire data
 
 #| Known symbol sets in superset order
-enum SymbolSet < ASCII Latin1 CP1252 W1G WGL4 MES2 Uni1 Uni7 Full >;
+enum Terminal::Widgets::SymbolSet < ASCII Latin1 CP1252 W1G WGL4 MES2 Uni1 Uni7 Full >;
 
 
 #| A container for the available capabilities of a particular terminal
 class Terminal::Widgets::TerminalCapabilities {
     #| Largest supported symbol repertoire
-    has SymbolSet:D $.symbol-set = ASCII;
+    has Terminal::Widgets::SymbolSet:D $.symbol-set = ASCII;
 
     #| Supports VT100 box drawing glyphs (nearly universal, but only *required* by WGL4)
     has Bool $.vt100-boxes = $!symbol-set >= WGL4;
@@ -27,7 +27,8 @@ class Terminal::Widgets::TerminalCapabilities {
 
     #| Find best symbol set supported by this terminal from a list of choices
     method best-symbol-set(@sets) {
-        @sets.map({ SymbolSet::{$_} // ASCII }).grep(* <= $.symbol-set).max
+        @sets.map({ Terminal::Widgets::SymbolSet::{$_} // ASCII })
+             .grep(* <= $.symbol-set).max
     }
 
     #| Choose the best choice out of options keyed by required symbol set
