@@ -83,6 +83,11 @@ class Terminal::Widgets::Widget
         $toplevel
     }
 
+    #| Determine the terminal connected to the toplevel of this widget
+    method terminal() {
+        self.toplevel.terminal
+    }
+
     #| Determine default focus point within widget tree
     method default-focus() {
         if $.focused-child {
