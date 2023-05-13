@@ -8,6 +8,7 @@ use Terminal::Widgets::Layout::BoxModel;
 use Terminal::Widgets::Layout;
 use Terminal::Widgets::Widget;
 use Terminal::Widgets::TopLevel;
+use Terminal::Widgets::TerminalCapabilities;
 use Terminal::Widgets::Terminal;
 use Terminal::Widgets::App;
 
