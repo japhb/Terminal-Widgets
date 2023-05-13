@@ -1,6 +1,8 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+
+0.0.3  2023-05-12T21:03:44-07:00
   [Bug fixes]
   - Prevent bubble-up event duplication
 
