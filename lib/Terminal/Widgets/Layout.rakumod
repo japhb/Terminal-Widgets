@@ -370,7 +370,12 @@ class Divider is Leaf { }
 class LogViewer is Leaf { }
 
 #| A minimal plain text container
-class PlainText is Leaf { }
+class PlainText is Leaf {
+    method default-styles(Str:D :$text = '') {
+        %( min-h => $text.lines.elems,
+           min-w => max 0, $text.lines.map(&duospace-width).max )
+    }
+}
 
 #| A multi-line single-select menu
 class Menu is Leaf {
@@ -444,7 +449,7 @@ class Builder {
         my $default      = LogViewer.default-styles;
         LogViewer.new:   :%extra, requested => Style.new(|$default, |%style) }
     method plain-text(   :%style, *%extra) {
-        my $default      = PlainText.default-styles;
+        my $default      = PlainText.default-styles(|%extra);
         PlainText.new:   :%extra, requested => Style.new(|$default, |%style) }
     method menu(         :%style, *%extra) {
         my $default      = Menu.default-styles(|%extra);
