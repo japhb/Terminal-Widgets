@@ -1,6 +1,7 @@
 # ABSTRACT: Base class for dynamically building standard widgets
 
 use Terminal::Widgets::Layout;
+use Terminal::Widgets::Input::Menu;
 use Terminal::Widgets::Input::Button;
 use Terminal::Widgets::Input::Checkbox;
 use Terminal::Widgets::Input::RadioButton;
