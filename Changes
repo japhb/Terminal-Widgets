@@ -1,6 +1,20 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Functionality]
+  - Add PlainText widget for simple text blocks
+  - Add Input::Menu widget for trivial menus
+  - Add 'highlight' as a themable color for Input widgets
+  - Allow layout widgets to dynamically generate their default styles
+  - Provide symbol-set helper routine for terminal capabilities
+
+  [Refactoring/Cleanup]
+  - Reduce boilerplate in building layout and widget trees
+  - Remove commented-out code
+
+  [Testing/CI]
+  - Upgrade to checkout@v3 to avoid CI warning
+
 
 0.0.3  2023-05-12T21:03:44-07:00
   [Bug fixes]
