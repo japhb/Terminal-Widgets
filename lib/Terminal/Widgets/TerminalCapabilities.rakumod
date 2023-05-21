@@ -4,6 +4,13 @@
 enum Terminal::Widgets::SymbolSet < ASCII Latin1 CP1252 W1G WGL4 MES2 Uni1 Uni7 Full >;
 
 
+#| Determine the correct SymbolSet enumerant for a possibly mis-cased string
+sub symbol-set(Str:D $set = 'Full') is export {
+    constant %sets = Terminal::Widgets::SymbolSet.^enum_value_list.map({ .Str.fc => $_ });
+    %sets{$set.fc} // ASCII
+}
+
+
 #| A container for the available capabilities of a particular terminal
 class Terminal::Widgets::TerminalCapabilities {
     #| Largest supported symbol repertoire
