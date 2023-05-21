@@ -1,5 +1,6 @@
 # ABSTRACT: General clickable button
 
+use Terminal::Widgets::TerminalCapabilities;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Input;
 use Terminal::Widgets::Input::Labeled;
@@ -10,9 +11,10 @@ class Terminal::Widgets::Input::Button
  does Terminal::Widgets::Input::Labeled {
     #| Refresh the whole input
     method full-refresh(Bool:D :$print = True) {
-        # my $text = '[' ~ (self.label || 'Button') ~ ']';
-        my $text = '⌈' ~ (self.label || 'Button') ~ '⌋';
-
+        my $label      = self.label || 'Button';
+        my $symbol-set = self.terminal.caps.symbol-set;
+        my $text       = $symbol-set >= Uni1 ?? '⌈' ~ $label ~ '⌋'
+                                             !! '[' ~ $label ~ ']';
         $.grid.clear;
         $.grid.set-span(0, 0, $text, self.current-color);
         self.composite(:$print);

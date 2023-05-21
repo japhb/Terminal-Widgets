@@ -27,8 +27,12 @@ class Terminal::Widgets::Input::RadioButton
 
     #| Radio button glyphs
     method button-text() {
-        # $.state ?? '(*)' !! '( )'
-        $.state ?? '🞊' !! '🞅';
+        my constant %buttons =
+            ASCII => « '( )' (*) »,
+            Uni1  => «   ○    ⊙  »,
+            Uni7  => «   🞅    🞊  »;
+
+        self.terminal.caps.best-symbol-choice(%buttons)[+$.state]
     }
 
     #| Refresh just the value, without changing anything else

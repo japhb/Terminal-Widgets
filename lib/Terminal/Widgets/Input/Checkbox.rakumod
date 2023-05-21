@@ -10,8 +10,12 @@ class Terminal::Widgets::Input::Checkbox
  does Terminal::Widgets::Input::Labeled {
     #| Checkbox glyphs
     method checkbox-text() {
-        # $.state ?? '[x]' !! '[ ]'
-        $.state ?? '🞕' !! '🞏'
+        my constant %boxes =
+            ASCII => « '[ ]' [x] »,
+            Uni1  => «   ☐    ☒  »,
+            Uni7  => «   🞏    🞕  »;
+
+        self.terminal.caps.best-symbol-choice(%boxes)[+$.state]
     }
 
     #| Refresh just the value, without changing anything else
