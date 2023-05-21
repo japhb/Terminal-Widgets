@@ -2,6 +2,7 @@
 
 unit module Terminal::Widgets::Layout;
 
+use Text::MiscUtils::Layout;
 use Terminal::Widgets::Layout::BoxModel;
 
 
@@ -368,6 +369,14 @@ class Divider is Leaf { }
 #| A multi-line auto-scrolling log viewer
 class LogViewer is Leaf { }
 
+#| A multi-line single-select menu
+class Menu is Leaf {
+    method default-styles(:@items) {
+        %( min-h => @items.elems,
+           min-w => 2 + max 0, @items.map({ duospace-width(.<title>) }).max )
+    }
+}
+
 #| Single line inputs
 class SingleLineInput is Leaf {
     method default-styles() { hash(set-h => 1) }
@@ -431,6 +440,9 @@ class Builder {
     method log-viewer(   :%style, *%extra) {
         my $default      = LogViewer.default-styles;
         LogViewer.new:   :%extra, requested => Style.new(|$default, |%style) }
+    method menu(         :%style, *%extra) {
+        my $default      = Menu.default-styles(|%extra);
+        Menu.new:        :%extra, requested => Style.new(|$default, |%style) }
 
     # Input leaf nodes (no children ever)
     method button(       :%style, *%extra) {

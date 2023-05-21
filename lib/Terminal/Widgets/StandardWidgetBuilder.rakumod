@@ -31,6 +31,9 @@ class Terminal::Widgets::StandardWidgetBuilder {
             when Terminal::Widgets::Layout::LogViewer {
                 Terminal::Widgets::Viewer::Log.new(|$geometry, |.extra)
             }
+            when Terminal::Widgets::Layout::Menu {
+                Terminal::Widgets::Input::Menu.new(|$geometry, |.extra)
+            }
             when Terminal::Widgets::Layout::Button {
                 Terminal::Widgets::Input::Button.new(|$geometry, |.extra)
             }
