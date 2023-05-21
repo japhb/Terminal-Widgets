@@ -46,12 +46,13 @@ role Terminal::Widgets::Input
     # Set color defaults
     method default-colors() {
         my constant %defaults =
-            error    => 'red',
-            disabled => gray-color(.5e0),
-            active   => 'bold inverse',
-            blurred  => 'on_' ~ gray-color(.25e0),
-            focused  => 'on_' ~ rgb-color(.2e0, .2e0, 0e0),  # Dim yellow
-            default  => 'on_' ~ gray-color(.1e0),
+            error     => 'red',
+            disabled  => gray-color(.5e0),
+            active    => 'bold inverse',
+            highlight => 'bold white on_blue',
+            blurred   => 'on_' ~ gray-color(.25e0),
+            focused   => 'on_' ~ rgb-color(.2e0, .2e0, 0e0),  # Dim yellow
+            default   => 'on_' ~ gray-color(.1e0),
         ;
 
         for %defaults.kv -> $state, $color {
