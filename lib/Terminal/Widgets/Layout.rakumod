@@ -435,46 +435,35 @@ class Widget  is Node {
 
 #| Helper class for building style/layout trees
 class Builder {
+    #| Helper method for building leaf nodes
+    method build-leaf($node-type, :%style, *%extra) {
+        my $default = $node-type.default-styles(|%extra);
+        $node-type.new(:%extra, requested => Style.new(|$default, |%style))
+    }
+
+    #| Helper method for building nodes with optional children
+    method build-node($node-type, *@children, :$vertical, :%style, *%extra) {
+        my $default = $node-type.default-styles(|%extra);
+        $node-type.new(:@children, :$vertical, :%extra,
+                       requested => Style.new(|$default, |%style))
+    }
+
     # Misc leaf nodes (no children ever)
-    method leaf(         :%style, *%extra) {
-        my $default      = Leaf.default-styles;
-        Leaf.new:        :%extra, requested => Style.new(|$default, |%style) }
-    method divider(      :%style, *%extra) {
-        my $default      = Divider.default-styles;
-        Divider.new:     :%extra, requested => Style.new(|$default, |%style) }
-    method log-viewer(   :%style, *%extra) {
-        my $default      = LogViewer.default-styles;
-        LogViewer.new:   :%extra, requested => Style.new(|$default, |%style) }
-    method plain-text(   :%style, *%extra) {
-        my $default      = PlainText.default-styles(|%extra);
-        PlainText.new:   :%extra, requested => Style.new(|$default, |%style) }
-    method menu(         :%style, *%extra) {
-        my $default      = Menu.default-styles(|%extra);
-        Menu.new:        :%extra, requested => Style.new(|$default, |%style) }
+    method leaf(|c)         { self.build-leaf(Leaf,        |c) }
+    method divider(|c)      { self.build-leaf(Divider,     |c) }
+    method log-viewer(|c)   { self.build-leaf(LogViewer,   |c) }
+    method plain-text(|c)   { self.build-leaf(PlainText,   |c) }
 
     # Input leaf nodes (no children ever)
-    method button(       :%style, *%extra) {
-        my $default      = Button.default-styles;
-        Button.new:      :%extra, requested => Style.new(|$default, |%style) }
-    method checkbox(     :%style, *%extra) {
-        my $default      = Checkbox.default-styles;
-        Checkbox.new:    :%extra, requested => Style.new(|$default, |%style) }
-    method radio-button( :%style, *%extra) {
-        my $default      = RadioButton.default-styles;
-        RadioButton.new: :%extra, requested => Style.new(|$default, |%style) }
-    method text-input(   :%style, *%extra) {
-        my $default      = TextInput.default-styles;
-        TextInput.new:   :%extra, requested => Style.new(|$default, |%style) }
+    method menu(|c)         { self.build-leaf(Menu,        |c) }
+    method button(|c)       { self.build-leaf(Button,      |c) }
+    method checkbox(|c)     { self.build-leaf(Checkbox,    |c) }
+    method text-input(|c)   { self.build-leaf(TextInput,   |c) }
+    method radio-button(|c) { self.build-leaf(RadioButton, |c) }
 
     # Nodes with optional children
-    method node(    *@children, :$vertical, :%style, *%extra) {
-        my $default = Node.default-styles;
-        Node.new:   :@children, :$vertical, :%extra,
-                    requested => Style.new(|$default, |%style) }
-    method widget(  *@children, :$vertical, :%style, *%extra) {
-        my $default = Widget.default-styles;
-        Widget.new: :@children, :$vertical, :%extra,
-                    requested => Style.new(|$default, |%style) }
+    method node(|c)         { self.build-node(Node,        |c) }
+    method widget(|c)       { self.build-node(Widget,      |c) }
 }
 
 
