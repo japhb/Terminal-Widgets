@@ -403,9 +403,6 @@ class RadioButton is SingleLineInput { }
 class TextInput is SingleLineInput { }
 
 
-#| A framing node
-# class Frame   is Node { }
-
 #| A widget node; localizes xy coordinate frame for children
 #| (upper left of this widget becomes new 0,0 for children)
 class Widget  is Node {
@@ -474,10 +471,6 @@ class Builder {
         my $default = Node.default-styles;
         Node.new:   :@children, :$vertical, :%extra,
                     requested => Style.new(|$default, |%style) }
-    # method frame(   *@children, :$vertical, :%style, *%extra) {
-    #     my $default = Frame.default-styles;
-    #     Frame.new:  :@children, :$vertical, :%extra,
-    #                 requested => Style.new(|$default, |%style) }
     method widget(  *@children, :$vertical, :%style, *%extra) {
         my $default = Widget.default-styles;
         Widget.new: :@children, :$vertical, :%extra,
