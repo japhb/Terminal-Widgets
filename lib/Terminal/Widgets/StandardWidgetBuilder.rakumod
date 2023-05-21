@@ -1,6 +1,7 @@
 # ABSTRACT: Base class for dynamically building standard widgets
 
 use Terminal::Widgets::Layout;
+use Terminal::Widgets::PlainText;
 use Terminal::Widgets::Input::Menu;
 use Terminal::Widgets::Input::Button;
 use Terminal::Widgets::Input::Checkbox;
@@ -31,6 +32,9 @@ class Terminal::Widgets::StandardWidgetBuilder {
             }
             when Terminal::Widgets::Layout::LogViewer {
                 Terminal::Widgets::Viewer::Log.new(|$geometry, |.extra)
+            }
+            when Terminal::Widgets::Layout::PlainText {
+                Terminal::Widgets::Input::PlainText.new(|$geometry, |.extra)
             }
             when Terminal::Widgets::Layout::Menu {
                 Terminal::Widgets::Input::Menu.new(|$geometry, |.extra)

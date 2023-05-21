@@ -14,6 +14,8 @@ use Terminal::Widgets::App;
 
 use Terminal::Widgets::Form;
 
+use Terminal::Widgets::PlainText;
+
 use Terminal::Widgets::Input;
 use Terminal::Widgets::Input::Menu;
 use Terminal::Widgets::Input::Labeled;

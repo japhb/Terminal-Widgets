@@ -369,6 +369,9 @@ class Divider is Leaf { }
 #| A multi-line auto-scrolling log viewer
 class LogViewer is Leaf { }
 
+#| A minimal plain text container
+class PlainText is Leaf { }
+
 #| A multi-line single-select menu
 class Menu is Leaf {
     method default-styles(:@items) {
@@ -440,6 +443,9 @@ class Builder {
     method log-viewer(   :%style, *%extra) {
         my $default      = LogViewer.default-styles;
         LogViewer.new:   :%extra, requested => Style.new(|$default, |%style) }
+    method plain-text(   :%style, *%extra) {
+        my $default      = PlainText.default-styles;
+        PlainText.new:   :%extra, requested => Style.new(|$default, |%style) }
     method menu(         :%style, *%extra) {
         my $default      = Menu.default-styles(|%extra);
         Menu.new:        :%extra, requested => Style.new(|$default, |%style) }
