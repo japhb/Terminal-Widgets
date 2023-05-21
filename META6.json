@@ -23,6 +23,7 @@
     "Terminal::Widgets::Input::Button": "lib/Terminal/Widgets/Input/Button.rakumod",
     "Terminal::Widgets::Input::Checkbox": "lib/Terminal/Widgets/Input/Checkbox.rakumod",
     "Terminal::Widgets::Input::Labeled": "lib/Terminal/Widgets/Input/Labeled.rakumod",
+    "Terminal::Widgets::Input::Menu": "lib/Terminal/Widgets/Input/Menu.rakumod",
     "Terminal::Widgets::Input::RadioButton": "lib/Terminal/Widgets/Input/RadioButton.rakumod",
     "Terminal::Widgets::Input::Text": "lib/Terminal/Widgets/Input/Text.rakumod",
     "Terminal::Widgets::Layout": "lib/Terminal/Widgets/Layout.rakumod",
