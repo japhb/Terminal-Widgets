@@ -2,6 +2,7 @@
 
 use Terminal::Widgets::TopLevel;
 use Terminal::Widgets::Terminal;
+use Terminal::Widgets::TerminalCapabilities;
 
 
 #| A singleton TUI app object, managing Terminal and TopLevel objects
@@ -13,22 +14,24 @@ class Terminal::Widgets::App {
     #| container to internal data structures, and return it.
     multi method add-terminal(IO::Path:D   :$tty!,
                               IO::Handle:D :$input  = $tty.open(:r),
-                              IO::Handle:D :$output = $tty.open(:a)) {
+                              IO::Handle:D :$output = $tty.open(:a),
+                              *%caps) {
         die "Terminal input and output are not both connected to a valid tty"
             unless $input.t && $output.t;
 
+        my $caps = Terminal::Widgets::TerminalCapabilities.new(|%caps);
         %!terminal{$tty.path} = Terminal::Widgets::Terminal.new(:$input, :$output,
-                                                                :app(self));
+                                                                :$caps, :app(self));
     }
 
     #| add-terminal by IO::Path tty object
-    multi method add-terminal(IO::Path:D $tty) {
-        self.add-terminal(:$tty);
+    multi method add-terminal(IO::Path:D $tty, *%caps) {
+        self.add-terminal(:$tty, |%caps);
     }
 
     #| add-terminal by Str tty-name, defaulting to '/dev/tty' (controlling terminal)
-    multi method add-terminal(Str:D $tty-name = '/dev/tty') {
-        self.add-terminal($tty-name.IO);
+    multi method add-terminal(Str:D $tty-name = '/dev/tty', *%caps) {
+        self.add-terminal($tty-name.IO, |%caps);
     }
 
     #| Create a new top-level widget of a given class, add it to the known
@@ -63,10 +66,15 @@ class Terminal::Widgets::App {
     #| Create a default terminal and initial toplevel, associate them, and
     #| initialize the terminal
     method default-init(Str:D $toplevel-moniker,
-                        Terminal::Widgets::TopLevel:U $class, |c) {
-        my $terminal = self.add-terminal;
-        my $toplevel = self.add-top-level($toplevel-moniker,
-                                          :$class, :$terminal, |c);
+                        Terminal::Widgets::TopLevel:U $class,
+                        Str:D :$symbols = %*ENV<TW_SYMBOLS> || 'Full',
+                          :$vt100-boxes = %*ENV<TW_VT100_BOXES>,
+                        |c) {
+        my $symbol-set = symbol-set($symbols);
+        my $terminal   = self.add-terminal(:$symbol-set,
+                                           |(:$vt100-boxes if $vt100-boxes.defined));
+        my $toplevel   = self.add-top-level($toplevel-moniker,
+                                            :$class, :$terminal, |c);
         $terminal.initialize;
         $terminal.set-toplevel($toplevel);
         $terminal
