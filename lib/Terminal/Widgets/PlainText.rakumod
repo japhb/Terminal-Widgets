@@ -3,7 +3,7 @@
 use Terminal::Widgets::Widget;
 
 
-class StaticText is Terminal::Widgets::Widget {
+class Terminal::Widgets::PlainText is Terminal::Widgets::Widget {
     has Str:D $.text  = '';
     has Str:D $.color = '';
 
