@@ -12,12 +12,31 @@ use Terminal::Widgets::Viewer::Log;
 
 #| Base class for dynamically building widgets, with knowledge of standard library
 class Terminal::Widgets::StandardWidgetBuilder {
+    #| Map layout nodes with default build rules
+    method default-build-nodes() {
+        :{
+            Terminal::Widgets::Layout::PlainText   => Terminal::Widgets::PlainText,
+            Terminal::Widgets::Layout::Menu        => Terminal::Widgets::Input::Menu,
+            Terminal::Widgets::Layout::Button      => Terminal::Widgets::Input::Button,
+            Terminal::Widgets::Layout::Checkbox    => Terminal::Widgets::Input::Checkbox,
+            Terminal::Widgets::Layout::RadioButton => Terminal::Widgets::Input::RadioButton,
+            Terminal::Widgets::Layout::TextInput   => Terminal::Widgets::Input::Text,
+            Terminal::Widgets::Layout::LogViewer   => Terminal::Widgets::Viewer::Log,
+        }
+    }
+
     #| Build widgets from the standard widget library based on dynamic layout
     method build-node($node, $geometry) {
-        do given $node {
+        # XXXX: Optimize this away
+        my $default-build := self.default-build-nodes;
+
+        do given $node.WHAT {
+            when $default-build {
+                $default-build{$_}.new(|$geometry, |$node.extra)
+            }
             when Terminal::Widgets::Layout::Divider {
-                my $style = .extra<line-style> || $geometry<parent>.default-box-style;
-                if .parent && .parent.vertical {
+                my $style = $node.extra<line-style> || $geometry<parent>.default-box-style;
+                if $node.parent && $node.parent.vertical {
                     my $x1 = $geometry<x>;
                     my $x2 = $x1 + $geometry<w> - 1;
                     my $y  = $geometry<y>;
@@ -29,27 +48,6 @@ class Terminal::Widgets::StandardWidgetBuilder {
                     my $y2 = $y1 + $geometry<h> - 1;
                     $geometry<parent>.draw-vline($x, $y1, $y2, :$style);
                 }
-            }
-            when Terminal::Widgets::Layout::LogViewer {
-                Terminal::Widgets::Viewer::Log.new(|$geometry, |.extra)
-            }
-            when Terminal::Widgets::Layout::PlainText {
-                Terminal::Widgets::Input::PlainText.new(|$geometry, |.extra)
-            }
-            when Terminal::Widgets::Layout::Menu {
-                Terminal::Widgets::Input::Menu.new(|$geometry, |.extra)
-            }
-            when Terminal::Widgets::Layout::Button {
-                Terminal::Widgets::Input::Button.new(|$geometry, |.extra)
-            }
-            when Terminal::Widgets::Layout::Checkbox {
-                Terminal::Widgets::Input::Checkbox.new(|$geometry, |.extra)
-            }
-            when Terminal::Widgets::Layout::RadioButton {
-                Terminal::Widgets::Input::RadioButton.new(|$geometry, |.extra)
-            }
-            when Terminal::Widgets::Layout::TextInput {
-                Terminal::Widgets::Input::Text.new(|$geometry, |.extra)
             }
             default { Nil }
         }
