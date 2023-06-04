@@ -3,6 +3,8 @@ use Test;
 
 use Terminal::Widgets;
 use Terminal::Widgets::Utils;
+use Terminal::Widgets::I18N::Translation;
+
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Layout::BoxModel;
 use Terminal::Widgets::Layout;
