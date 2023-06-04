@@ -1,6 +1,8 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+
+0.0.5  2023-06-04T12:24:07-07:00
   [Functionality]
   - Support terminal capabilities and envvars for them in ::App
   - Adjust input widget rendering based on available symbol set
