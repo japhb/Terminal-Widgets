@@ -48,7 +48,8 @@ class TranslatableString is export {
 
     #| Translate by interpolating variables into a pre-translated string
     multi method translate-via(Str:D $interpolatable) {
-        my $needs-vars = $interpolatable.contains($_);
+        # XXXX: This method doesn't handle \$ or \\$
+        my $needs-vars = $interpolatable.contains('$');
         my $translated = $needs-vars
                          ?? $interpolatable.subst(/\$(\w+)/,
                                                   { %.vars{$0}
@@ -70,7 +71,7 @@ class TranslatableString is export {
 
 
 #| Language selection utility methods
-class LanguageSelection {
+class LanguageSelection is export {
     #| Determine list of language codes user prefers
     method user-languages(Str $override?, Str :$default) {
         my Str:D $pref = $override || %*ENV<LANGUAGE> || %*ENV<LANG>
@@ -82,7 +83,7 @@ class LanguageSelection {
     #| preferred array.  Returned language codes are directly available, and
     #| need not be further matched (preferred short codes have been expanded
     #| where needed).
-    multi best-languages(:@preferred, :@available) {
+    multi method best-languages(:@preferred, :@available) {
         my $available = @available.classify(*);
         my $shortened = @available.classify(*.split('-')[0]);
 
