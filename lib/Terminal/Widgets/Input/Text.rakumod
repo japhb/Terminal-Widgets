@@ -9,7 +9,7 @@ use Terminal::Widgets::Events;
 use Terminal::Widgets::Input;
 
 
-#| Multiplex all forms of user input, rooted at a control widget
+#| Single-line text entry field with history tracking and mappable keys
 class Terminal::Widgets::Input::Text
  does Terminal::Widgets::Input
  does Terminal::LineEditor::HistoryTracking
