@@ -514,10 +514,9 @@ role WidgetBuilding {
         for $layout-node.children {
             # Along with computed XYWH, also include child's parent Widget and
             # child's associated Layout::Dynamic object in the geometry info
-            my $geometry = \(:$parent, :layout($_),
-                             :x(.x), :y(.y),
-                             :w(.computed.set-w),
-                             :h(.computed.set-h));
+            my $w = .computed.set-w + .computed.width-correction(MarginBox);
+            my $h = .computed.set-h + .computed.height-correction(MarginBox);
+            my $geometry = \(:$parent, :layout($_), :x(.x), :y(.y), :$w, :$h);
             if .widget && .widget.parent === $parent && .widget.layout === $_ {
                 .widget.update-geometry(|$geometry);
             }
