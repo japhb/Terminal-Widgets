@@ -232,6 +232,54 @@ class Terminal::Widgets::Widget
         }
     }
 
+    #| Draw framing (padding, border, margin) for current widget
+    method draw-framing() {
+        # XXXX: Detect unchanged style and avoid extra work?
+        # XXXX: What about dirty areas?
+        my $style = self.layout.computed;
+        if $style && $style.has-framing {
+            # XXXX: Avoid explicitly drawing padding and/or margin if they
+            #       have no color and have not been dirtied?
+            # XXXX: Does not clear old framing elements
+            self.draw-margin  if $style.has-margin;
+            self.draw-border  if $style.has-border;
+            self.draw-padding if $style.has-padding;
+        }
+    }
+
+    #| Draw margin
+    method draw-margin() {
+    }
+
+    #| Draw border
+    method draw-border() {
+        my $style = self.layout.computed;
+        my $x1    = $style.ml;
+        my $y1    = $style.mt;
+        my $x2    = $.w - $style.mr - 1;
+        my $y2    = $.h - $style.mb - 1;
+
+        # Draw equal-width portion of border as efficiently as possible
+        my $min = min $style.bt, $style.br, $style.bb, $style.bl;
+        for ^$min {
+            self.draw-box($x1, $y1, $x2, $y2, color => 'white');
+            # XXXX: Support visually equal spacing: $x1 += 2; $x2 -= 2;
+            # XXXX: Would need sizing support in BoxModel also ...
+            ++$x1; --$x2;
+            ++$y1; --$y2;
+        }
+
+        # XXXX: Draw remaining partial borders
+        my $bt = $style.bt - $min;
+        my $br = $style.br - $min;
+        my $bb = $style.bb - $min;
+        my $bl = $style.bl - $min;
+    }
+
+    #| Draw padding
+    method draw-padding() {
+    }
+
     #| Union all dirty areas, update parent's dirty list, and then composite
     method composite(|) {
         my @dirty := self.snapshot-dirty-areas;
