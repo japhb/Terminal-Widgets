@@ -2,6 +2,7 @@
 
 use Terminal::Print::Widget;
 use Terminal::Print::Animated;
+use Terminal::Print::BoxDrawing;
 
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Layout;
@@ -56,6 +57,7 @@ role Terminal::Widgets::DirtyAreas {
 class Terminal::Widgets::Widget
    is Terminal::Print::Widget
  does Terminal::Print::Animated
+ does Terminal::Print::BoxDrawing
  does Terminal::Widgets::Events::EventHandling
  does Terminal::Widgets::DirtyAreas {
     #| Dynamic layout node associated with this widget
