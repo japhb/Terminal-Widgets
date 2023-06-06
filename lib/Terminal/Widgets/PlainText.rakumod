@@ -13,7 +13,6 @@ class Terminal::Widgets::PlainText is Terminal::Widgets::Widget {
 
     method refresh-all() {
         self.clear-frame;
-        self.draw-framing;
         self.draw-frame;
         self.composite(:print);
     }
@@ -22,6 +21,8 @@ class Terminal::Widgets::PlainText is Terminal::Widgets::Widget {
         my $layout = self.layout.computed;
         my $x      = $layout.left-correction;
         my $y      = $layout.top-correction;
+
+        self.draw-framing;
 
         my @lines = $.text.lines;
         for @lines.kv -> $i, $line {
