@@ -37,16 +37,25 @@ class Terminal::Widgets::Input::RadioButton
 
     #| Refresh just the value, without changing anything else
     method refresh-value(Bool:D :$print = True) {
-        $.grid.set-span-text(0, 0, self.button-text);
+        my $layout = self.layout.computed;
+        my $x      = $layout.left-correction;
+        my $y      = $layout.top-correction;
+
+        $.grid.set-span-text($x, $y, self.button-text);
         self.composite(:$print);
     }
 
     #| Refresh the whole input
     method full-refresh(Bool:D :$print = True) {
-        my $text = self.button-text ~ (' ' ~ $.label if $.label);
+        my $layout = self.layout.computed;
+        my $x      = $layout.left-correction;
+        my $y      = $layout.top-correction;
+        my $text   = self.button-text ~ (' ' ~ $.label if $.label);
 
-        $.grid.clear;
-        $.grid.set-span(0, 0, $text, self.current-color);
+        self.clear-frame;
+        self.draw-framing;
+
+        $.grid.set-span($x, $y, $text, self.current-color);
         self.composite(:$print);
     }
 }

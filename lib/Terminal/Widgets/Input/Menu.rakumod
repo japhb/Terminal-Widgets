@@ -22,15 +22,22 @@ class Terminal::Widgets::Input::Menu
 
     #| Refresh the whole input
     method full-refresh(Bool:D :$print = True) {
-        self.set-selected($!selected);
+        my $layout     = self.layout.computed;
+        my $x          = $layout.left-correction;
+        my $y          = $layout.top-correction;
+        my $w          = $.w - $layout.width-correction;
         my $base-color = self.current-color;
-        $.grid.clear;
+
+        self.set-selected($!selected);
+        self.clear-frame;
+        self.draw-framing;
+
         for @.items.kv -> $i, $item {
             my $title     = $item<title>;
-            my $extra     = max 1, $.w - 1 - duospace-width($title);
+            my $extra     = max 1, $w - 1 - duospace-width($title);
             my $formatted = " $title" ~ ' ' x $extra;
             my $color     = $i == $!selected ?? %.color<highlight> !! $base-color;
-            $.grid.set-span(0, $i, $formatted, $color);
+            $.grid.set-span($x, $y + $i, $formatted, $color);
         }
         self.composite(:$print);
     }

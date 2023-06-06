@@ -54,8 +54,12 @@ class Terminal::Widgets::Input::Text
                         Bool:D :$print = True) {
         if $.enabled {
             # Determine new field metrics
-            my $field-start   = duospace-width($.prompt-string);
-            my $display-width = $.w - $field-start;
+            my $layout        = self.layout.computed;
+            my $prompt-width  = duospace-width($.prompt-string);
+            my $field-start   = $prompt-width
+                              + $layout.left-correction;
+            my $display-width = $.w - $prompt-width
+                              - $layout.width-correction;
 
             # Create a new input field using the new metrics
             # XXXX: Should we support masked inputs?
@@ -71,9 +75,16 @@ class Terminal::Widgets::Input::Text
 
     #| Display input disabled state
     method show-disabled(Bool:D :$print = True) {
-        $.grid.clear;
-        $.grid.set-span-text(0, 0, $.disabled-string);
-        $.grid.set-span-color(0, $.w - 1, 0, self.current-color);
+        my $layout = self.layout.computed;
+        my $x      = $layout.left-correction;
+        my $y      = $layout.top-correction;
+        my $w      = $.w - $layout.width-correction;
+
+        self.clear-frame;
+        self.draw-framing;
+
+        $.grid.set-span-text($x, $y, $.disabled-string);
+        $.grid.set-span-color($x, $x + $w - 1, $y, self.current-color);
         self.composite(:$print);
     }
 
@@ -89,6 +100,10 @@ class Terminal::Widgets::Input::Text
 
     #| Refresh widget in input field mode
     method refresh-input-field(Bool:D $edited = True) {
+        my $layout  = self.layout.computed;
+        my $x       = $layout.left-correction;
+        my $y       = $layout.top-correction;
+
         my $color   = self.current-color;
         my $refresh = $.input-field.render(:$edited);
         my $start   = $.input-field.field-start;
@@ -96,9 +111,12 @@ class Terminal::Widgets::Input::Text
                     + $.input-field.left-mark-width
                     + $.input-field.scroll-to-insert-width;
 
-        $.grid.set-span(0,      0, $.prompt-string, "$color bold");
-        $.grid.set-span($start, 0, $refresh, $color);
-        $.grid.set-span-color($pos, $pos, 0, "$color inverse");
+        self.clear-frame;
+        self.draw-framing;
+
+        $.grid.set-span($x,     $y, $.prompt-string, "$color bold");
+        $.grid.set-span($start, $y, $refresh, $color);
+        $.grid.set-span-color($pos, $pos, $y, "$color inverse");
     }
 
     #| Fetch completions based on current buffer contents and cursor pos

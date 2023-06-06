@@ -11,12 +11,18 @@ class Terminal::Widgets::Input::Button
  does Terminal::Widgets::Input::Labeled {
     #| Refresh the whole input
     method full-refresh(Bool:D :$print = True) {
+        my $layout     = self.layout.computed;
+        my $x          = $layout.left-correction;
+        my $y          = $layout.top-correction;
         my $label      = self.label || 'Button';
         my $symbol-set = self.terminal.caps.symbol-set;
-        my $text       = $symbol-set >= Uni1 ?? '⌈' ~ $label ~ '⌋'
-                                             !! '[' ~ $label ~ ']';
-        $.grid.clear;
-        $.grid.set-span(0, 0, $text, self.current-color);
+        my $text       = $layout.has-border  ??       $label       !!
+                         $symbol-set >= Uni1 ?? '⌈' ~ $label ~ '⌋' !!
+                                                '[' ~ $label ~ ']' ;
+        self.clear-frame;
+        self.draw-framing;
+
+        $.grid.set-span($x, $y, $text, self.current-color);
         self.composite(:$print);
     }
 

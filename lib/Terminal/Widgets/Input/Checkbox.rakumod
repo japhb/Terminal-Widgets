@@ -20,16 +20,25 @@ class Terminal::Widgets::Input::Checkbox
 
     #| Refresh just the value, without changing anything else
     method refresh-value(Bool:D :$print = True) {
-        $.grid.set-span-text(0, 0, self.checkbox-text);
+        my $layout = self.layout.computed;
+        my $x      = $layout.left-correction;
+        my $y      = $layout.top-correction;
+
+        $.grid.set-span-text($x, $y, self.checkbox-text);
         self.composite(:$print);
     }
 
     #| Refresh the whole input
     method full-refresh(Bool:D :$print = True) {
-        my $text = self.checkbox-text ~ (' ' ~ $.label if $.label);
+        my $layout = self.layout.computed;
+        my $x      = $layout.left-correction;
+        my $y      = $layout.top-correction;
+        my $text   = self.checkbox-text ~ (' ' ~ $.label if $.label);
 
-        $.grid.clear;
-        $.grid.set-span(0, 0, $text, self.current-color);
+        self.clear-frame;
+        self.draw-framing;
+
+        $.grid.set-span($x, $y, $text, self.current-color);
         self.composite(:$print);
     }
 }

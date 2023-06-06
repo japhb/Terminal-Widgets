@@ -18,13 +18,18 @@ class Terminal::Widgets::Viewer::Log
     #| Refresh display
     method full-refresh(Bool:D :$print = True) {
         self.clear-frame;
+        self.draw-framing;
 
-        # Print most recent $.h wrapped lines
-        my $top = max 0, $.scroll-pos - $.h;
+        # Print most recent content-height wrapped lines
+        my $layout = self.layout.computed;
+        my $x      = $layout.left-correction;
+        my $t      = $layout.top-correction;
+        my $h      = $.h - $layout.height-correction;
+        my $top    = max 0, $.scroll-pos - $h;
 
-        for ^$.h {
+        for ^$h {
             my $line = @!log[$top + $_] // '';
-            $.grid.set-span-text(0, $_, $line);
+            $.grid.set-span-text($x, $t + $_, $line);
         }
 
         self.composite(:$print);

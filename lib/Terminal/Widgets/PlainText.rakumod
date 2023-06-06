@@ -13,14 +13,19 @@ class Terminal::Widgets::PlainText is Terminal::Widgets::Widget {
 
     method refresh-all() {
         self.clear-frame;
+        self.draw-framing;
         self.draw-frame;
         self.composite(:print);
     }
 
     method draw-frame() {
+        my $layout = self.layout.computed;
+        my $x      = $layout.left-correction;
+        my $y      = $layout.top-correction;
+
         my @lines = $.text.lines;
-        for @lines.kv -> $y, $line {
-            $.grid.set-span(0, $y, $line, $.color);
+        for @lines.kv -> $i, $line {
+            $.grid.set-span($x, $y + $i, $line, $.color);
         }
     }
 }
