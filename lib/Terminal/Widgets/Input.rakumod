@@ -99,7 +99,8 @@ role Terminal::Widgets::Input
     # Convert animation drawing to full-refresh
     method draw-frame() {
         self.full-refresh;
-        callsame;
+        # XXXX: Do we need to callsame here?
+        # callsame;
     }
 
     # Move focus to next or previous Input
