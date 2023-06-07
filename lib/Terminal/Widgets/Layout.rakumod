@@ -284,12 +284,11 @@ class Node does Dynamic {
                 fail "Negative remaining width to distribute" if $remain-w < 0;
                 my $share  = floor $remain-w / @unset-w;
                 my $node   = @unset-w.shift;
-                my $correction = $node.computed.width-correction(MarginBox);
                 $share     = 0                    if $node.computed.minimize-w;
                 $share  max= $node.computed.min-w if $node.computed.min-w.defined;
-                $share    += $correction;
                 $remain-w -= $share;
 
+                my $correction = $node.computed.width-correction(MarginBox);
                 $node.computed = $node.computed.clone(:set-w($share - $correction));
                 $node.compute-layout;
             }
@@ -315,12 +314,11 @@ class Node does Dynamic {
                 fail "Negative remaining height to distribute" if $remain-h < 0;
                 my $share  = floor $remain-h / @unset-h;
                 my $node   = @unset-h.shift;
-                my $correction = $node.computed.height-correction(MarginBox);
                 $share     = 0                    if $node.computed.minimize-h;
                 $share  max= $node.computed.min-h if $node.computed.min-h.defined;
-                $share    += $correction;
                 $remain-h -= $share;
 
+                my $correction = $node.computed.height-correction(MarginBox);
                 $node.computed = $node.computed.clone(:set-h($share - $correction));
                 $node.compute-layout;
             }
