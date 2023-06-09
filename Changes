@@ -1,6 +1,23 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Bug Fixes]
+  - Correct width and height when building objects
+  - Fix thinkos in distributing unassigned height/width in layouts
+  - Comment out seemingly-redundant callsame
+  - Fix WHY for ::Input::Text
+
+  [Examples]
+  - Update form example with framing styles
+
+  [Functionality]
+  - Expand BoxModel and make it more usable
+  - Add `draw-framing` and related methods to base Widget class
+  - Draw and account for framing for all existing widgets
+
+  [Refactoring]
+  - Move BoxDrawing consumption to base Widget class
+
 
 0.0.5  2023-06-04T12:24:07-07:00
   [Functionality]
