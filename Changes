@@ -1,6 +1,8 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+
+0.0.6  2023-06-08T22:12:17-07:00
   [Bug Fixes]
   - Correct width and height when building objects
   - Fix thinkos in distributing unassigned height/width in layouts
