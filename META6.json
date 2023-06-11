@@ -7,7 +7,7 @@
   ],
   "depends": [
     "Terminal::LineEditor:auth<zef:japhb>:ver<0.0.13>",
-    "Terminal::Print:auth<zef:terminal-printers>:ver<0.973>"
+    "Terminal::Print:auth<zef:terminal-printers>:ver<0.974+>"
   ],
   "description": "Basic TUI Widgets",
   "license": "Artistic-2.0",
