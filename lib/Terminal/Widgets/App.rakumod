@@ -1,8 +1,9 @@
 # ABSTRACT: Singleton terminal app object
 
+use Terminal::Capabilities;
+
 use Terminal::Widgets::TopLevel;
 use Terminal::Widgets::Terminal;
-use Terminal::Widgets::TerminalCapabilities;
 
 
 #| A singleton TUI app object, managing Terminal and TopLevel objects
@@ -19,7 +20,7 @@ class Terminal::Widgets::App {
         die "Terminal input and output are not both connected to a valid tty"
             unless $input.t && $output.t;
 
-        my $caps = Terminal::Widgets::TerminalCapabilities.new(|%caps);
+        my $caps = Terminal::Capabilities.new(|%caps);
         %!terminal{$tty.path} = Terminal::Widgets::Terminal.new(:$input, :$output,
                                                                 :$caps, :app(self));
     }

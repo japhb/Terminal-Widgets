@@ -1,6 +1,8 @@
 # ABSTRACT: General clickable button
 
-use Terminal::Widgets::TerminalCapabilities;
+use Terminal::Capabilities;
+constant Uni1 = Terminal::Capabilities::SymbolSet::Uni1;
+
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Input;
 use Terminal::Widgets::Input::Labeled;
