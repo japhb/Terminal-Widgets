@@ -63,7 +63,8 @@ class Terminal::Widgets::Input::Text
 
             # Create a new input field using the new metrics
             # XXXX: Should we support masked inputs?
-            self.set-input-field($.input-class.new(:$display-width, :$field-start));
+            my $caps = self.terminal.caps;
+            self.set-input-field($.input-class.new(:$display-width, :$field-start, :$caps));
 
             # Insert initial content if any and refresh input field
             self.do-edit('insert-string', $content, :force-refresh);

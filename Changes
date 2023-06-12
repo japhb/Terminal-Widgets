@@ -1,12 +1,15 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
-  [Refactoring]
-  - Move ::TerminalCapabilities out to its own separate distribution,
-    Terminal::Capabilities
+  [Bug Fixes]
+  - Make sure ::Input::Text uses scroll markers matched to terminal caps
 
   [Packaging]
   - Bump dependencies
+
+  [Refactoring]
+  - Move ::TerminalCapabilities out to its own separate distribution,
+    Terminal::Capabilities
 
 
 0.0.6  2023-06-08T22:12:17-07:00
