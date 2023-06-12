@@ -1,6 +1,10 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Refactoring]
+  - Move ::TerminalCapabilities out to its own separate distribution,
+    Terminal::Capabilities
+
   [Packaging]
   - Bump dependencies
 
