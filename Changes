@@ -1,6 +1,9 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Packaging]
+  - Bump dependencies
+
 
 0.0.6  2023-06-08T22:12:17-07:00
   [Bug Fixes]
