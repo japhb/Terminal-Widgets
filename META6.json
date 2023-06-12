@@ -6,7 +6,7 @@
   "build-depends": [
   ],
   "depends": [
-    "Terminal::LineEditor:auth<zef:japhb>:ver<0.0.13>",
+    "Terminal::LineEditor:auth<zef:japhb>:ver<0.0.14+>",
     "Terminal::Print:auth<zef:terminal-printers>:ver<0.974+>"
   ],
   "description": "Basic TUI Widgets",
