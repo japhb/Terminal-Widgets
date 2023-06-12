@@ -35,7 +35,6 @@
     "Terminal::Widgets::Simple::TopLevel": "lib/Terminal/Widgets/Simple/TopLevel.rakumod",
     "Terminal::Widgets::StandardWidgetBuilder": "lib/Terminal/Widgets/StandardWidgetBuilder.rakumod",
     "Terminal::Widgets::Terminal": "lib/Terminal/Widgets/Terminal.rakumod",
-    "Terminal::Widgets::TerminalCapabilities": "lib/Terminal/Widgets/TerminalCapabilities.rakumod",
     "Terminal::Widgets::TopLevel": "lib/Terminal/Widgets/TopLevel.rakumod",
     "Terminal::Widgets::Utils": "lib/Terminal/Widgets/Utils.rakumod",
     "Terminal::Widgets::Viewer::Log": "lib/Terminal/Widgets/Viewer/Log.rakumod",
