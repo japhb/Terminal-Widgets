@@ -121,7 +121,15 @@ role BoxModel {
         $!pl + $!bl + $!ml
     }
 
+    multi method right-correction() {
+        $!pr + $!br + $!mr
+    }
+
     multi method top-correction() {
         $!pt + $!bt + $!mt
+    }
+
+    multi method bottom-correction() {
+        $!pb + $!bb + $!mb
     }
 }
