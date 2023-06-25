@@ -280,13 +280,114 @@ class Terminal::Widgets::Widget
     method draw-padding() {
     }
 
-    #| Union all dirty areas, update parent's dirty list, and then composite
+    #| Clip a rectangle to the content area of this widget
+    method clip-to-content-area($dx is copy, $dy is copy, $w is copy, $h is copy,
+                                $sx is copy = 0, $sy is copy = 0) {
+        my $style = self.layout.computed;
+        my $ct    = $style.top-correction;
+        my $cl    = $style.left-correction;
+        my $cr    = $.w - $style.right-correction;
+        my $cb    = $.h - $style.bottom-correction;
+
+        # Adjust for upper-left corner outside of content area:
+        # * Move   DX,DY (dest-X,dest-Y) back into content area
+        # * Adjust SX,SY (source-X,source-Y) to compensate
+        # * Shrink W,H   (Width,Height) to compensate
+        if $dx < $cl {
+            my $xd = $cl - $dx;
+            $w    -= $xd;
+            $sx   += $xd;
+            $dx    = $cl;
+        }
+        if $dy < $ct {
+            my $yd = $ct - $dy;
+            $h    -= $yd;
+            $sy   += $yd;
+            $dy    = $ct;
+        }
+
+        # If it's entirely outside the content area or the rectangle doesn't
+        # have positive extent in both dimensions, clip to zero size
+        if $dx >= $cr || $dy >= $cb || $w <= 0 || $h <= 0 {
+            # Empty rect at (possibly adjusted) X,Y
+            ($dx, $dy, 0, 0, $sx, $sy)
+        }
+        else {
+            # Shrink the rectangle if it extends past the right or bottom edge
+            # of the content area; return clipped but non-empty rect with
+            # updated source location
+            ($dx, $dy, ($w min $cr - $dx), ($h min $cb - $dy), $sx, $sy)
+        }
+    }
+
+    #| Copy from a source grid to the content area of this widget, protected by
+    #| this widget's grid lock (as per Terminal::Print::Grid rules).
+    method copy-to-content-area($source) {
+        # NOTE: Micro-optimized a bit because it's on a very hot path
+
+        # Clip to our content area and check that the result is non-empty
+        my $clipped = self.clip-to-content-area($source.x, $source.y,
+                                                $source.w, $source.h);
+        my ($dx, $dy, $w, $h, $sx, $sy) = @$clipped;
+        return $clipped unless $w && $h;
+
+        # Look through abstractions to true underlying grid arrays
+        my $dg  = $.grid.grid;
+        my $sg  = $source.grid;
+           $sg .= grid if $sg ~~ Terminal::Print::Grid;
+
+        # Actually do the copy, optimizing for full-source-width copies if possible
+        if !$sx && $w == $source.w {
+            # Fast path; whole source rows can be copied
+            $.grid.with-grid-lock: {
+                $dg.AT-POS($dy + $_).splice($dx, $w, $sg.AT-POS($sy + $_)) for ^$h;
+            }
+        }
+        else {
+            # General path
+            my $sx2 = $sx + $w - 1;
+            $.grid.with-grid-lock: {
+                $dg.AT-POS($dy + $_).splice($dx, $w, $sg.AT-POS($sy + $_)[$sx..$sx2]) for ^$h;
+            }
+        }
+
+        # Pass clipped coordinates back to callers to avoid recalculation
+        $clipped
+    }
+
+    #| Copy from a source grid to the content area of this widget as with
+    #| .copy-to-content-area, and then print the modified area, all while
+    #| holding this widget's grid lock (as per Terminal::Print::Grid rules).
+    method print-to-content-area($source) {
+        # NOTE: Micro-optimized a bit because it's on a very hot path
+        $.grid.with-grid-lock: {
+            my ($x1, $y1, $w, $h) = self.copy-to-content-area($source);
+            my $x2 = $x1 + $w - 1;
+            my $g  = $.grid;
+
+            ($y1 .. ($y1 + $h - 1))
+                .map({ $g.span-string($x1, $x2, $_) }).join.print
+                if $w && $h;
+        }
+    }
+
+    #| Union all dirty areas, update parent's dirty list if needed, and composite
     method composite(|) {
         my @dirty := self.snapshot-dirty-areas;
 
-        # XXXX: HACK, just assumes entire widget is dirty
-        $.parent.add-dirty-rect($.x, $.y, $.w, $.h) if self.parent-dirtyable;
-
-        nextsame;
+        # XXXX: HACK, just assumes entire composed area is dirty on both paths
+        if $.parent ~~ Terminal::Widgets::Widget:D {
+            if $.parent.is-current-toplevel && $.parent.grid === $*TERMINAL.current-grid {
+                $.parent.print-to-content-area(self);
+            }
+            else {
+                my ($x, $y, $w, $h) = $.parent.copy-to-content-area(self);
+                $.parent.add-dirty-rect($x, $y, $w, $h);
+            }
+        }
+        else {
+            $.parent.add-dirty-rect($.x, $.y, $.w, $.h) if self.parent-dirtyable;
+            nextsame;
+        }
     }
 }
