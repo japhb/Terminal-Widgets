@@ -4,6 +4,13 @@ Revision history for Terminal-Widgets
   [Bug Fixes]
   - Make sure ::Input::Text uses scroll markers matched to terminal caps
 
+  [Documentation]
+  - Add doc with ruminations on styles
+
+  [Functionality]
+  - Add right-correction and bottom-correction methods to BoxModel
+  - Rewrite Widget compositing to clip to parent's content area
+
   [Packaging]
   - Bump dependencies
 
