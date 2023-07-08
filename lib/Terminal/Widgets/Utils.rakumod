@@ -57,7 +57,7 @@ multi gray-color(Real:D $gray) is export {
 
     (my num $gn = $gray.Num) <  .015625e0 ??  '16' !!
                          $gn >= .953125e0 ?? '231' !!
-                                            ~(232 + (25.6e0 * ($gray - .015625e0)).floor)
+                      ~(232 + my int $g = floor(25.6e0 * ($gray - .015625e0)))
 }
 
 
@@ -74,7 +74,7 @@ multi gray-color(num $gray) is export {
 
     $gray <  .015625e0 ??  '16' !!
     $gray >= .953125e0 ?? '231' !!
-                         ~(232 + (25.6e0 * ($gray - .015625e0)).floor)
+                       ~(232 + my int $g = floor(25.6e0 * ($gray - .015625e0)))
 }
 
 
