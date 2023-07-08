@@ -46,19 +46,35 @@ multi rgb-luma(num $r, num $g, num $b) is export {
 
 #| Convert a grayscale value (in the 0..1 range) to a valid cell color
 multi gray-color(Real:D $gray) is export {
-    # Use the hi-res gray ramp plus true black and white
-    (my num $gn = $gray.Num) <= .012e0 ?? 'black' !!
-                         $gn >= .953e0 ?? 'white' !!
-                                          ~(232 + (24e0 * $gn).floor)
+    # Use the hi-res gray ramp plus true black and white (from the color cube).
+
+    # Note: Due to an off-by-one error in the original xterm ramp mapping, the
+    #       gray ramp is *NOT* centered between the black and white ends; here
+    #       we choose 1/64 and 61/64 as the crossover points and map the 15/16
+    #       between them to the grey ramp.  For more info see:
+    #
+    # https://github.com/ThomasDickey/xterm-snapshots/blob/master/256colres.pl
+
+    (my num $gn = $gray.Num) <  .015625e0 ??  '16' !!
+                         $gn >= .953125e0 ?? '231' !!
+                                            ~(232 + (25.6e0 * ($gray - .015625e0)).floor)
 }
 
 
 #| Convert a grayscale value (in the 0..1 range) to a valid cell color
 multi gray-color(num $gray) is export {
-    # Use the hi-res gray ramp plus true black and white
-    $gray <= .012e0 ?? 'black' !!
-    $gray >= .953e0 ?? 'white' !!
-                       ~(232 + (24e0 * $gray).floor)
+    # Use the hi-res gray ramp plus true black and white (from the color cube).
+
+    # Note: Due to an off-by-one error in the original xterm ramp mapping, the
+    #       gray ramp is *NOT* centered between the black and white ends; here
+    #       we choose 1/64 and 61/64 as the crossover points and map the 15/16
+    #       between them to the grey ramp.  For more info see:
+    #
+    # https://github.com/ThomasDickey/xterm-snapshots/blob/master/256colres.pl
+
+    $gray <  .015625e0 ??  '16' !!
+    $gray >= .953125e0 ?? '231' !!
+                         ~(232 + (25.6e0 * ($gray - .015625e0)).floor)
 }
 
 
