@@ -7,8 +7,10 @@ use Text::MiscUtils::Layout;
 
 
 #| Convert an rgb triplet (each in the 0..1 range) to a valid cell color
-multi rgb-color(Real:D $r, Real:D $g, Real:D $b) is export {
-    # Just use the 6x6x6 color cube, ignoring the hi-res gray ramp
+multi rgb-color-flat(Real:D $r, Real:D $g, Real:D $b) is export {
+    # Just use the 6x6x6 color cube, ignoring the hi-res gray ramp.
+    # NOTE: Ignores uneven spacing of xterm-256 color cube for speed.
+
     ~(16 + 36 * (my int $ri = floor(5e0 * (my num $rn = $r.Num) + .5e0))
          +  6 * (my int $gi = floor(5e0 * (my num $gn = $g.Num) + .5e0))
          +      (my int $bi = floor(5e0 * (my num $bn = $b.Num) + .5e0)))
@@ -16,11 +18,50 @@ multi rgb-color(Real:D $r, Real:D $g, Real:D $b) is export {
 
 
 #| Convert an rgb triplet (each in the 0..1 range) to a valid cell color
-multi rgb-color(num $r, num $g, num $b) is export {
-    # Just use the 6x6x6 color cube, ignoring the hi-res gray ramp
+multi rgb-color-flat(num $r, num $g, num $b) is export {
+    # Just use the 6x6x6 color cube, ignoring the hi-res gray ramp.
+    # NOTE: Ignores uneven spacing of xterm-256 color cube for speed.
+
     ~(16 + 36 * (my int $ri = floor(5e0 * $r + .5e0))
          +  6 * (my int $gi = floor(5e0 * $g + .5e0))
          +      (my int $bi = floor(5e0 * $b + .5e0)))
+}
+
+
+#| Convert an rgb triplet (each in the 0..1 range) to a valid cell color
+multi rgb-color(Real:D $r, Real:D $g, Real:D $b) is export {
+    # Just use the 6x6x6 color cube, ignoring the hi-res gray ramp.
+
+    # NOTE: The xterm-256 color cube is *NOT* evenly spaced along the axes;
+    #       rather, there is a very large jump between black and the first
+    #       visible color in each primary, and smaller jumps thereafter.
+
+    ~(16 + 36 * (my int $ri = (my num $rn = $r.Num) < .45098e0
+                              ?? my int $rc = $rn >= .1875e0
+                              !! my int $rf = floor(6.375e0 * $rn - .875e0))
+         +  6 * (my int $gi = (my num $gn = $g.Num) < .45098e0
+                              ?? my int $gc = $gn >= .1875e0
+                              !! my int $gf = floor(6.375e0 * $gn - .875e0))
+         +      (my int $bi = (my num $bn = $b.Num) < .45098e0
+                              ?? my int $bc = $bn >= .1875e0
+                              !! my int $bf = floor(6.375e0 * $bn - .875e0)))
+}
+
+
+#| Convert an rgb triplet (each in the 0..1 range) to a valid cell color
+multi rgb-color(num $r, num $g, num $b) is export {
+    # Just use the 6x6x6 color cube, ignoring the hi-res gray ramp.
+
+    # NOTE: The xterm-256 color cube is *NOT* evenly spaced along the axes;
+    #       rather, there is a very large jump between black and the first
+    #       visible color in each primary, and smaller jumps thereafter.
+
+    ~(16 + 36 * (my int $ri = $r < .45098e0 ?? my int $rc = $r >= .1875e0
+                                            !! my int $rf = floor(6.375e0 * $r - .875e0))
+         +  6 * (my int $gi = $g < .45098e0 ?? my int $gc = $g >= .1875e0
+                                            !! my int $gf = floor(6.375e0 * $g - .875e0))
+         +      (my int $bi = $b < .45098e0 ?? my int $bc = $b >= .1875e0
+                                            !! my int $bf = floor(6.375e0 * $b - .875e0)))
 }
 
 
