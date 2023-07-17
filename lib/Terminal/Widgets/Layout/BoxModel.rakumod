@@ -102,10 +102,22 @@ role BoxModel {
         + $!ml * ((MarginBox  > $!sizing-box) - (MarginBox  > $box))
     }
 
+    multi method right-correction(SizingBox:D $box) {
+          $!pr * ((PaddingBox > $!sizing-box) - (PaddingBox > $box))
+        + $!br * ((BorderBox  > $!sizing-box) - (BorderBox  > $box))
+        + $!mr * ((MarginBox  > $!sizing-box) - (MarginBox  > $box))
+    }
+
     multi method top-correction(SizingBox:D $box) {
           $!pt * ((PaddingBox > $!sizing-box) - (PaddingBox > $box))
         + $!bt * ((BorderBox  > $!sizing-box) - (BorderBox  > $box))
         + $!mt * ((MarginBox  > $!sizing-box) - (MarginBox  > $box))
+    }
+
+    multi method bottom-correction(SizingBox:D $box) {
+          $!pb * ((PaddingBox > $!sizing-box) - (PaddingBox > $box))
+        + $!bb * ((BorderBox  > $!sizing-box) - (BorderBox  > $box))
+        + $!mb * ((MarginBox  > $!sizing-box) - (MarginBox  > $box))
     }
 
     # Fast shorthands for full correction between MarginBox and ContentBox
