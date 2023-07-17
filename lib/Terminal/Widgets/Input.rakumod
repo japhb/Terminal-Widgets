@@ -1,6 +1,6 @@
 # ABSTRACT: Base role for input field widgets
 
-use Terminal::Widgets::Utils;
+use Terminal::Widgets::Utils::Color;
 use Terminal::Widgets::Widget;
 use Terminal::Widgets::Form;
 

@@ -1,6 +1,9 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Refactoring]
+  - Move all color utilities in ::Utils into a separate ::Utils::Color module
+
 
 0.0.7  2023-06-24T22:17:50-07:00
   [Bug Fixes]
