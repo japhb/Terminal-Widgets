@@ -49,8 +49,7 @@ class TranslatableString is export {
     #| Translate by interpolating variables into a pre-translated string
     multi method translate-via(Str:D $interpolatable) {
         # XXXX: This method doesn't handle \$ or \\$
-        my $needs-vars = $interpolatable.contains('$');
-        my $translated = $needs-vars
+        my $translated = $interpolatable.contains('$')
                          ?? $interpolatable.subst(/\$(\w+)/,
                                                   { %.vars{$0}
                                                     // "[MISSING TRANSLATION VARIABLE '$0']" },
