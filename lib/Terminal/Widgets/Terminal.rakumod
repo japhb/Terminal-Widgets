@@ -6,21 +6,25 @@ use Terminal::LineEditor::RawTerminalInput;
 
 use Terminal::Widgets::Events;
 use Terminal::Widgets::TopLevel;
+use Terminal::Widgets::I18N::Locale;
 
 
 #| A container for the unique ANSI terminal event pump for a given terminal
 class Terminal::Widgets::Terminal
  does Terminal::LineEditor::RawTerminalIO
  does Terminal::LineEditor::RawTerminalUtils {
-    has Terminal::Widgets::TopLevel $.current-toplevel;
-    has Terminal::Capabilities:D $.caps .= new;
-    has Channel:D $.control         .= new;
+    has Terminal::Widgets::TopLevel       $.current-toplevel;
+    has Terminal::Capabilities:D          $.caps   .= new;
+    has Terminal::Widgets::I18N::Locale:D $.locale .= new;
+
     has Promise:D $.has-initialized .= new;
     has Promise:D $.has-started     .= new;
     has Promise:D $.has-shutdown    .= new;
     has           $!initialized-vow  = $!has-initialized.vow;
     has           $!started-vow      = $!has-started.vow;
     has           $!shutdown-vow     = $!has-shutdown.vow;
+
+    has Channel:D $.control         .= new;
     has Bool:D    $.terminal-focused = True;
     has UInt:D    $.w = 0;
     has UInt:D    $.h = 0;
