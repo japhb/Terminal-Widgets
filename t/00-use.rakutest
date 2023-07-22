@@ -4,6 +4,8 @@ use Test;
 use Terminal::Widgets;
 use Terminal::Widgets::Utils;
 use Terminal::Widgets::Utils::Color;
+
+use Terminal::Widgets::I18N::Locale;
 use Terminal::Widgets::I18N::Translation;
 
 use Terminal::Widgets::Events;

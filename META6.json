@@ -19,6 +19,7 @@
     "Terminal::Widgets::App": "lib/Terminal/Widgets/App.rakumod",
     "Terminal::Widgets::Events": "lib/Terminal/Widgets/Events.rakumod",
     "Terminal::Widgets::Form": "lib/Terminal/Widgets/Form.rakumod",
+    "Terminal::Widgets::I18N::Locale": "lib/Terminal/Widgets/I18N/Locale.rakumod",
     "Terminal::Widgets::I18N::Translation": "lib/Terminal/Widgets/I18N/Translation.rakumod",
     "Terminal::Widgets::Input": "lib/Terminal/Widgets/Input.rakumod",
     "Terminal::Widgets::Input::Boolean": "lib/Terminal/Widgets/Input/Boolean.rakumod",
