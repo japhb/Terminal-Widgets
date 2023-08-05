@@ -403,7 +403,7 @@ class TextInput is SingleLineInput { }
 
 #| A widget node; localizes xy coordinate frame for children
 #| (upper left of this widget becomes new 0,0 for children)
-class Widget  is Node {
+class Widget is Node {
     method propagate-xy() {
         if $.vertical {
             my $x = $.computed.left-correction(ContentBox);
