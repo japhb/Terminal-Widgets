@@ -66,6 +66,14 @@ does Terminal::Widgets::Layout::WidgetBuilding {
         self.do-frame($frame-info);
     }
 
+    #| Relayout, redraw, and composite entire widget tree
+    method relayout(Bool:D :$focus = False) {
+        self.build-layout;
+        self.gain-focus(:!redraw) if $focus;
+        self.redraw-all;
+        self.composite;
+    }
+
     # XXXX: Allow terminal to be disconnected or switched?
     # XXXX: Does disconnect imply recursive destroy?
 }

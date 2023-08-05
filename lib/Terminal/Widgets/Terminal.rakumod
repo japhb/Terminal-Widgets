@@ -140,16 +140,8 @@ class Terminal::Widgets::Terminal
                 $!terminal-print.switch-grid($name);
             }
 
-            # note "Rebuilding layout"; $*ERR.flush;
-            .build-layout;
-            # note .layout.gist;
-            # note "Focusing on toplevel"; $*ERR.flush;
-            .gain-focus(:!redraw);
-            # note "Redrawing toplevel"; $*ERR.flush;
-            .redraw-all;
-            # note "Recompositing toplevel"; $*ERR.flush;
-            .composite;
-            # note "Toplevel resize complete.\n"; $*ERR.flush;
+            # Refresh layout, draw, and composite
+            .relayout(:focus);
         }
     }
 
