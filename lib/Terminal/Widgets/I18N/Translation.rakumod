@@ -61,10 +61,11 @@ class TranslatableString is export {
 
     #| Disallow direct .Str without translation
     method Str() {
-        die "Cannot directly stringify a TranslatableString; use translate-via instead.";
+        die "Cannot directly stringify a TranslatableString; use translate-via method instead.";
     }
 
-    #| Provide a common method name that provides the TranslatableString for this object
+    #| Provide a common method name that provides the TranslatableString
+    #| for this string, whether or not it has been translated already
     method translatable() { self }
 }
 
