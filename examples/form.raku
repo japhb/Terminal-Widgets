@@ -47,5 +47,6 @@ class FormUI is TopLevel {
 
 
 sub MAIN() {
-    first-screen('form', FormUI, title => 'Form UI Example').start;
+    # Boot a Terminal::Widgets::App and jump right to the form screen
+    App.boot-to-screen('form', FormUI, title => 'Form UI Example');
 }

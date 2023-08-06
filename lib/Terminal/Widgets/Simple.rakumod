@@ -6,12 +6,6 @@ use Terminal::Widgets::Simple::TopLevel;
 
 
 # Re-export classes under shorter names
+constant App      is export = Terminal::Widgets::App;
 constant Form     is export = Terminal::Widgets::Form;
 constant TopLevel is export = Terminal::Widgets::Simple::TopLevel;
-
-
-#| Instantiate UI class as first screen in a TUI app (implicitly sets up terminal)
-sub first-screen(|c) is export {
-    my $app  = Terminal::Widgets::App.new;
-    my $term = $app.default-init(|c);
-}
