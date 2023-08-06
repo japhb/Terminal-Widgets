@@ -51,5 +51,8 @@ class Terminal::Widgets::Simple::TopLevel
         # Actually build widgets and recalculate coordinate offsets recursively
         self.build-children($layout-root, self);
         self.recalc-coord-offsets($.x, $.y, $.z);
+
+        # Return is-rebuild for subclasses
+        $is-rebuild
     }
 }
