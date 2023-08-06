@@ -20,6 +20,7 @@ class Terminal::Widgets::App {
         die "Terminal input and output are not both connected to a valid tty"
             unless $input.t && $output.t;
 
+        %caps<symbol-set> //= symbol-set(%caps<symbols> || 'Full');
         my $caps = Terminal::Capabilities.new(|%caps);
         %!terminal{$tty.path} = Terminal::Widgets::Terminal.new(:$input, :$output,
                                                                 :$caps, :app(self));
@@ -68,14 +69,13 @@ class Terminal::Widgets::App {
     #| initialize the terminal
     method default-init(Str:D $toplevel-moniker,
                         Terminal::Widgets::TopLevel:U $class,
-                        Str:D :$symbols = %*ENV<TW_SYMBOLS> || 'Full',
-                          :$vt100-boxes = %*ENV<TW_VT100_BOXES>,
+                        Str :$symbols = %*ENV<TW_SYMBOLS> // Str,
+                        :$vt100-boxes = %*ENV<TW_VT100_BOXES>,
                         |c) {
-        my $symbol-set = symbol-set($symbols);
-        my $terminal   = self.add-terminal(:$symbol-set,
-                                           |(:$vt100-boxes if $vt100-boxes.defined));
-        my $toplevel   = self.add-top-level($toplevel-moniker,
-                                            :$class, :$terminal, |c);
+        my $terminal = self.add-terminal(|(:symbols($_)     with $symbols),
+                                         |(:vt100-boxes($_) with $vt100-boxes));
+        my $toplevel = self.add-top-level($toplevel-moniker,
+                                          :$class, :$terminal, |c);
         $terminal.initialize;
         $terminal.set-toplevel($toplevel);
         $terminal
