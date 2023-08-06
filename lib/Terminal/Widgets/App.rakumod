@@ -80,12 +80,12 @@ class Terminal::Widgets::App {
 
     #| Perform startup processes that should happen before the first Terminal
     #| is initialized, when the launching VT is still showing the primary screen
-    method bootup() {
+    method bootup(|c) {
         # Make sure we see diagnostics immediately, even if $*ERR is redirected to a file
         $*ERR.out-buffer = False;
 
         # Provide hook for subclasses to perform boot-time initialization
-        self.boot-init;
+        self.boot-init(|c);
 
         # Ready to switch to alternate screen, cleanup boot message if any
         if PROCESS::<$BOOTSTRAP_MESSAGE> -> $message {
