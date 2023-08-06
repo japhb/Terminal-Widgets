@@ -8,6 +8,8 @@ use Terminal::Widgets::Terminal;
 
 #| A singleton TUI app object, managing Terminal and TopLevel objects
 class Terminal::Widgets::App {
+    has Instant $.bootup-instant is built(False);
+
     has %!terminal;
     has %!top-level;
 
@@ -92,6 +94,9 @@ class Terminal::Widgets::App {
             my $chars = $message.chars;
             print "\b" x $chars ~ ' ' x $chars ~ "\b" x $chars;
         }
+
+        # Record end of bootup
+        $!bootup-instant = now;
     }
 
     #| Boot-time (before alternate screen switch) initialization hook
