@@ -22,7 +22,14 @@ class Terminal::Widgets::App {
         die "Terminal input and output are not both connected to a valid tty"
             unless $input.t && $output.t;
 
-        %caps<symbol-set> //= symbol-set(%caps<symbols> || 'Full');
+        %caps<symbol-set> //= symbol-set(%caps<symbols> || %*ENV<TW_SYMBOLS> || 'Full');
+
+        # This contortion avoids an error trying to assign to a type object
+        without %caps<vt100-boxes> {
+            %caps<vt100-boxes>:delete;
+            %caps<vt100-boxes> = ?+$_ with %*ENV<TW_VT100_BOXES>;
+        }
+
         my $caps = Terminal::Capabilities.new(|%caps);
         %!terminal{$tty.path} = Terminal::Widgets::Terminal.new(:$input, :$output,
                                                                 :$caps, :app(self));
@@ -106,9 +113,7 @@ class Terminal::Widgets::App {
     #| initialize the terminal
     method default-init(Str:D $toplevel-moniker,
                         Terminal::Widgets::TopLevel:U $class,
-                        Str :$symbols = %*ENV<TW_SYMBOLS> // Str,
-                        :$vt100-boxes = %*ENV<TW_VT100_BOXES>,
-                        |c) {
+                        Str :$symbols, :$vt100-boxes, |c) {
         my $terminal = self.add-terminal(|(:symbols($_)     with $symbols),
                                          |(:vt100-boxes($_) with $vt100-boxes));
         my $toplevel = self.add-top-level($toplevel-moniker,
