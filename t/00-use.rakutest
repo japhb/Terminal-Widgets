@@ -33,6 +33,7 @@ use Terminal::Widgets::Viewer::Log;
 
 use Terminal::Widgets::StandardWidgetBuilder;
 use Terminal::Widgets::Simple::TopLevel;
+use Terminal::Widgets::Simple::App;
 use Terminal::Widgets::Simple;
 
 
