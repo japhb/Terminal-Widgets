@@ -15,7 +15,7 @@ class Terminal::Widgets::Simple::App is Terminal::Widgets::App {
     method boot-init() { }
 
     #| Make a progress tracker for a loading screen (stub is invisible)
-    method make-progress-tracker() {
+    method make-progress-tracker(Terminal::Widgets::Terminal:D $terminal) {
         Terminal::Widgets::Progress::Tracker.new
     }
 
@@ -56,9 +56,10 @@ class Terminal::Widgets::Simple::App is Terminal::Widgets::App {
         $!bootup-instant = now;
     }
 
-    method loading-screen() {
+    method loading-screen(Terminal::Widgets::Terminal:D $terminal) {
         # Make a progress tracker for the user
-        my Terminal::Widgets::Progress::Tracker:D $tracker = self.make-progress-tracker;
+        my Terminal::Widgets::Progress::Tracker:D $tracker
+            = self.make-progress-tracker($terminal);
 
         # Spawn loading promises (the actual loading work)
         my @loading-promises = self.loading-promises($tracker);
