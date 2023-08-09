@@ -6,7 +6,8 @@ use Terminal::Widgets::Progress::Tracker;
 
 #| Simplified singleton TUI app object, with various convenience methods
 class Terminal::Widgets::Simple::App is Terminal::Widgets::App {
-    has Instant $.bootup-instant is built(False);
+    has Instant $.bootup-instant               is built(False);
+    has Instant $.terminal-initialized-instant is built(False);
 
 
     ### Stubbed hooks for subclasses
@@ -79,6 +80,8 @@ class Terminal::Widgets::Simple::App is Terminal::Widgets::App {
         my $toplevel = self.add-top-level($toplevel-moniker,
                                           :$class, :$terminal, |c);
         $terminal.initialize;
+        $!terminal-initialized-instant = now;
+
         $terminal.set-toplevel($toplevel);
         $terminal
     }
