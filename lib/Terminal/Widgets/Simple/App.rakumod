@@ -28,13 +28,9 @@ class Terminal::Widgets::Simple::App is Terminal::Widgets::App {
 
     ### Core implementation
 
-    #| Convenience multi: construct a fresh App object, then continue with
-    #| standard boot-to-screen method
-    multi method boot-to-screen(::?CLASS:U: |c) { self.new.boot-to-screen(|c) }
-
     #| Boot up, create a default terminal and initialize it, create an initial
     #| toplevel attached to that terminal, switch to it, and start the terminal
-    multi method boot-to-screen(::?CLASS:D: |c) {
+    method boot-to-screen(::?CLASS:D: |c) {
         self.bootup;
 
         my $term = self.default-init(|c);
