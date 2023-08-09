@@ -29,6 +29,8 @@ use Terminal::Widgets::Input::Checkbox;
 use Terminal::Widgets::Input::RadioButton;
 use Terminal::Widgets::Input::Text;
 
+use Terminal::Widgets::Progress::Tracker;
+
 use Terminal::Widgets::Viewer::Log;
 
 use Terminal::Widgets::StandardWidgetBuilder;
