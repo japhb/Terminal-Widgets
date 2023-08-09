@@ -27,7 +27,29 @@ class Terminal::Widgets::Simple::App is Terminal::Widgets::App {
     }
 
 
-    ### Core implementation
+    ### boot-to-X convenience methods
+
+    #| Boot up, create a default terminal and initialize it (thus switching to
+    #| the alternate screen), stop there and return the Terminal object
+    method boot-to-terminal(::?CLASS:D: |c) {
+        self.bootup;
+
+        my $terminal = self.add-terminal(|c);
+        $terminal.initialize;
+        $!terminal-initialized-instant = now;
+
+        $terminal
+    }
+
+    #| Start with boot-to-terminal, then display a loading screen and optionally
+    #| a Progress::Tracker, start the loading-promises, then await them and set
+    #| the tracker's progress to complete, returning the Terminal object
+    method boot-to-loading-screen(::?CLASS:D: |c) {
+        my $terminal = self.boot-to-terminal(|c);
+
+        self.loading-screen($terminal);
+        $terminal
+    }
 
     #| Boot up, create a default terminal and initialize it, create an initial
     #| toplevel attached to that terminal, switch to it, and start the terminal
@@ -37,6 +59,9 @@ class Terminal::Widgets::Simple::App is Terminal::Widgets::App {
         my $term = self.default-init(|c);
         $term.start
     }
+
+
+    ### Core implementation
 
     #| Perform startup processes that should happen before the first Terminal
     #| is initialized, when the launching VT is still showing the primary screen
