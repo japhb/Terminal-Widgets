@@ -82,13 +82,17 @@ class Terminal::Widgets::Simple::App is Terminal::Widgets::App {
         $!bootup-instant = now;
     }
 
-    method loading-screen(Terminal::Widgets::Terminal:D $terminal) {
-        # Make a progress tracker for the user
-        my Terminal::Widgets::Progress::Tracker:D $tracker
-            = self.make-progress-tracker($terminal);
+    #| Display a loading screen on a raw (but initialized) Terminal
+    multi method loading-screen(Terminal::Widgets::Terminal:D $terminal, |c) {
+        # Make a progress tracker for the user, then proceed with loading
+        # screen as usual
+        self.loading-screen(self.make-progress-tracker($terminal), |c)
+    }
 
+    #| Display a loading screen using a pre-defined progress Tracker
+    multi method loading-screen(Terminal::Widgets::Progress::Tracker:D $tracker, |c) {
         # Spawn loading promises (the actual loading work)
-        my @loading-promises = self.loading-promises($tracker);
+        my @loading-promises = self.loading-promises($tracker, |c);
 
         # Ensure all work is done, and show progress complete
         await @loading-promises;
