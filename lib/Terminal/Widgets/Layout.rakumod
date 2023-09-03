@@ -112,18 +112,18 @@ role Dynamic {
                                + $style.width-correction(MarginBox);
                 my $pc-smw     = $pc.set-w // $pc.max-w;
 
-                $min-w //= max 0, $pc.min-w - $correction if $pc.min-w.defined;
-                $set-w //= max 0, $pc.set-w - $correction if $pc.set-w.defined;
-                $max-w //= max 0, $pc-smw   - $correction if $pc-smw.defined;
+                $min-w //= 0 max $pc.min-w - $correction if $pc.min-w.defined;
+                $set-w //= 0 max $pc.set-w - $correction if $pc.set-w.defined;
+                $max-w //= 0 max $pc-smw   - $correction if $pc-smw.defined;
             }
             else {
                 my $correction =    $pc.height-correction(ContentBox)
                                + $style.height-correction(MarginBox);
                 my $pc-smh     = $pc.set-h // $pc.max-h;
 
-                $min-h //= max 0, $pc.min-h - $correction if $pc.min-h.defined;
-                $set-h //= max 0, $pc.set-h - $correction if $pc.set-h.defined;
-                $max-h //= max 0, $pc-smh   - $correction if $pc-smh.defined;
+                $min-h //= 0 max $pc.min-h - $correction if $pc.min-h.defined;
+                $set-h //= 0 max $pc.set-h - $correction if $pc.set-h.defined;
+                $max-h //= 0 max $pc-smh   - $correction if $pc-smh.defined;
             }
         }
         else {
@@ -371,7 +371,7 @@ class LogViewer is Leaf { }
 class PlainText is Leaf {
     method default-styles(Str:D :$text = '') {
         %( min-h => $text.lines.elems,
-           min-w => max 0, $text.lines.map(&duospace-width).max )
+           min-w => 0 max $text.lines.map(&duospace-width).max )
     }
 }
 
@@ -379,7 +379,7 @@ class PlainText is Leaf {
 class Menu is Leaf {
     method default-styles(:@items) {
         %( min-h => @items.elems,
-           min-w => 2 + max 0, @items.map({ duospace-width(.<title>) }).max )
+           min-w => 2 + 0 max @items.map({ duospace-width(.<title>) }).max )
     }
 }
 

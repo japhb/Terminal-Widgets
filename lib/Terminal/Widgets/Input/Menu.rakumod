@@ -34,7 +34,7 @@ class Terminal::Widgets::Input::Menu
 
         for @.items.kv -> $i, $item {
             my $title     = $item<title>;
-            my $extra     = max 1, $w - 1 - duospace-width($title);
+            my $extra     = 1 max $w - 1 - duospace-width($title);
             my $formatted = " $title" ~ ' ' x $extra;
             my $color     = $i == $!selected ?? %.color<highlight> !! $base-color;
             $.grid.set-span($x, $y + $i, $formatted, $color);

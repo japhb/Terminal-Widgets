@@ -25,7 +25,7 @@ class Terminal::Widgets::Viewer::Log
         my $x      = $layout.left-correction;
         my $t      = $layout.top-correction;
         my $h      = $.h - $layout.height-correction;
-        my $top    = max 0, $.scroll-pos - $h;
+        my $top    = 0 max $.scroll-pos - $h;
 
         for ^$h {
             my $line = @!log[$top + $_] // '';
