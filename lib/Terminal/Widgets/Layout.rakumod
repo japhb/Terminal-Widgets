@@ -281,7 +281,9 @@ class Node does Dynamic {
 
             # Need to use @.children instead of @.child-style because will need to
             # recompute .computed in the while loop below
-            my @unset-w = @.children.grep(!*.computed.set-w.defined).sort(-?*.computed.minimize-w);
+            my @unset-w = @.children.grep(!*.computed.set-w.defined)
+                                    .sort(-*.computed.min-w)
+                                    .sort(-?*.computed.minimize-w);
             while @unset-w {
                 fail "Negative remaining width to distribute" if $remain-w < 0;
                 my $sum    = @unset-w.map(*.computed.share-w).sum;
@@ -312,7 +314,9 @@ class Node does Dynamic {
 
             # Need to use @.children instead of @.child-style because will need to
             # recompute .computed in the while loop below
-            my @unset-h = @.children.grep(!*.computed.set-h.defined).sort(-?*.computed.minimize-h);
+            my @unset-h = @.children.grep(!*.computed.set-h.defined)
+                                    .sort(-*.computed.min-h)
+                                    .sort(-?*.computed.minimize-h);
             while @unset-h {
                 fail "Negative remaining height to distribute" if $remain-h < 0;
                 my $sum    = @unset-h.map(*.computed.share-h).sum;
