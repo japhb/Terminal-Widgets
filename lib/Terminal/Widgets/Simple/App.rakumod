@@ -7,6 +7,7 @@ use Terminal::Widgets::Progress::Tracker;
 #| Simplified singleton TUI app object, with various convenience methods
 class Terminal::Widgets::Simple::App is Terminal::Widgets::App {
     has Instant $.bootup-instant               is built(False);
+    has Instant $.terminal-added-instant       is built(False);
     has Instant $.terminal-initialized-instant is built(False);
 
 
@@ -35,6 +36,7 @@ class Terminal::Widgets::Simple::App is Terminal::Widgets::App {
         self.bootup;
 
         my $terminal = self.add-terminal(|c);
+        $!terminal-added-instant = now;
         $terminal.initialize;
         $!terminal-initialized-instant = now;
 
@@ -106,6 +108,8 @@ class Terminal::Widgets::Simple::App is Terminal::Widgets::App {
                         Str :$symbols, :$vt100-boxes, |c) {
         my $terminal = self.add-terminal(|(:symbols($_)     with $symbols),
                                          |(:vt100-boxes($_) with $vt100-boxes));
+        $!terminal-added-instant = now;
+
         my $toplevel = self.add-top-level($toplevel-moniker,
                                           :$class, :$terminal, |c);
         $terminal.initialize;
