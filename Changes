@@ -1,8 +1,34 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Bug Fixes]
+  - Minor tweaks, fixes, and error message improvements
+
+  [Functionality]
+  - Add missing right/bottom-correction BoxModel multis
+  - Track timing for app bootup and terminal initialization
+  - Add ::Progress::Tracker role to unify interface to progress tracking widgets
+  - Support loading screens with optional progress tracking display
+  - Allow layout objects to specify a share weight for distributing space
+  - Add spacer-only layout leaf node for self-documenting convenience
+
+  [I18n]
+  - Stub in ::I18N::Locale class and ensure each Terminal gets one
+
+  [Performance]
+  - Various minor micro-optimizations
+
+  [Quality]
+  - Improve quality and performance of gray-color() utility multis
+  - Better represent uneven xterm-256 color cube mapping in rgb-color() utility
+    multis, adding rgb-color-flat() multis to use the old flat-mapping formulae
+
   [Refactoring]
   - Move all color utilities in ::Utils into a separate ::Utils::Color module
+  - Move relayout phases from Terminal to TopLevel
+  - Move TW_* environment var handling to ::App.add-terminal
+  - Significantly refactor and simplify App booting (many commits), resulting
+    in adding separate ::Simple::App class as well
 
 
 0.0.7  2023-06-24T22:17:50-07:00
