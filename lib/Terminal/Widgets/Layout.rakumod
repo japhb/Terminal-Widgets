@@ -369,6 +369,9 @@ class Node does Dynamic {
 }
 
 
+#| A space consumer around or between layout nodes
+class Spacer is Leaf { }
+
 #| A visual divider (such as box-drawing lines) between layout nodes
 class Divider is Leaf { }
 
@@ -456,6 +459,7 @@ class Builder {
 
     # Misc leaf nodes (no children ever)
     method leaf(|c)         { self.build-leaf(Leaf,        |c) }
+    method spacer(|c)       { self.build-leaf(Spacer,      |c) }
     method divider(|c)      { self.build-leaf(Divider,     |c) }
     method log-viewer(|c)   { self.build-leaf(LogViewer,   |c) }
     method plain-text(|c)   { self.build-leaf(PlainText,   |c) }
