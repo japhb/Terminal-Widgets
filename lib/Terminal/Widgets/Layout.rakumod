@@ -22,6 +22,8 @@ class Style
     has UInt $.max-h;
     has Bool $.minimize-w;
     has Bool $.minimize-h;
+    has UInt:D $.share-w = 1;
+    has UInt:D $.share-h = 1;
 
     submethod TWEAK() {
         self.Terminal::Widgets::Layout::BoxModel::BoxModel::TWEAK;
@@ -282,8 +284,9 @@ class Node does Dynamic {
             my @unset-w = @.children.grep(!*.computed.set-w.defined).sort(-?*.computed.minimize-w);
             while @unset-w {
                 fail "Negative remaining width to distribute" if $remain-w < 0;
-                my $share  = floor $remain-w / @unset-w;
+                my $sum    = @unset-w.map(*.computed.share-w).sum;
                 my $node   = @unset-w.shift;
+                my $share  = floor($remain-w * $node.computed.share-w / $sum);
                 $share     = 0                    if $node.computed.minimize-w;
                 $share  max= $node.computed.min-w if $node.computed.min-w.defined;
                 $remain-w -= $share;
@@ -312,8 +315,9 @@ class Node does Dynamic {
             my @unset-h = @.children.grep(!*.computed.set-h.defined).sort(-?*.computed.minimize-h);
             while @unset-h {
                 fail "Negative remaining height to distribute" if $remain-h < 0;
-                my $share  = floor $remain-h / @unset-h;
+                my $sum    = @unset-h.map(*.computed.share-h).sum;
                 my $node   = @unset-h.shift;
+                my $share  = floor($remain-h * $node.computed.share-h / $sum);
                 $share     = 0                    if $node.computed.minimize-h;
                 $share  max= $node.computed.min-h if $node.computed.min-h.defined;
                 $remain-h -= $share;
