@@ -21,6 +21,16 @@ class Terminal::Widgets::Input::Menu
         }
     }
 
+    # gist that doesn't pull in the widget grid
+    method gist() {
+        my @strings = "items:$!items.elems()",
+                      "selected:$!selected",
+                      "hotkeys:%!hotkey.elems()",
+                      "hint-target:$!hint-target.gist()";
+
+        self.Terminal::Widgets::Input::gist ~ ',' ~ @strings.join(',')
+    }
+
     #| Refresh the whole input
     method full-refresh(Bool:D :$print = True) {
         my $layout     = self.layout.computed;
