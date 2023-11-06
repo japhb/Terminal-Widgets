@@ -17,7 +17,7 @@ class Terminal::Widgets::Input::Menu
     submethod TWEAK() {
         self.Terminal::Widgets::Input::TWEAK;
         for $!items.kv -> $i, $item {
-            %!hotkey{$_} = $i for ($item<hotkeys> // []).words;
+            %!hotkey{$_} = $i for $item<hotkeys>[];
         }
     }
 
