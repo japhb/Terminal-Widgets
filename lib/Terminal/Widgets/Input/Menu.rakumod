@@ -9,6 +9,7 @@ use Terminal::Widgets::Input;
 class Terminal::Widgets::Input::Menu
  does Terminal::Widgets::Input {
     has UInt:D $.selected = 0;
+    has        $.hint-target;
     has        $.items;
     has        %!hotkey;
 
@@ -16,8 +17,18 @@ class Terminal::Widgets::Input::Menu
     submethod TWEAK() {
         self.Terminal::Widgets::Input::TWEAK;
         for $!items.kv -> $i, $item {
-            %!hotkey{$_} = $i for $item<hotkeys>.words;
+            %!hotkey{$_} = $i for ($item<hotkeys> // []).words;
         }
+    }
+
+    # gist that doesn't pull in the widget grid
+    method gist() {
+        my @strings = "items:$!items.elems()",
+                      "selected:$!selected",
+                      "hotkeys:%!hotkey.elems()",
+                      "hint-target:$!hint-target.gist()";
+
+        self.Terminal::Widgets::Input::gist ~ ',' ~ @strings.join(',')
     }
 
     #| Refresh the whole input
@@ -42,11 +53,19 @@ class Terminal::Widgets::Input::Menu
         self.composite(:$print);
     }
 
+    #| Set the hint
+    method set-hint(Str:D $hint) {
+        my $target = $.hint-target;
+           $target = self.toplevel.by-id{$target} if $target ~~ Str:D;
+
+        $target.?set-text($hint);
+    }
+
     #| Set an item as selected
     method set-selected(Int:D $selected) {
         if 0 <= $selected <= @.items.end {
             $!selected = $selected;
-            self.toplevel.hint.set-text(@.items[$!selected]<hint> // '');
+            self.set-hint(@.items[$!selected]<hint> // '');
         }
     }
 
