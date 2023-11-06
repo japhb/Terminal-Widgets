@@ -31,7 +31,7 @@ class FormUI is TopLevel {
                 { title => 'Item h' },
                 { title => 'Item i' }
               ]
-            );
+            ),
             .node(
                 .button(  :$.form, :%style, label => 'Show State',
                                    process-input  => { self.show-state }),
