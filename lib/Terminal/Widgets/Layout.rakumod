@@ -317,6 +317,9 @@ class Node does Dynamic {
             my @unset-h = @.children.grep(!*.computed.set-h.defined)
                                     .sort(-*.computed.min-h)
                                     .sort(-?*.computed.minimize-h);
+
+            @unset-h.gist.say;
+
             while @unset-h {
                 fail "Negative remaining height to distribute" if $remain-h < 0;
                 my $sum    = @unset-h.map(*.computed.share-h).sum;
@@ -388,8 +391,8 @@ class PlainText is Leaf {
 
 #| A multi-line single-select menu
 class Menu is Leaf {
-    method default-styles(:@items) {
-        %( min-h => @items.elems,
+    method default-styles(:@items, :height(:$h) = @items.elems) {
+        %( min-h => $h,
            min-w => 2 + 0 max @items.map({ duospace-width(.<title>) }).max )
     }
 }

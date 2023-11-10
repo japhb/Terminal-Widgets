@@ -9,6 +9,8 @@ use Terminal::Widgets::Input;
 class Terminal::Widgets::Input::Menu
  does Terminal::Widgets::Input {
     has UInt:D $.selected = 0;
+    has UInt:D $.top-item = 0;
+    has UInt:D $.row      = 0;
     has        $.hint-target;
     has        $.items;
     has        %!hotkey;
@@ -37,18 +39,25 @@ class Terminal::Widgets::Input::Menu
         my $x          = $layout.left-correction;
         my $y          = $layout.top-correction;
         my $w          = $.w - $layout.width-correction;
+        my $h          = $.h - $layout.height-correction;
         my $base-color = self.current-color;
 
         self.set-selected($!selected);
         self.clear-frame;
         self.draw-framing;
 
-        for @.items.kv -> $i, $item {
+        #for @.items.kv -> $i, $item {
+        for ^$h {
+            my $i         = $!top-item + $_;
+            my $item      = $!items[$i];
             my $title     = $item<title>;
             my $extra     = 1 max $w - 1 - duospace-width($title);
             my $formatted = " $title" ~ ' ' x $extra;
-            my $color     = $i == $!selected ?? %.color<highlight> !! $base-color;
-            $.grid.set-span($x, $y + $i, $formatted, $color);
+            my $color     = $i == $!selected
+              ?? %.color<highlight>
+              !! ( $item<color> // $base-color );
+
+            $.grid.set-span($x, $_, $formatted, $color);
         }
         self.composite(:$print);
     }
@@ -87,12 +96,25 @@ class Terminal::Widgets::Input::Menu
 
     #| Process a prev-item event
     method prev-item(Bool:D :$print = True) {
+        if $!row {
+          $!row-- if $!row;
+        } else {
+          $!top-item-- if $!top-item;
+          self.full-refresh;
+        }
         self.set-selected($!selected - 1);
         self.refresh-value(:$print);
     }
 
     #| Process a next-item event
     method next-item(Bool:D :$print = True) {
+        if $!row == $.h.pred {
+          return if $!top-item.succ > 20;
+          $!top-item++;
+          self.full-refresh;
+        } else {
+          $!row++ if $!row < $.h;
+        }
         self.set-selected($!selected + 1);
         self.refresh-value(:$print);
     }
