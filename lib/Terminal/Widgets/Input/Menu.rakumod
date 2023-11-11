@@ -96,6 +96,8 @@ class Terminal::Widgets::Input::Menu
 
     #| Process a prev-item event
     method prev-item(Bool:D :$print = True) {
+        return if $!selected.not;
+
         if $!row {
           $!row-- if $!row;
         } else {
@@ -108,8 +110,9 @@ class Terminal::Widgets::Input::Menu
 
     #| Process a next-item event
     method next-item(Bool:D :$print = True) {
+        return if $!selected.succ > $!items.elems.pred;
+
         if $!row == $.h.pred {
-          return if $!top-item.succ > 20;
           $!top-item++;
           self.full-refresh;
         } else {
