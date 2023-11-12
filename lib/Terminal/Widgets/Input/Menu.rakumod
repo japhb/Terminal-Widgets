@@ -9,6 +9,7 @@ use Terminal::Widgets::Input;
 class Terminal::Widgets::Input::Menu
  does Terminal::Widgets::Input {
     has UInt:D $.selected = 0;
+    has UInt:D $.top-item = 0;
     has        $.hint-target;
     has        $.items;
     has        %!hotkey;
@@ -24,6 +25,7 @@ class Terminal::Widgets::Input::Menu
     # gist that doesn't pull in the widget grid
     method gist() {
         my @strings = "items:$!items.elems()",
+                      "top-item:$!top-item",
                       "selected:$!selected",
                       "hotkeys:%!hotkey.elems()",
                       "hint-target:$!hint-target.gist()";
@@ -37,19 +39,24 @@ class Terminal::Widgets::Input::Menu
         my $x          = $layout.left-correction;
         my $y          = $layout.top-correction;
         my $w          = $.w - $layout.width-correction;
+        my $h          = $.h - $layout.height-correction;
         my $base-color = self.current-color;
 
         self.set-selected($!selected);
         self.clear-frame;
         self.draw-framing;
 
-        for @.items.kv -> $i, $item {
+        for ^$h {
+            last if $!items.end < my $i = $.top-item + $_;
+
+            my $item      = $!items[$i];
             my $title     = $item<title>;
             my $extra     = 1 max $w - 1 - duospace-width($title);
             my $formatted = " $title" ~ ' ' x $extra;
             my $color     = $i == $!selected ?? %.color<highlight> !! $base-color;
-            $.grid.set-span($x, $y + $i, $formatted, $color);
+            $.grid.set-span($x, $y + $_, $formatted, $color);
         }
+
         self.composite(:$print);
     }
 
@@ -61,11 +68,20 @@ class Terminal::Widgets::Input::Menu
         $target.?set-text($hint);
     }
 
-    #| Set an item as selected
+    #| Scroll to keep the selected element visible
+    method auto-scroll() {
+        my $h         = $.h - $.layout.computed.height-correction;
+        my $last-top  = 0 max ($!items.elems - $h);
+        $!top-item min= $!selected min $last-top;
+        $!top-item max= $!selected + 1 - $h;
+    }
+
+    #| Set an item as selected and make sure it is visible
     method set-selected(Int:D $selected) {
         if 0 <= $selected <= @.items.end {
             $!selected = $selected;
             self.set-hint(@.items[$!selected]<hint> // '');
+            self.auto-scroll;
         }
     }
 
