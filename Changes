@@ -1,6 +1,8 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+
+0.0.10  2023-11-12T14:53:56-08:00
   [Bug Fixes]
   - Fix layout bug causing max limits to be ignored when allocating extra space
     to undersized child layout nodes
