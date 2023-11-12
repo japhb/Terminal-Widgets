@@ -53,7 +53,8 @@ class Terminal::Widgets::Input::Menu
             my $title     = $item<title>;
             my $extra     = 1 max $w - 1 - duospace-width($title);
             my $formatted = " $title" ~ ' ' x $extra;
-            my $color     = $i == $!selected ?? %.color<highlight> !! $base-color;
+            my $color     = $i == $!selected ?? %.color<highlight>
+                                             !! $item<color> // $base-color;
             $.grid.set-span($x, $y + $_, $formatted, $color);
         }
 
