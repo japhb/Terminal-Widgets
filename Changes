@@ -1,6 +1,17 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Bug Fixes]
+  - Fix layout bug causing max limits to be ignored when allocating extra space
+    to undersized child layout nodes
+
+  [Examples]
+  - Add a scrolling, colored, responsive-layout menu example
+
+  [Functionality]
+  - Support autoscrolling Menu input widgets
+  - Support per-menu-item colors
+
 
 0.0.9  2023-11-08T15:34:35-08:00
   [Bug Fixes]
