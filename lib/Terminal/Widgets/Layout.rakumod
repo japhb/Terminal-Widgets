@@ -291,6 +291,7 @@ class Node does Dynamic {
                 my $share  = floor($remain-w * $node.computed.share-w / $sum);
                 $share     = 0                    if $node.computed.minimize-w;
                 $share  max= $node.computed.min-w if $node.computed.min-w.defined;
+                $share  min= $node.computed.max-w if $node.computed.max-w.defined;
                 $remain-w -= $share;
 
                 my $correction = $node.computed.width-correction(MarginBox);
@@ -324,6 +325,7 @@ class Node does Dynamic {
                 my $share  = floor($remain-h * $node.computed.share-h / $sum);
                 $share     = 0                    if $node.computed.minimize-h;
                 $share  max= $node.computed.min-h if $node.computed.min-h.defined;
+                $share  min= $node.computed.max-h if $node.computed.max-h.defined;
                 $remain-h -= $share;
 
                 my $correction = $node.computed.height-correction(MarginBox);
