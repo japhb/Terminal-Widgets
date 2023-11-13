@@ -1,6 +1,13 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Bug Fixes]
+  - Prefer to autofocus on widgets that process input (falling back to widgets
+    that are able to handle events of any type, as before)
+
+  [Examples]
+  - Add an example showing how to move back and forth between form pages
+
 
 0.0.10  2023-11-12T14:53:56-08:00
   [Bug Fixes]
