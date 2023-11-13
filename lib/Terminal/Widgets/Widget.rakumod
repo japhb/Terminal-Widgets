@@ -96,7 +96,8 @@ class Terminal::Widgets::Widget
             $.focused-child.default-focus
         }
         else {
-            my $focusable = @.children.first(Terminal::Widgets::Events::EventHandling);
+            my $focusable =  @.children.first(*.^can('process-input'))
+                          || @.children.first(Terminal::Widgets::Events::EventHandling);
             $focusable ?? $focusable.default-focus() !! self
         }
     }
