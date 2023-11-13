@@ -1,6 +1,8 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+
+0.0.11  2023-11-12T17:11:18-08:00
   [Bug Fixes]
   - Prefer to autofocus on widgets that process input (falling back to widgets
     that are able to handle events of any type, as before)
