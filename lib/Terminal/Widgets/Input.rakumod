@@ -75,18 +75,8 @@ role Terminal::Widgets::Input
                      (%.color<active>   if     $!active),
                      (%.color<disabled> unless $.enabled),
                      (%.color<error>    if     $.error);
-        my @split  = @colors.join(' ').words.reverse;
 
-        # If there are any resets, only use the requests after the last reset
-        my $reset  = @split.first('reset', :k);
-        @split    .= splice($reset) if $reset.defined;
-
-        # Separate background from others
-        my $background = @split.first(*.starts-with('on_'));
-        my @others     = @split.grep(!*.starts-with('on_')).reverse;
-
-        # Final color info!
-        (|@others, $background).join(' ')
+        color-merge(@colors)
     }
 
     # Set error state, then refresh

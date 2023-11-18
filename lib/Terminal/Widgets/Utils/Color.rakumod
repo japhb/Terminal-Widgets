@@ -126,3 +126,37 @@ multi gray-color(Real:D $r, Real:D $g, Real:D $b) is export {
 multi gray-color(num $r, num $g, num $b) is export {
     gray-color(rgb-luma($r, $g, $b))
 }
+
+
+#| Merge color strings together and simplify result, with later settings
+#| overriding earlier ones.  Note that simplification is incomplete for
+#| performance reasons.
+multi sub color-merge(@colors) is export {
+    # Split into individual SGR descriptors
+    my @split = @colors.join(' ').words.reverse;
+
+    # If there are any resets, only keep the last reset and the remaining
+    # descriptors after it
+    my $reset = @split.first('reset', :k);
+    @split.splice($reset + 1) if $reset.defined;
+
+    # Avoid further work for trivial cases; otherwise, actually calc overrides
+    @split <= 1 ?? @split[0] // ''
+                !! do {
+        # Separate background from others
+        my $background = @split.first(*.starts-with('on_'));
+        my @others     = @split.grep(!*.starts-with('on_')).unique.reverse;
+        @others.push($background) if $background;
+
+        # Final color info!
+        @others.join(' ')
+    }
+}
+
+
+#| Merge color strings together and simplify result, with later settings
+#| overriding earlier ones.  Note that simplification is incomplete for
+#| performance reasons.
+multi sub color-merge(*@colors) is export {
+    color-merge(@colors)
+}
