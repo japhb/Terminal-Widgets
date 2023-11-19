@@ -131,7 +131,7 @@ multi gray-color(num $r, num $g, num $b) is export {
 #| Merge color strings together and simplify result, with later settings
 #| overriding earlier ones.  Note that simplification is incomplete for
 #| performance reasons.
-multi sub color-merge(@colors) is export {
+multi color-merge(@colors) is export {
     # Split into individual SGR descriptors
     my @split = @colors.join(' ').words.reverse;
 
@@ -157,6 +157,6 @@ multi sub color-merge(@colors) is export {
 #| Merge color strings together and simplify result, with later settings
 #| overriding earlier ones.  Note that simplification is incomplete for
 #| performance reasons.
-multi sub color-merge(*@colors) is export {
+multi color-merge(*@colors) is export {
     color-merge(@colors)
 }
