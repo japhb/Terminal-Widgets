@@ -52,7 +52,11 @@ class Style
     }
 
     multi method gist(Style:D:) {
-        $.sizing-box ~ ' ' ~
+        my $padding = $.has-padding ?? ($.pt, $.pr, $.pb, $.pl).join(',') !! 0;
+        my $border  = $.has-border  ?? ($.bt, $.br, $.bb, $.bl).join(',') !! 0;
+        my $margin  = $.has-margin  ?? ($.mt, $.mr, $.mb, $.ml).join(',') !! 0;
+
+        "$.sizing-box p:$padding b:$border m:$margin " ~
         'w:(' ~ ($.min-w, $.set-w, $.max-w).map({ $_ // '*'}).join(':')
          ~ (' min' if $.minimize-w) ~ ') ' ~
         'h:(' ~ ($.min-h, $.set-h, $.max-h).map({ $_ // '*'}).join(':')
