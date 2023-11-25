@@ -93,7 +93,7 @@ class Terminal::Widgets::Widget
     }
 
     #| Bootstrapping: Setting TopLevel's layout
-    method set-layout($!layout) { }
+    method set-layout($!layout) { $!layout.widget = self }
 
     #| Non-TopLevel Widgets cannot be the terminal's current-toplevel
     method is-current-toplevel(--> False) { }
