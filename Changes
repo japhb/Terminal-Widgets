@@ -1,6 +1,18 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Bug Fixes]
+  - Select correct item when using mouse-click selection on a scrolled Menu
+  - Allow Text input to receive focus via mouse click
+  - Make sure TopLevel's .layout object knows its own .widget object (the
+    original TopLevel itself)
+  - Build *base* Widget objects as internal widget tree nodes if requested
+    by the layout tree
+
+  [Refactoring]
+  - Factor color-merge() helper out to ::Utils::Color
+  - Refactor, improve, and expand gist logic for both Widget and Layout objects
+
 
 0.0.11  2023-11-12T17:11:18-08:00
   [Bug Fixes]
