@@ -62,12 +62,12 @@ class Style
         my $tc      = $.top-correction;
         my $bc      = $.bottom-correction;
 
-        ("$.sizing-box p:$padding b:$border m:$margin wc:$wc=$lc+$rc hc:$hc=$tc+$bc "
-         if $.has-framing) ~
         'w:(' ~ ($.min-w, $.set-w, $.max-w).map({ $_ // '*'}).join(':')
          ~ (' min' if $.minimize-w) ~ ') ' ~
         'h:(' ~ ($.min-h, $.set-h, $.max-h).map({ $_ // '*'}).join(':')
          ~ (' min' if $.minimize-h) ~ ')'
+         ~ (" $.sizing-box p:$padding b:$border m:$margin wc:$wc=$lc+$rc hc:$hc=$tc+$bc"
+            if $.has-framing)
     }
 
     multi method gist(Style:U:) {
