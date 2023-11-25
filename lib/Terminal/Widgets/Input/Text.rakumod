@@ -201,6 +201,13 @@ class Terminal::Widgets::Input::Text
         }
     }
 
+    #| Handle mouse events
+    multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
+                              $event where !*.mouse.pressed, AtTarget) {
+        self.toplevel.focus-on(self);
+        # XXXX: Move cursor?
+    }
+
     #| Abort entry in progress
     method abort-entry() {
         self.reset-entry-state;
