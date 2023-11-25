@@ -76,7 +76,8 @@ class Terminal::Widgets::Widget
         my @flags = self.gist-flags.grep(?*);
 
         self.gist-name ~ '|' ~ @flags.join(',')
-        ~ " w:$.w,h:$.h x:$.x,y:$.y,z:$.z xo:$.x-offset,yo:$.y-offset,zo:$.z-offset"
+        ~ " w:$.w,h:$.h x:$.x,y:$.y,z:$.z"
+        ~ " xo:{$.x-offset // '*'},yo:{$.y-offset // '*'},zo:{$.z-offset // '*'}"
     }
 
     # Shorted name for gists
@@ -89,7 +90,7 @@ class Terminal::Widgets::Widget
         my $is-toplevel = self.toplevel === self;
 
         ("id:$.id" if $.id),
-        ((self.is-current-toplevel ?? 'CURRENT TOPLEVEL' !! 'is-toplevel') if $is-toplevel)
+        ((self.is-current-toplevel ?? 'CURRENT-TOPLEVEL' !! 'is-toplevel') if $is-toplevel)
     }
 
     #| Bootstrapping: Setting TopLevel's layout

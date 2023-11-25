@@ -157,7 +157,7 @@ class Leaf does Dynamic {
         "requested: [$.requested.gist()] " ~
         "computed: [$.computed.gist()] " ~
         "x:{$.x // '*'} y:{$.y // '*' }" ~
-        (" widget: [$.widget.gist()]" if $.widget)
+        (" --- [$.widget.gist()]" if $.widget)
     }
 
     method all-set(Leaf:D:) { self.is-set }
@@ -194,7 +194,7 @@ class Node does Dynamic {
         "computed: [$.computed.gist()] " ~
         "x:{$.x // '*'} y:{$.y // '*' }" ~
         (" :vertical" if $.vertical) ~
-        (" widget: [$.widget.gist()]" if $.widget) ~
+        (" --- [$.widget.gist()]" if $.widget) ~
         ("\n" ~ @child-gists.join("\n") if @.children)
     }
 
