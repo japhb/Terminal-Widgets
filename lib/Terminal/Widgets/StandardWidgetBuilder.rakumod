@@ -15,6 +15,7 @@ class Terminal::Widgets::StandardWidgetBuilder {
     #| Map layout nodes with default build rules
     method default-build-nodes() {
         :{
+            Terminal::Widgets::Layout::Widget      => Terminal::Widgets::Widget,
             Terminal::Widgets::Layout::PlainText   => Terminal::Widgets::PlainText,
             Terminal::Widgets::Layout::Menu        => Terminal::Widgets::Input::Menu,
             Terminal::Widgets::Layout::Button      => Terminal::Widgets::Input::Button,
