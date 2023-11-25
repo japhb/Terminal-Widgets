@@ -22,15 +22,14 @@ class Terminal::Widgets::Input::Menu
         }
     }
 
-    # gist that doesn't pull in the widget grid
-    method gist() {
-        my @strings = "items:$!items.elems()",
-                      "top-item:$!top-item",
-                      "selected:$!selected",
-                      "hotkeys:%!hotkey.elems()",
-                      "hint-target:$!hint-target.gist()";
-
-        self.Terminal::Widgets::Input::gist ~ ',' ~ @strings.join(',')
+    # Menu-specific gist flags
+    method gist-flags() {
+        |self.Terminal::Widgets::Input::gist-flags,
+        "items:$!items.elems()",
+        "top-item:$!top-item",
+        "selected:$!selected",
+        "hotkeys:%!hotkey.elems()",
+        "hint-target:$!hint-target.gist()"
     }
 
     #| Refresh the whole input

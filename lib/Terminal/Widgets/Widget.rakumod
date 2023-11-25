@@ -71,6 +71,27 @@ class Terminal::Widgets::Widget
     has Int $.z-offset;  #= Cumulative Z offset from screen root, + = nearer
 
 
+    # gist that doesn't pull in widget grid
+    method gist() {
+        my @flags = self.gist-flags.grep(?*);
+
+        self.gist-name ~ '|' ~ @flags.join(',')
+        ~ " w:$.w,h:$.h x:$.x,y:$.y,z:$.z xo:$.x-offset,yo:$.y-offset,zo:$.z-offset"
+    }
+
+    # Shorted name for gists
+    method gist-name() {
+        self.^name.subst('Terminal::Widgets::', '')
+    }
+
+    # General widget gist flags
+    method gist-flags() {
+        my $is-toplevel = self.toplevel === self;
+
+        ("id:$.id" if $.id),
+        ((self.is-current-toplevel ?? 'CURRENT TOPLEVEL' !! 'is-toplevel') if $is-toplevel)
+    }
+
     #| Bootstrapping: Setting TopLevel's layout
     method set-layout($!layout) { }
 

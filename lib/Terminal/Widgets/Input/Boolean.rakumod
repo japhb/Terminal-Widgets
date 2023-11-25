@@ -8,9 +8,10 @@ role Terminal::Widgets::Input::Boolean
 does Terminal::Widgets::Input {
     has Bool:D $.state = False;
 
-    # gist that doesn't pull in widget grid
-    method gist() {
-        self.Terminal::Widgets::Input::gist ~ ',' ~ $!state
+    # Boolean-specific gist flags
+    method gist-flags() {
+        |self.Terminal::Widgets::Input::gist-flags,
+        "state:$!state"
     }
 
     # Set boolean state, then refresh

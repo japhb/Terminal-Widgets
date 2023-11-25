@@ -45,12 +45,15 @@ class Terminal::Widgets::Simple::TopLevel
         my $layout-root = self.compute-layout;
         self.set-layout($layout-root);
 
-        # Debug: describe computed layout
+        # Debug: describe computed layout BEFORE build and coord recalc
         # note $layout-root.gist;
 
         # Actually build widgets and recalculate coordinate offsets recursively
         self.build-children($layout-root, self);
         self.recalc-coord-offsets($.x, $.y, $.z);
+
+        # Debug: describe computed layout AFTER build and coord recalc
+        # note $layout-root.gist;
 
         # Return is-rebuild for subclasses
         $is-rebuild

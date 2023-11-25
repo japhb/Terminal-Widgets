@@ -16,12 +16,12 @@ role Terminal::Widgets::Input
     has Terminal::Widgets::Form $.form;
 
 
-    # gist that doesn't pull in the widget grid
-    method gist() {
-        my @flags = ('enabled' if $!enabled),
-                    ('active'  if $!active),
-                    ('ERROR'   if $!error);
-        self.^shortname ~ '|' ~ @flags.join(':')
+    # Input-specific gist flags
+    method gist-flags() {
+       |callsame,
+       ('enabled' if $!enabled),
+       ('active'  if $!active),
+       ('ERROR'   if $!error)
     }
 
 
