@@ -293,7 +293,7 @@ class Node does Dynamic {
         elsif $set-w.defined {
             my $remain-w = $set-w + $cwc - $child-set-w;
 
-            # Need to use @.children instead of @.child-style because will need to
+            # Need to use @.children instead of @child-style because will need to
             # recompute .computed in the while loop below
             my @unset-w = @.children.grep(!*.computed.set-w.defined)
                                     .sort(-*.computed.min-w)
@@ -327,7 +327,7 @@ class Node does Dynamic {
         elsif $set-h.defined {
             my $remain-h = $set-h + $chc - $child-set-h;
 
-            # Need to use @.children instead of @.child-style because will need to
+            # Need to use @.children instead of @child-style because will need to
             # recompute .computed in the while loop below
             my @unset-h = @.children.grep(!*.computed.set-h.defined)
                                     .sort(-*.computed.min-h)
