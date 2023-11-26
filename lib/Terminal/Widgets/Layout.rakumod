@@ -25,6 +25,13 @@ class Style
     has UInt:D $.share-w = 1;
     has UInt:D $.share-h = 1;
 
+    # Force clone to call TWEAK, just like bless/new
+    method clone {
+        my $clone = callsame;
+        $clone.Style::TWEAK;
+        $clone
+    }
+
     submethod TWEAK() {
         self.Terminal::Widgets::Layout::BoxModel::BoxModel::TWEAK;
 
