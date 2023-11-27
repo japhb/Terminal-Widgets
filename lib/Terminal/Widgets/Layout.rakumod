@@ -291,14 +291,15 @@ class Node does Dynamic {
         my $child-set-w = $.vertical
                           ?? (@child-set-w ?? @child-set-w.max !! 0)
                           !!  @child-set-w.sum;
+        my $corrected-child-set-w = $child-set-w - $cwc;
 
         if @.children == @child-set-w {
             fail "Set width in parent ($set-w) does not match width of children ($child-set-w)"
-                if $set-w.defined && $set-w != $child-set-w - $cwc;
-            $set-w = $child-set-w - $cwc;
+                if $set-w.defined && $set-w != $corrected-child-set-w;
+            $set-w = $corrected-child-set-w;
         }
         elsif $set-w.defined {
-            my $remain-w = $set-w + $cwc - $child-set-w;
+            my $remain-w = $set-w - $corrected-child-set-w;
 
             # Need to use @.children instead of @child-style because will need to
             # recompute .computed in the while loop below
@@ -325,14 +326,15 @@ class Node does Dynamic {
             { .set-h + .height-correction(MarginBox) };
         my $child-set-h = $.vertical   ?? @child-set-h.sum !!
                           @child-set-h ?? @child-set-h.max !! 0;
+        my $corrected-child-set-h = $child-set-h - $chc;
 
         if @.children == @child-set-h {
             fail "Set height in parent ($set-h) does not match height of children ($child-set-h)"
-                if $set-h.defined && $set-h != $child-set-h - $chc;
-            $set-h = $child-set-h - $chc;
+                if $set-h.defined && $set-h != $corrected-child-set-h;
+            $set-h = $corrected-child-set-h;
         }
         elsif $set-h.defined {
-            my $remain-h = $set-h + $chc - $child-set-h;
+            my $remain-h = $set-h - $corrected-child-set-h;
 
             # Need to use @.children instead of @child-style because will need to
             # recompute .computed in the while loop below
