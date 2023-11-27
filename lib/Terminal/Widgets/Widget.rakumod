@@ -242,7 +242,10 @@ class Terminal::Widgets::Widget
     }
 
     #| Composite children with painter's algorithm (in Z order, back to front)
+    #| on top of framing (padding, border, margin), if any
     method draw-frame() {
+        self.draw-framing;
+
         # XXXX: Cache the sorted order?
         for @.children.sort({ .?z // 0 }) {
             .composite;
