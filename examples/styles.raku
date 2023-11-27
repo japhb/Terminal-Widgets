@@ -11,8 +11,11 @@ class StyleUI is TopLevel {
         my $table = do with $builder {
             # Lay out columns horizontally with styled dividers between
             .node(
+                # Use .widget instead of .node for columns in order to get
+                # box model (padding/border/margin) rendering support
+
                 # Column 0: basic attributes
-                .node(:vertical,
+                .widget(:vertical, style => %(padding-width => (0, 1)),
                       .plain-text(text  => 'bold',      color => 'bold'),
                       .plain-text(text  => 'italic',    color => 'italic'),
                       .plain-text(text  => 'inverse',   color => 'inverse'),
@@ -25,7 +28,7 @@ class StyleUI is TopLevel {
                 .divider(line-style => 'light2', style => %(set-w => 1)),
 
                 # Column 1: paletted colors using historical names
-                .node(:vertical,
+                .widget(:vertical, style => %(border-width => 1),
                       .plain-text(text  => 'red',        color => 'red'),
                       .plain-text(text  => 'on_blue',    color => 'on_blue'),
                       .plain-text(text  => 'bold black', color => 'bold black'),
@@ -39,7 +42,7 @@ class StyleUI is TopLevel {
                 .divider(line-style => 'heavy4', style => %(set-w => 1)),
 
                 # Column 2: 8-bit colors
-                .node(:vertical,
+                .widget(:vertical, style => %(margin-width => 1),
                       # Directly using xterm-256color numeric ids
                       .plain-text(text  => 'dark red on mid-grey',
                                   color => '52 on_243'),
@@ -65,7 +68,7 @@ class StyleUI is TopLevel {
                 .divider(line-style => 'double', style => %(set-w => 1)),
 
                 # Column 3: 24-bit colors
-                .node(:vertical,
+                .widget(:vertical,
                       .plain-text(text  => 'fire brick', color => '178,34,34'),
                       .plain-text(text  => 'sweet corn', color => '251,236,93'),
                       .plain-text(text  => 'almond on slate gray',
