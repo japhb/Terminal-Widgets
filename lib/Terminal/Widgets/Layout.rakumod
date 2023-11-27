@@ -304,7 +304,8 @@ class Node does Dynamic {
             # Need to use @.children instead of @child-style because will need to
             # recompute .computed in the while loop below
             my @unset-w = @.children.grep(!*.computed.set-w.defined)
-                                    .sort(-*.computed.min-w)
+                                    .sort({-(.computed.min-w +
+                                             .computed.width-correction(MarginBox))})
                                     .sort(-?*.computed.minimize-w);
             while @unset-w {
                 fail "Negative remaining width to distribute" if $remain-w < 0;
@@ -339,7 +340,8 @@ class Node does Dynamic {
             # Need to use @.children instead of @child-style because will need to
             # recompute .computed in the while loop below
             my @unset-h = @.children.grep(!*.computed.set-h.defined)
-                                    .sort(-*.computed.min-h)
+                                    .sort({-(.computed.min-h +
+                                             .computed.height-correction(MarginBox))})
                                     .sort(-?*.computed.minimize-h);
             while @unset-h {
                 fail "Negative remaining height to distribute" if $remain-h < 0;
