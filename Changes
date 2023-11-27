@@ -1,6 +1,8 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+
+0.0.12  2023-11-26T21:03:49-08:00
   [Bug Fixes]
   - Select correct item when using mouse-click selection on a scrolled Menu
   - Allow Text input to receive focus via mouse click
