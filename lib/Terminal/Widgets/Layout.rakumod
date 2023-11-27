@@ -308,17 +308,19 @@ class Node does Dynamic {
                                              .computed.width-correction(MarginBox))})
                                     .sort(-?*.computed.minimize-w);
             while @unset-w {
-                fail "Negative remaining width to distribute" if $remain-w < 0;
                 my $sum    = @unset-w.map(*.computed.share-w).sum;
                 my $node   = @unset-w.shift;
-                my $share  = floor($remain-w * $node.computed.share-w / $sum);
-                $share     = 0                    if $node.computed.minimize-w;
-                $share  max= $node.computed.min-w if $node.computed.min-w.defined;
-                $share  min= $node.computed.max-w if $node.computed.max-w.defined;
+                my $before = $node.computed;
+                $remain-w -= $before.width-correction(MarginBox);
+                fail "Insufficient remaining width to distribute" if $remain-w < 0;
+
+                my $share  = floor($remain-w * $before.share-w / $sum);
+                $share     = 0              if $before.minimize-w;
+                $share  max= $before.min-w  if $before.min-w.defined;
+                $share  min= $before.max-w  if $before.max-w.defined;
                 $remain-w -= $share;
 
-                my $correction = $node.computed.width-correction(MarginBox);
-                $node.computed = $node.computed.clone(:set-w($share - $correction));
+                $node.computed = $before.clone(:set-w($share));
                 $node.compute-layout;
             }
         }
@@ -344,17 +346,19 @@ class Node does Dynamic {
                                              .computed.height-correction(MarginBox))})
                                     .sort(-?*.computed.minimize-h);
             while @unset-h {
-                fail "Negative remaining height to distribute" if $remain-h < 0;
                 my $sum    = @unset-h.map(*.computed.share-h).sum;
                 my $node   = @unset-h.shift;
-                my $share  = floor($remain-h * $node.computed.share-h / $sum);
-                $share     = 0                    if $node.computed.minimize-h;
-                $share  max= $node.computed.min-h if $node.computed.min-h.defined;
-                $share  min= $node.computed.max-h if $node.computed.max-h.defined;
+                my $before = $node.computed;
+                $remain-h -= $before.height-correction(MarginBox);
+                fail "Insufficient remaining height to distribute" if $remain-h < 0;
+
+                my $share  = floor($remain-h * $before.share-h / $sum);
+                $share     = 0             if $before.minimize-h;
+                $share  max= $before.min-h if $before.min-h.defined;
+                $share  min= $before.max-h if $before.max-h.defined;
                 $remain-h -= $share;
 
-                my $correction = $node.computed.height-correction(MarginBox);
-                $node.computed = $node.computed.clone(:set-h($share - $correction));
+                $node.computed = $before.clone(:set-h($share));
                 $node.compute-layout;
             }
         }
