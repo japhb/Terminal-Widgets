@@ -14,6 +14,9 @@ Revision history for Terminal-Widgets
   - Simplify and fix propagate-xy box model corrections
   - Fix correction handling in child layout share computations
 
+  [Examples]
+  - Update styles example to include box model (framing) styling as well
+
   [Refactoring]
   - Factor color-merge() helper out to ::Utils::Color
   - Refactor, improve, and expand gist logic for both Widget and Layout objects
