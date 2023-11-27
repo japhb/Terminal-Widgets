@@ -370,9 +370,10 @@ class Node does Dynamic {
         # Stop propagating silently if current node has not been placed properly
         return unless $.x.defined && $.y.defined;
 
+        my $x = $.x + $.computed.left-correction;
+        my $y = $.y + $.computed.top-correction;
+
         if $.vertical {
-            my $x = $.x + $.computed.left-correction(ContentBox);
-            my $y = $.y + $.computed.top-correction( ContentBox);
             for @.children {
                 .x = $x;
                 .y = $y;
@@ -382,8 +383,6 @@ class Node does Dynamic {
             }
         }
         else {
-            my $x = $.x + $.computed.left-correction(ContentBox);
-            my $y = $.y + $.computed.top-correction( ContentBox);
             for @.children {
                 .x = $x;
                 .y = $y;
@@ -443,9 +442,10 @@ class TextInput is SingleLineInput { }
 #| (upper left of this widget becomes new 0,0 for children)
 class Widget is Node {
     method propagate-xy() {
+        my $x = $.computed.left-correction;
+        my $y = $.computed.top-correction;
+
         if $.vertical {
-            my $x = $.computed.left-correction(ContentBox);
-            my $y = $.computed.top-correction( ContentBox);
             for @.children {
                 .x = $x;
                 .y = $y;
@@ -455,8 +455,6 @@ class Widget is Node {
             }
         }
         else {
-            my $x = $.computed.left-correction(ContentBox);
-            my $y = $.computed.top-correction( ContentBox);
             for @.children {
                 .x = $x;
                 .y = $y;
