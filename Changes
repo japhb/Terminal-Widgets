@@ -8,10 +8,15 @@ Revision history for Terminal-Widgets
     original TopLevel itself)
   - Build *base* Widget objects as internal widget tree nodes if requested
     by the layout tree
+  - Make sure Style.clone calls Style's TWEAK, just as for new/bless
+  - Sort unset layout children by MarginBox size, not default sizing box
+  - Simplify and fix propagate-xy box model corrections
+  - Fix correction handling in child layout share computations
 
   [Refactoring]
   - Factor color-merge() helper out to ::Utils::Color
   - Refactor, improve, and expand gist logic for both Widget and Layout objects
+  - Clarify layout computation via change of variable
 
 
 0.0.11  2023-11-12T17:11:18-08:00
