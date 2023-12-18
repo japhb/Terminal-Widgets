@@ -93,7 +93,36 @@ class Terminal::Widgets::Widget
         ((self.is-current-toplevel ?? 'CURRENT-TOPLEVEL' !! 'is-toplevel') if $is-toplevel)
     }
 
-    #| Bootstrapping: Setting TopLevel's layout
+    #| Wrap an existing T::P::Grid into a T::W::Widget with proper layout
+    #| styling information and proper linkups to widget and layout trees
+    method new-from-grid($grid, |c) {
+        callsame.fix-layout
+    }
+
+    #| Fix the current layout of the widget by computing a fixed Layout from
+    #| the widget's current attributes, and then setting the widget's current
+    #| layout to that newly computed fixed Layout object
+    method fix-layout() {
+        self.set-layout(self.as-fixed-layout)
+    }
+
+    #| Create a fixed Layout object based on current Widget details, which may
+    #| have been computed dynamically or specified manually
+    method as-fixed-layout() {
+        my $parent    = $.parent.?layout;
+        my $requested = Terminal::Widgets::Layout::Style.new(set-w => $.w,
+                                                             set-h => $.h);
+        # XXXX: What about widgets with children?  Decide dynamically or always
+        #       go with Leaf or Widget respectively?
+        my $layout    = Terminal::Widgets::Layout::Leaf.new(:$requested, :$parent,
+                                                            :$.x, :$.y);
+        $layout.compute-layout
+    }
+
+    #| Set this widget's layout attribute, and set that layout's widget
+    #| attribute to this widget.  Used for bootstrapping, such as setting
+    #| TopLevel's layout or building the layout for a widget created from
+    #| an existing grid.
     method set-layout($!layout) { $!layout.widget = self }
 
     #| Non-TopLevel Widgets cannot be the terminal's current-toplevel
