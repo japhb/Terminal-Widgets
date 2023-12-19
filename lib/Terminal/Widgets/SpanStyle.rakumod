@@ -17,6 +17,18 @@ class Span {
         $parent-color ?? self.new(:$.text, color => color-merge($parent-color, $.color))
                       !! self
     }
+
+    #| Split into a sequence of Spans that contain one line each
+    #| (as delimited by textual newlines as usual for Str.lines)
+    method lines(Bool:D :$chomp = True) {
+        $.text.lines(:$chomp).map({ Span.new(:$.color, :text($_)) })
+    }
+
+    #| Split into a sequence of Spans that contain one word each
+    #| (as delimited by whitespace as usual for Str.words)
+    method words() {
+        $.text.words.map({ Span.new(:$.color, :text($_)) })
+    }
 }
 
 #| Helper function to build a single Span
@@ -30,11 +42,28 @@ class SpanTree {
     has Str:D $.color = '';  # Color/SGR attributes to apply to this (sub-)tree
     has       @.children;    # Str:D, Span:D, or SpanTree:D children
 
-    #| Convert from tree form to single linear list of Spans for rendering
+    #| Convert from tree form to single linear sequence of Spans for rendering
     method flatten(Str:D $parent-color = '') {
         my $child-base-color = color-merge($parent-color, $.color);
         @.children.map({ $_ ~~ Str ?? span($child-base-color, $_)
                                    !! .flatten($child-base-color) }).flat
+    }
+
+    #| Convert from arbitrary tree form to a sequence of Arrays, each of which
+    #| contains all the flattened Spans of a single (newline-delimited) line
+    method lines(Bool:D :$chomp = True) {
+        my @spans;
+        gather for self.flatten.map(*.lines(:!chomp)).flat {
+            if .text.ends-with("\n") {
+                @spans.push($chomp ?? span(.color, .text.chomp) !! $_);
+                take @spans.clone;
+                @spans = ();
+            }
+            else {
+                @spans.push($_)
+            }
+            LAST take @spans if @spans;
+        }
     }
 }
 
