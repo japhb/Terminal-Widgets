@@ -6,16 +6,35 @@ use Terminal::Widgets::Widget;
 use Terminal::Widgets::SpanStyle;
 
 
+my class LogEntry {
+    has SpanContent $.content is required;
+    has $.timestamp = now;
+    has @.hard-lines is built(False);
+
+    submethod TWEAK() {
+        my $as-tree  = $!content ~~ Terminal::Widgets::SpanStyle::SpanTree
+                         ?? $!content
+                         !! span-tree('', $!content);
+        @!hard-lines = $as-tree.lines;
+    }
+}
+
+
 #| Simple auto-scrolling log viewer
 class Terminal::Widgets::Viewer::Log
    is Terminal::Widgets::Widget {
     has UInt:D $.scroll-pos = 0;
     has @.log;
 
-    #| Add a single entry (styled content or plain text) to the log
-    method add-entry(SpanContent $content) {
+    #| Add content for a single entry (in styled spans or a plain string) to the log
+    multi method add-entry(SpanContent $content) {
+        self.add-entry(LogEntry.new(:$content))
+    }
+
+    #| Add a single LogEntry to the log
+    multi method add-entry(LogEntry:D $entry) {
         $!scroll-pos += 1 if $!scroll-pos == @!log;
-        @!log.push($content);
+        @!log.push($entry);
     }
 
     #| Refresh display
@@ -31,21 +50,19 @@ class Terminal::Widgets::Viewer::Log
         my $h      = $.h - $layout.height-correction;
         my $top    = 0 max $.scroll-pos - $h;
 
+        my $y = $t;
         for ^$h {
-            my $entry = @!log[$top + $_] // '';
-            my $x     = $l;
-            my $y     = $t + $_;
-            for self.spans($entry) {
-                $.grid.set-span($x, $y, .text, .color);
-                $x += duospace-width(.text);
+            my  $entry = @!log[$top + $_] // LogEntry.new(content => '');
+            for $entry.hard-lines -> @spans {
+                my $x = $l;
+                for @spans {
+                    $.grid.set-span($x, $y, .text, .color);
+                    $x += duospace-width(.text);
+                }
+                $y++;
             }
         }
 
         self.composite(:$print);
-    }
-
-    #| Determine individual subspans for a log entry's content
-    method spans($entry) {
-        $entry ~~ Str ?? span('', $entry) !! $entry.flatten
     }
 }
