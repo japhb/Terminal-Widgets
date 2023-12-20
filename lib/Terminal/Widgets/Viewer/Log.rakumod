@@ -23,10 +23,7 @@ class Terminal::Widgets::Viewer::Log
    is Terminal::Widgets::Widget {
     has LogEntry:D @.log;
     has Int:D      $.scroll-entry = -1;
-    has UInt:D     $.scroll-line  = 0;
     has UInt:D     $!wrap-width   = 0;
-    has UInt:D     $!total-lines  = 0;
-    has %!top-hard-line;
     has %!hard-lines;
     has %!laid-out;
 
@@ -38,17 +35,8 @@ class Terminal::Widgets::Viewer::Log
     #| Add a single LogEntry to the log
     multi method add-entry(LogEntry:D $entry) {
         # Auto-scroll to new entry if needed
-        if  $!scroll-entry == @.log.end {
-            $!scroll-entry++;
-            $!scroll-line = 0;
-        }
-
-        my $id = ~$entry.id;
+        $!scroll-entry++ if $!scroll-entry == @.log.end;
         @!log.push($entry);
-        %!top-hard-line{$id} = $!total-lines;
-
-        my $lines      = +(%!hard-lines{$id} = self.hard-lines($entry));
-        $!total-lines += $lines;
     }
 
     #| Refresh display
