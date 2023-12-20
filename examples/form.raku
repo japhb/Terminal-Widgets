@@ -1,6 +1,7 @@
 # ABSTRACT: Simple form UI example based on Terminal::Widgets::Simple
 
 use Terminal::Widgets::Simple;
+use Terminal::Widgets::SpanStyle;
 
 
 #| A top level UI container based on Terminal::Widgets::Simple::TopLevel
@@ -26,6 +27,8 @@ class FormUI is TopLevel {
             .node(
                 .button(  :$.form, :%style, label => 'Show State',
                                    process-input  => { self.show-state }),
+                .button(  :$.form, :%style, label => 'Show Layout Tree',
+                                   process-input  => { self.show-layout }),
                 .button(  :$.form, :%style, label => 'Quit',
                                    process-input  => { $.terminal.quit }),
             ),
@@ -36,11 +39,20 @@ class FormUI is TopLevel {
 
     method show-state() {
         my $log-viewer = %.by-id<lv>;
-        $log-viewer.add-entry('') if $log-viewer.log;
+        $log-viewer.add-entry("\n") if $log-viewer.log;
 
         for $.form.inputs {
-            $log-viewer.add-entry(.gist);
+            $log-viewer.add-entry(span-tree('on_white',
+                                            span('red',  $++ ~ ' '),
+                                            span('blue', .gist)));
         }
+        $log-viewer.full-refresh;
+    }
+
+    method show-layout() {
+        my $log-viewer = %.by-id<lv>;
+        $log-viewer.add-entry("\n") if $log-viewer.log;
+        $log-viewer.add-entry(span('green', self.layout.gist));
         $log-viewer.full-refresh;
     }
 }
