@@ -39,6 +39,11 @@ class Terminal::Widgets::Viewer::Log
         @!log.push($entry);
     }
 
+    #| Convert animation drawing to full-refresh
+    method draw-frame() {
+        self.full-refresh;
+    }
+
     #| Refresh display
     method full-refresh(Bool:D :$print = True) {
         # Clear grid and draw framing if any
