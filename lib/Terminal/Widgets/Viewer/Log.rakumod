@@ -64,29 +64,42 @@ class Terminal::Widgets::Viewer::Log
         return self.composite(:$print) unless $w && $h;
 
         # Empty layout cache unless it is still valid for current available width
-        %!laid-out = () unless $!wrap-width == $w;
+        unless $!wrap-width == $w {
+            $!wrap-width = $w;
+            %!laid-out   = Empty;
+        }
 
-        # Cache layout for previous entries starting from current scroll-entry,
-        # stopping if they would overfill the current viewer area
-        my $avail  = 0;
-        my $cur    = $!scroll-entry;
+        # Cache layout for surrounding entries starting from current
+        # scroll-entry, stopping if they would overfill the current viewer area
 
-        while $cur >= 0 && $avail < $h {
-            my $entry  = @!log[$cur];
+        # Available fully laid out lines surrounding scroll-entry
+        my $avail = 0;
+
+        # Current and previous entries first
+        my $cur = $!scroll-entry;
+        while $avail < $h && $cur >= 0 && (my $entry = @!log[$cur--]) {
             my @lines := %!laid-out{$entry.id} //= self.layout-entry($entry, $w);
             $avail    += @lines;
-            $cur--;
         }
         $cur = 0 if $cur < 0;
+
+        # Following entries next, if needed
+        my $next = $!scroll-entry;
+        while $avail < $h && ($entry = @!log[++$next]) {
+            my @lines := %!laid-out{$entry.id} //= self.layout-entry($entry, $w);
+            $avail    += @lines;
+        }
 
         # Render entries, accounting for scrolling and layout corrections
         my $l = $layout.left-correction;
         my $t = $layout.top-correction;
+        my $s = 0 max $avail - $h + 1;
         my $y = 0;
         VIEWER_LINE: while $y < $h {
             my  $entry  = @!log[$cur++] // last;
-            my  @lines := %!laid-out{$entry.id} //= self.layout-entry($entry, $w);
+            my  @lines := %!laid-out{$entry.id};
             for @lines -> @spans {
+                next if $s-- > 0;
                 my $x = $l;
                 for @spans {
                     $.grid.set-span($x, $t + $y, .text, .color);
