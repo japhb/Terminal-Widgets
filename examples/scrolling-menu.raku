@@ -34,7 +34,7 @@ class FormUI is TopLevel {
 
     method show-state() {
         my $log-viewer = %.by-id<lv>;
-        $log-viewer.add-entry('') if $log-viewer.log;
+        $log-viewer.add-entry("\n") if $log-viewer.log;
 
         for $.form.inputs {
             $log-viewer.add-entry(.gist);
