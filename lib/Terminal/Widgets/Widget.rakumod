@@ -413,6 +413,8 @@ class Terminal::Widgets::Widget
         }
         else {
             $.parent.add-dirty-rect($.x, $.y, $.w, $.h) if self.parent-dirtyable;
+            # Invalidate T::P::Grid::grid-string cache
+            $.grid.change-cell(0, 0, $.grid.grid[0][0]);
             nextsame;
         }
     }
