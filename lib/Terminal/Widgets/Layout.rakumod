@@ -420,7 +420,7 @@ class PlainText is Leaf {
 class Menu is Leaf {
     method default-styles(:@items) {
         %( min-h => @items.elems,
-           min-w => 2 + 0 max @items.map({ duospace-width(.<title>) }).max )
+           min-w => 2 + (0 max @items.map({ duospace-width(.<title>) }).max) )
     }
 }
 
