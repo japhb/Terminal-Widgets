@@ -15,6 +15,15 @@ does Terminal::Widgets::Layout::WidgetBuilding {
 
     has Terminal::Widgets::Widget $.focused-widget;
 
+
+    ### Required overrides
+
+    #| Lay out main subwidgets (and dividers/frames, if any)
+    method build-layout() { ... }
+
+
+    ### Core implementation
+
     #| Add a widget to a named group
     method add-to-group(Terminal::Widgets::Widget:D $widget, Str:D $group) {
         %!named-group{$group}.push($widget);
