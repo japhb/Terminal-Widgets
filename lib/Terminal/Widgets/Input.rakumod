@@ -32,6 +32,7 @@ role Terminal::Widgets::Input
     method full-refresh { ... }
 
     # OPTIONAL OPTIMIZATION: Refresh display for input value changes ONLY
+    # XXXX: Variants for color changes versus metrics changes?
     method refresh-value(Bool:D :$print = True) {
         # Default to just doing a full-refresh
         self.full-refresh(:$print)
