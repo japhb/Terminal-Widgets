@@ -16,6 +16,14 @@ class Event {
 }
 
 
+#| A global event that reaches all leaves
+class GlobalEvent is Event { }
+
+
+#| A global event indicating a TopLevel's widget tree has been laid out fully
+class LayoutBuilt is GlobalEvent { }
+
+
 #| An event that follows the focus path
 class FocusFollowingEvent is Event { }
 

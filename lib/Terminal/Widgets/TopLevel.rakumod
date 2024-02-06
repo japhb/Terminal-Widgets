@@ -77,7 +77,11 @@ does Terminal::Widgets::Layout::WidgetBuilding {
 
     #| Relayout, redraw, and composite entire widget tree
     method relayout(Bool:D :$focus = False) {
+        # Build the layout and then send a global event that layout has completed
         self.build-layout;
+        self.process-event(Terminal::Widgets::Events::LayoutBuilt.new);
+
+        # Set focus if needed, redraw the entire widget tree, and composite the TopLevel
         self.gain-focus(:!redraw) if $focus;
         self.redraw-all;
         self.composite;
