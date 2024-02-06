@@ -19,6 +19,7 @@ role Terminal::Widgets::Input
     # Input-specific gist flags
     method gist-flags() {
        |callsame,
+       ('FOCUSED' if self.toplevel.focused-widget === self),
        ('enabled' if $!enabled),
        ('active'  if $!active),
        ('ERROR'   if $!error)
