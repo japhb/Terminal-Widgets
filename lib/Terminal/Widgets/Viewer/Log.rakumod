@@ -39,22 +39,23 @@ class Terminal::Widgets::Viewer::Log
         @!log.push($entry);
     }
 
-    #| Convert animation drawing to full-refresh
-    method draw-frame() {
-        self.full-refresh;
+    #| Refresh widget display completely
+    method full-refresh(Bool:D :$print = True) {
+        self.clear-frame;
+        self.draw-frame;
+        self.composite(:$print);
     }
 
-    #| Refresh display
-    method full-refresh(Bool:D :$print = True) {
-        # Clear grid and draw framing if any
-        self.clear-frame;
+    #| Render visible log lines
+    method draw-frame() {
+        # Draw framing first
         self.draw-framing;
 
         # Compute available viewer area; bail if empty
         my $layout = self.layout.computed;
         my $w      = 0 max $.w - $layout.width-correction;
         my $h      = 0 max $.h - $layout.height-correction;
-        return self.composite(:$print) unless $w && $h;
+        return unless $w && $h;
 
         # Empty layout cache unless it is still valid for current available width
         unless $!wrap-width == $w {
@@ -101,9 +102,6 @@ class Terminal::Widgets::Viewer::Log
                 last VIEWER_LINE if ++$y >= $h;
             }
         }
-
-        # Composite result
-        self.composite(:$print);
     }
 
     #| Lay out an individual entry for a particular viewer width
