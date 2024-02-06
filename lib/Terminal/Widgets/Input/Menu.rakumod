@@ -48,7 +48,6 @@ class Terminal::Widgets::Input::Menu
         my $h          = $.h - $layout.height-correction;
         my $base-color = self.current-color;
 
-        self.set-selected($!selected);
         self.draw-framing;
 
         for ^$h {
@@ -150,5 +149,10 @@ class Terminal::Widgets::Input::Menu
                               $event where !*.mouse.pressed, AtTarget) {
         self.toplevel.focus-on(self);
         self.select($.top-item + $event.relative-to(self)[1]);
+    }
+
+    #| Handle LayoutBuilt event by updating hint and scrolling
+    multi method handle-event(Terminal::Widgets::Events::LayoutBuilt:D, AtTarget) {
+        self.set-selected($!selected);
     }
 }
