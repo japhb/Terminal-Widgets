@@ -426,6 +426,15 @@ class Terminal::Widgets::Widget
         }
     }
 
+    #| Return an optionally framed debug rendering of the current widget grid
+    method debug-grid(Bool :$framed = True) {
+        (  '┌' ~ '─' x $.w ~ "┐\n" if $framed) ~
+        $.grid.grid.map({
+            ('│' if $framed) ~ .join ~ ('│' if $framed)
+        }).join("\n") ~
+        ("\n└" ~ '─' x $.w ~ '┘'   if $framed)
+    }
+
     #| Union all dirty areas, update parent's dirty list if needed, and composite
     method composite(|) {
         my @dirty := self.snapshot-dirty-areas;
