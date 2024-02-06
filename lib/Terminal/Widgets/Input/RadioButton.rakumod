@@ -47,15 +47,19 @@ class Terminal::Widgets::Input::RadioButton
 
     #| Refresh the whole input
     method full-refresh(Bool:D :$print = True) {
+        self.clear-frame;
+        self.draw-frame;
+        self.composite(:$print);
+    }
+
+    #| Draw framing and full input
+    method draw-frame() {
         my $layout = self.layout.computed;
         my $x      = $layout.left-correction;
         my $y      = $layout.top-correction;
         my $text   = self.button-text ~ (' ' ~ $.label if $.label);
 
-        self.clear-frame;
         self.draw-framing;
-
         $.grid.set-span($x, $y, $text, self.current-color);
-        self.composite(:$print);
     }
 }

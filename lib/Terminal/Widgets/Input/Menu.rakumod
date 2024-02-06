@@ -34,6 +34,13 @@ class Terminal::Widgets::Input::Menu
 
     #| Refresh the whole input
     method full-refresh(Bool:D :$print = True) {
+        self.clear-frame;
+        self.draw-frame;
+        self.composite(:$print);
+    }
+
+    #| Draw framing and full input
+    method draw-frame() {
         my $layout     = self.layout.computed;
         my $x          = $layout.left-correction;
         my $y          = $layout.top-correction;
@@ -42,7 +49,6 @@ class Terminal::Widgets::Input::Menu
         my $base-color = self.current-color;
 
         self.set-selected($!selected);
-        self.clear-frame;
         self.draw-framing;
 
         for ^$h {
@@ -56,8 +62,6 @@ class Terminal::Widgets::Input::Menu
                                              !! $item<color> // $base-color;
             $.grid.set-span($x, $y + $_, $formatted, $color);
         }
-
-        self.composite(:$print);
     }
 
     #| Set the hint

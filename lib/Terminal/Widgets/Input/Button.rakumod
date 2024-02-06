@@ -13,6 +13,13 @@ class Terminal::Widgets::Input::Button
  does Terminal::Widgets::Input::Labeled {
     #| Refresh the whole input
     method full-refresh(Bool:D :$print = True) {
+        self.clear-frame;
+        self.draw-frame;
+        self.composite(:$print);
+    }
+
+    #| Draw framing and button itself
+    method draw-frame() {
         my $layout     = self.layout.computed;
         my $x          = $layout.left-correction;
         my $y          = $layout.top-correction;
@@ -21,11 +28,8 @@ class Terminal::Widgets::Input::Button
         my $text       = $layout.has-border  ??       $label       !!
                          $symbol-set >= Uni1 ?? '⌈' ~ $label ~ '⌋' !!
                                                 '[' ~ $label ~ ']' ;
-        self.clear-frame;
         self.draw-framing;
-
         $.grid.set-span($x, $y, $text, self.current-color);
-        self.composite(:$print);
     }
 
     #| Process a click event
