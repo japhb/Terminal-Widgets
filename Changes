@@ -1,6 +1,8 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+
+0.1.0  2024-02-12T17:19:15-08:00
   [API Changes]
   - Begin process of rationalizing refresh handling for an easier mental model
     and fewer redundant or missing refreshes
