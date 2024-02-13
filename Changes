@@ -1,6 +1,19 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Bug Fixes]
+  - Fix precedence thinko in menu width detection that caused some menus to
+    overdraw their right boundary
+  - Invalidate grid-string cache for full-screen composites, fixing a visual
+    bug seen when switching back to a previously-viewed screen
+  - Compute fixed layouts for widgets created statically from an existing grid
+  - Add stub for build-layout method to clarify that TopLevel requires it
+
+  [Debugging]
+  - Show when a Widget is focused in Widget gists
+  - Add a debug-grid method to Widget for dumping a widget's grid contents
+    as an ANSI-colored snapshot, rather than as an array of arrays of Cells
+
 
 0.0.12  2023-11-26T21:03:49-08:00
   [Bug Fixes]
