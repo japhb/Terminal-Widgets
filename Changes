@@ -1,6 +1,23 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [API Changes]
+  - Begin process of rationalizing refresh handling for an easier mental model
+    and fewer redundant or missing refreshes
+  - Create a new global LayoutBuilt event, and issue it in TopLevel.relayout
+    to notify widgets that the overall layout has finished building (and thus
+    all widgets should now exist and be nominally initialized)
+
+  [Functionality]
+  - Add initial support for styling of span trees
+  - Add styled span tree support to Viewer::Log
+
+  [Examples]
+  - Demo span-styled log entries and layout gists in form example
+
+  [Refactoring]
+  - Massive refactor of Viewer::Log to use LogEntry objects
+
 
 0.0.13  2024-02-12T16:54:00-08:00
   [Bug Fixes]
