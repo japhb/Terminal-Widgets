@@ -42,7 +42,7 @@ class StyleUI is TopLevel {
                 .divider(line-style => 'heavy4', style => %(set-w => 1)),
 
                 # Column 2: 8-bit colors
-                .widget(:vertical, style => %(margin-width => 1),
+                .widget(:vertical, style => %(margin-width => (1, 0)),
                       # Directly using xterm-256color numeric ids
                       .plain-text(text  => 'dark red on mid-grey',
                                   color => '52 on_243'),
