@@ -430,7 +430,11 @@ class SingleLineInput is Leaf {
 }
 
 #| A single button
-class Button is SingleLineInput { }
+class Button is SingleLineInput {
+    method default-styles(Str:D :$label = '') {
+        %( |callsame, set-w => 2 + duospace-width($label) )
+    }
+}
 
 #| A single checkbox
 class Checkbox is SingleLineInput { }
