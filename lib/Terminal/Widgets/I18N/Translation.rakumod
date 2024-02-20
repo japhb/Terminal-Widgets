@@ -105,3 +105,30 @@ class LanguageSelection is export {
         self.best-languages(:@preferred, :@available)
     }
 }
+
+
+# Ensure $*TRANSLATION_CONTEXT exists, even at BEGIN time in the importing module
+PROCESS::<$TRANSLATION_CONTEXT> = 'DEFAULT';
+
+
+#| Set the current $*TRANSLATION_CONTEXT in this dynamic scope
+sub prefix:<¢>(Str:D $context) is export {
+    $*TRANSLATION_CONTEXT = $context;
+}
+
+#| Create a TranslatableString from a simple Str and the $*TRANSLATION_CONTEXT
+sub prefix:<¿>(Str:D $string) is export {
+    my $context = $*TRANSLATION_CONTEXT // 'DEFAULT';
+    TranslatableString.new(:$string, :$context)
+}
+
+#| Create a TranslatableString from a _specified_ context and string
+sub infix:<¢¿>(Str:D $context, Str:D $string) is export {
+    TranslatableString.new(:$string, :$context)
+}
+
+#| Set the current TRANSLATION_CONTEXT for a block
+sub infix:«¢>»(Str:D $context, &code) is export {
+    my $*TRANSLATION_CONTEXT = $context;
+    code();
+}
