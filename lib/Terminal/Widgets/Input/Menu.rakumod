@@ -42,6 +42,7 @@ class Terminal::Widgets::Input::Menu
     #| Draw framing and full input
     method draw-frame() {
         my $layout     = self.layout.computed;
+        my $locale     = self.terminal.locale;
         my $x          = $layout.left-correction;
         my $y          = $layout.top-correction;
         my $w          = $.w - $layout.width-correction;
@@ -54,8 +55,8 @@ class Terminal::Widgets::Input::Menu
             last if $!items.end < my $i = $.top-item + $_;
 
             my $item      = $!items[$i];
-            my $title     = $item<title>;
-            my $extra     = 1 max $w - 1 - duospace-width($title);
+            my $title     = $locale.translate($item<title>);
+            my $extra     = 1 max $w - 1 - $locale.width($title);
             my $formatted = " $title" ~ ' ' x $extra;
             my $color     = $i == $!selected ?? %.color<highlight>
                                              !! $item<color> // $base-color;
@@ -63,12 +64,18 @@ class Terminal::Widgets::Input::Menu
         }
     }
 
-    #| Set the hint
-    method set-hint(Str:D $hint) {
+    #| Set the hint to a plain Str
+    multi method set-hint(Str:D $hint) {
         my $target = $.hint-target;
            $target = self.toplevel.by-id{$target} if $target ~~ Str:D;
 
+        # XXXX: Defang the hint text?
         $target.?set-text($hint);
+    }
+
+    #| Set the hint to a translatable
+    multi method set-hint($hint) {
+        self.set-hint(~$.terminal.locale.translate($hint))
     }
 
     #| Scroll to keep the selected element visible
