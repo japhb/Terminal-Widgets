@@ -21,7 +21,7 @@ class Terminal::Widgets::Simple::TopLevel
 
     #| Hand off to subclass to define the initial layout constraints
     method layout-model() {
-        with $.layout-builder-class.new {
+        with $.layout-builder-class.new(context => $.terminal) {
             .widget(:$.vertical,
                     style => %(max-w => $.w, max-h => $.h),
                     |self.initial-layout($_, $.w, $.h));

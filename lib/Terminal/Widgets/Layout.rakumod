@@ -410,17 +410,19 @@ class LogViewer is Leaf { }
 
 #| A minimal plain text container
 class PlainText is Leaf {
-    method default-styles(Str:D :$text = '') {
-        %( min-h => $text.lines.elems,
-           min-w => 0 max $text.lines.map(&duospace-width).max )
+    method default-styles(:$locale!, :$text = '') {
+        my @lines = $locale.translate($text).Str.lines;
+
+        %( min-h => @lines.elems,
+           min-w => 0 max @lines.map({ $locale.width($_) }).max )
     }
 }
 
 #| A multi-line single-select menu
 class Menu is Leaf {
-    method default-styles(:@items) {
+    method default-styles(:$locale!, :@items) {
         %( min-h => @items.elems,
-           min-w => 2 + (0 max @items.map({ duospace-width(.<title>) }).max) )
+           min-w => 2 + (0 max @items.map({ $locale.width(.<title>) }).max) )
     }
 }
 
@@ -431,8 +433,8 @@ class SingleLineInput is Leaf {
 
 #| A single button
 class Button is SingleLineInput {
-    method default-styles(Str:D :$label = '') {
-        %( |callsame, set-w => 2 + duospace-width($label) )
+    method default-styles(:$locale!, :$label = '') {
+        %( |callsame, min-w => 2 + $locale.width($label) )
     }
 }
 
@@ -477,16 +479,21 @@ class Widget is Node {
 
 #| Helper class for building style/layout trees
 class Builder {
+    has $.context is required;
+
     #| Helper method for building leaf nodes
     method build-leaf($node-type, :%style, *%extra) {
-        my $default = $node-type.default-styles(|%extra);
-        $node-type.new(:%extra, requested => Style.new(|$default, |%style))
+        my $default = $node-type.default-styles(locale => $.context.locale,
+                                                :$.context, |%extra);
+        $node-type.new(:$.context, :%extra,
+                       requested => Style.new(|$default, |%style))
     }
 
     #| Helper method for building nodes with optional children
     method build-node($node-type, *@children, :$vertical, :%style, *%extra) {
-        my $default = $node-type.default-styles(|%extra);
-        $node-type.new(:@children, :$vertical, :%extra,
+        my $default = $node-type.default-styles(locale => $.context.locale,
+                                                :$.context, |%extra);
+        $node-type.new(:$.context, :@children, :$vertical, :%extra,
                        requested => Style.new(|$default, |%style))
     }
 
