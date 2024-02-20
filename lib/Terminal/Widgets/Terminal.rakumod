@@ -155,9 +155,20 @@ class Terminal::Widgets::Terminal
         }
     }
 
-    #| Set terminal emulator window title
-    method set-window-title(Str:D $title) {
-        $.output.print("\e]2;$title\e\\");
+    #| Sanitize text for safe display in the terminal
+    method sanitize-text(Str $text) {
+        $text ?? $text.subst(/<:C+:Cc+:Cf+:Cn+:Co+:Cs>+/, '', :g)
+              !! ''
+    }
+
+    #| Set terminal emulator window title to a plain Str
+    multi method set-window-title(Str:D $title) {
+        $.output.print("\e]2;" ~ self.sanitize-text($title) ~ "\e\\");
+    }
+
+    #| Set terminal emulator window title to a translatable
+    multi method set-window-title($title) {
+        self.set-window-title(~$.locale.translate($title))
     }
 
     #| Exit from various per-terminal reactors and allow shutdown to proceed
