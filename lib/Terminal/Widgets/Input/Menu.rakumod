@@ -1,7 +1,5 @@
 # ABSTRACT: Simple single-selection menu
 
-use Text::MiscUtils::Layout;
-
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Input;
 
