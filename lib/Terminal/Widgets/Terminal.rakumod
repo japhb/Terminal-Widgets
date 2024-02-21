@@ -155,6 +155,16 @@ class Terminal::Widgets::Terminal
         }
     }
 
+    #| Change current terminal capabilities and relayout to match
+    method set-caps(Terminal::Capabilities:D $!caps) {
+        self.set-toplevel($.current-toplevel);
+    }
+
+    #| Change current locale and relayout to match
+    method set-locale(Terminal::Widgets::I18N::Locale:D $!locale) {
+        self.set-toplevel($.current-toplevel);
+    }
+
     #| Sanitize text for safe display in the terminal
     method sanitize-text(Str $text) {
         $text ?? $text.subst(/<:C+:Cc+:Cf+:Cn+:Co+:Cs>+/, '', :g)
