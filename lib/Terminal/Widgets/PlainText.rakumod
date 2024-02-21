@@ -1,5 +1,7 @@
 # ABSTRACT: Plain text content
 
+use Text::MiscUtils::Layout;
+
 use Terminal::Widgets::Widget;
 
 
@@ -26,10 +28,11 @@ class Terminal::Widgets::PlainText is Terminal::Widgets::Widget {
         my $layout = self.layout.computed;
         my $x      = $layout.left-correction;
         my $y      = $layout.top-correction;
+        my $w      = 0 max ($.w - $layout.width-correction);
 
         self.draw-framing;
 
-        my @lines = $.text.lines;
+        my @lines = $.text.lines.map({ wrap-text($w, $_).Slip }).flat;
         for @lines.kv -> $i, $line {
             $.grid.set-span($x, $y + $i, $line, $.color);
         }
