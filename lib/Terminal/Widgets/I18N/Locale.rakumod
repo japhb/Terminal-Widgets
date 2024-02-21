@@ -6,9 +6,11 @@ use Terminal::Widgets::I18N::Translation;
 
 #| Per-terminal user locale info and locale/language aware utility methods
 class Terminal::Widgets::I18N::Locale {
+    has %.string-table;
+
     multi method translate(TranslatableString:D $string) {
-        # XXXX: Huge hack to get PoC working
-        $string.translate-via($string.string)
+        %!string-table ?? $string.translate-via(%!string-table)
+                       !! $string.translate-via($string.string)
     }
     multi method translate($string) { $string }
 
