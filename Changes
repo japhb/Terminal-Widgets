@@ -1,6 +1,10 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Bug fixes]
+  - Update META6 to require latest versions of dependencies, and add a missing
+    dependency (Text::MiscUtils)
+
 
 0.1.1  2024-02-21T18:35:46-08:00
   [API Changes]
