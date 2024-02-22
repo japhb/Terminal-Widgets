@@ -7,8 +7,9 @@ use Terminal::Widgets::Widget;
 
 #| A simple mono-colored plain text widget
 class Terminal::Widgets::PlainText is Terminal::Widgets::Widget {
-    has Str:D $.text  = '';
-    has Str:D $.color = '';
+    has Str:D  $.text  = '';
+    has Str:D  $.color = '';
+    has Bool:D $.wrap  = False;
 
     # Setters that also trigger display refresh
     method set-text(Str:D $!text)                   { self.full-refresh }
@@ -32,7 +33,8 @@ class Terminal::Widgets::PlainText is Terminal::Widgets::Widget {
 
         self.draw-framing;
 
-        my @lines = $.text.lines.map({ wrap-text($w, $_).Slip }).flat;
+        my @lines = $.wrap ?? $.text.lines.map({ wrap-text($w, $_).Slip }).flat
+                           !! $.text.lines;
         for @lines.kv -> $i, $line {
             $.grid.set-span($x, $y + $i, $line, $.color);
         }
