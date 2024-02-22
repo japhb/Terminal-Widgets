@@ -3,6 +3,7 @@
 use Terminal::Capabilities;
 constant Uni1 = Terminal::Capabilities::SymbolSet::Uni1;
 
+use Terminal::Widgets::I18N::Translation;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Input;
 use Terminal::Widgets::Input::Labeled;
@@ -24,10 +25,12 @@ class Terminal::Widgets::Input::Button
         my $x          = $layout.left-correction;
         my $y          = $layout.top-correction;
         my $label      = self.label || 'Button';
+        my $string     = $label ~~ TranslatableString
+                         ?? ~$.terminal.locale.translate($label) !! ~$label;
         my $symbol-set = self.terminal.caps.symbol-set;
-        my $text       = $layout.has-border  ??       $label       !!
-                         $symbol-set >= Uni1 ?? '⌈' ~ $label ~ '⌋' !!
-                                                '[' ~ $label ~ ']' ;
+        my $text       = $layout.has-border  ??       $string       !!
+                         $symbol-set >= Uni1 ?? '⌈' ~ $string ~ '⌋' !!
+                                                '[' ~ $string ~ ']' ;
         self.draw-framing;
         $.grid.set-span($x, $y, $text, self.current-color);
     }

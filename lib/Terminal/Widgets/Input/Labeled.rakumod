@@ -1,7 +1,8 @@
 # ABSTRACT: Role for inputs that have a label "attached" to them, such as radio buttons
 
 role Terminal::Widgets::Input::Labeled {
-    has Str:D $.label = '';
+    # XXXX: Need a "defined textual content" type constraint
+    has $.label = '';
 
-    method set-label(Str:D $!label) { self.full-refresh }
+    method set-label($!label) { self.full-refresh }
 }
