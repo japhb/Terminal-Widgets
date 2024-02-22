@@ -1,6 +1,32 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [API Changes]
+  - First *experimental* version of translatable UI elements; see Functionality
+  - This release should still be compatible with existing 0.1.0 code, but
+    future releases in the 0.1.x cycle may not be
+  - Will almost certainly require some additional changes to work seamlessly
+    with span tree coloring and proper interpolations
+
+  [Bug Fixes]
+  - Fit styles example into 80 columns (it was not intended to demonstrate
+    overflow behavior and doesn't handle it well)
+
+  [Functionality]
+  - Translatable string markup operators added for lightweight code changes
+  - Translations handled by Locale object, which is tied to the Terminal
+  - Terminal passed as context to Layout objects, allowing the Locale
+    to influence layout measurements
+  - Terminal capabilities and locale can now be updated on the fly (causing
+    a screen refresh)
+  - Currently works with Labeled Input, Menu, and PlainText widgets
+  - PlainText widgets can optionally add soft-wrapping behavior in addition
+    to respecting hard-wrapped lines in the input text as before
+  - Window title also translated (and sanitized for security reasons)
+
+  [Refactoring]
+  - Refactor debug-grid and improve its empty grid handling
+
 
 0.1.0  2024-02-12T17:19:15-08:00
   [API Changes]
