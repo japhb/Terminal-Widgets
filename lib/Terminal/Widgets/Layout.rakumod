@@ -420,9 +420,13 @@ class PlainText is Leaf {
 
 #| A multi-line single-select menu
 class Menu is Leaf {
-    method default-styles(:$locale!, :@items) {
+    method default-styles(:$locale!, :@items, :%icons) {
+        my $max-icon = 0 max %icons.values.map({ $locale.width($_) }).max;
+        my $spacing  = 2 + ?$max-icon;
+
         %( min-h => @items.elems,
-           min-w => 2 + (0 max @items.map({ $locale.width(.<title>) }).max) )
+           min-w => $spacing + $max-icon +
+                    (0 max @items.map({ $locale.width(.<title>) }).max) )
     }
 }
 

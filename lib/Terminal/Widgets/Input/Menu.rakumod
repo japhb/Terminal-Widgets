@@ -10,6 +10,7 @@ class Terminal::Widgets::Input::Menu
     has UInt:D $.top-item = 0;
     has        $.hint-target;
     has        $.items;
+    has        %.icons;
     has        %!hotkey;
 
     #| Do basic input TWEAK, then compute hotkey hash
@@ -53,12 +54,14 @@ class Terminal::Widgets::Input::Menu
             last if $!items.end < my $i = $.top-item + $_;
 
             my $item      = $!items[$i];
+            my $icon      = %.icons{$item<id>} || '';
             my $title     = $locale.translate($item<title>);
-            my $extra     = 1 max $w - 1 - $locale.width($title);
-            my $formatted = " $title" ~ ' ' x $extra;
+            my $formatted = ' ' ~ ("$icon " if $icon) ~ $title ~ ' ';
+            my $extra     = 0 max $w - $locale.width($formatted);
+            my $padding   = ' ' x $extra;
             my $color     = $i == $!selected ?? %.color<highlight>
                                              !! $item<color> // $base-color;
-            $.grid.set-span($x, $y + $_, $formatted, $color);
+            $.grid.set-span($x, $y + $_, $formatted ~ $padding, $color);
         }
     }
 
