@@ -1,6 +1,8 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+
+0.1.1  2024-02-21T18:35:46-08:00
   [API Changes]
   - First *experimental* version of translatable UI elements; see Functionality
   - This release should still be compatible with existing 0.1.0 code, but
