@@ -1,6 +1,13 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Debugging]
+  - Add tunable Widget compositing debugging
+  - Make ACTIVE state more obvious in Input.gist-flags
+
+  [Functionality]
+  - Add support for menu item icons
+
 
 0.1.2  2024-02-21T20:44:08-08:00
   [Bug fixes]
