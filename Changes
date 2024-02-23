@@ -1,6 +1,8 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+
+0.1.3  2024-02-22T23:38:50-08:00
   [Debugging]
   - Add tunable Widget compositing debugging
   - Make ACTIVE state more obvious in Input.gist-flags
