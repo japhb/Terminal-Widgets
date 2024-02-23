@@ -21,7 +21,7 @@ role Terminal::Widgets::Input
        |callsame,
        ('FOCUSED' if self.toplevel.focused-widget === self),
        ('enabled' if $!enabled),
-       ('active'  if $!active),
+       ('ACTIVE'  if $!active),
        ('ERROR'   if $!error)
     }
 
