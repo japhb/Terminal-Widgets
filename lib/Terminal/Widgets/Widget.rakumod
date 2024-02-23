@@ -439,18 +439,31 @@ class Terminal::Widgets::Widget
     #| Union all dirty areas, update parent's dirty list if needed, and composite
     method composite(|) {
         my @dirty := self.snapshot-dirty-areas;
+        my $debug  = +($*DEBUG // 0);
+
+        note "Compositing:" if $debug >= 2;
+        note Backtrace.new.Str.subst(/' at ' \S+/, '', :g) if $debug >= 3;
 
         # XXXX: HACK, just assumes entire composed area is dirty on both paths
         if $.parent ~~ Terminal::Widgets::Widget:D {
             if $.parent.is-current-toplevel && $.parent.grid === $*TERMINAL.current-grid {
+                note "  Printing to content area: $.gist" if $debug;
+                note self.debug-grid if $debug >= 2;
+
                 $.parent.print-to-content-area(self);
             }
             else {
+                note "  Copying to content area and dirtying parent: $.gist" if $debug;
+                note self.debug-grid if $debug >= 2;
+
                 my ($x, $y, $w, $h) = $.parent.copy-to-content-area(self);
                 $.parent.add-dirty-rect($x, $y, $w, $h);
             }
         }
         else {
+            note "  FOLLOWING OLD COMPOSITE PATH FOR {self.^name} WITH PARENT {$.parent.^name}" if $debug;
+            note self.debug-grid if $debug >= 2;
+
             $.parent.add-dirty-rect($.x, $.y, $.w, $.h) if self.parent-dirtyable;
             # Invalidate T::P::Grid::grid-string cache
             $.grid.change-cell(0, 0, $.grid.grid[0][0]);
