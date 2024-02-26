@@ -17,12 +17,21 @@ class Terminal::Widgets::Input::RadioButton
         self.toplevel.add-to-group(self, $!group);
     }
 
+    #| All buttons in this button's group
+    method group-members() {
+        self.toplevel.group-members($!group)
+    }
+
+    #| Selected member of this button's group
+    method selected-member() {
+        self.group-members.first(*.state)
+    }
+
     #| If setting this button, unset remainder in group
     method set-state(Bool:D $state) {
         self.Terminal::Widgets::Input::Boolean::set-state($state);
         if $state {
-            my @others = self.toplevel.named-group{$.group}.grep(* !=== self);
-            .set-state(False) for @others;
+            .set-state(False) for self.group-members.grep(* !=== self);
         }
     }
 

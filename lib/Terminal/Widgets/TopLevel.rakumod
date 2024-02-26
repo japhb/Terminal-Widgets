@@ -34,6 +34,11 @@ does Terminal::Widgets::Layout::WidgetBuilding {
         %!named-group{$group} .= grep(* !=== $widget);
     }
 
+    #| All members of a given named group
+    method group-members(Str:D $group) {
+        %!named-group{$group} // Empty
+    }
+
     #| Check if the Terminal believes this is its current TopLevel
     method is-current-toplevel(--> Bool:D) {
         self === $.terminal.current-toplevel
