@@ -20,9 +20,9 @@ class FormUI is TopLevel {
             .checkbox(    :$.form, :%style, label => "It's a checkbox"),
             .checkbox(    :$.form, :%style, label => "It's another checkbox"),
             .radio-button(:$.form, :%style, label => "It's a radio button",
-                                            group => 'my-radios'),
+                                            group => 'my-radios', id => 'one'),
             .radio-button(:$.form, :%style, label => "It's a second radio button",
-                                            group => 'my-radios'),
+                                            group => 'my-radios', id => 'two'),
             .text-input(  :$.form, :%style),
             .node(
                 .button(  :$.form, :%style, label => 'Show State',
@@ -46,6 +46,14 @@ class FormUI is TopLevel {
                                             span('red',  $++ ~ ' '),
                                             span('blue', .gist)));
         }
+
+        my $selected = %.by-id<one>.selected-member;
+        $log-viewer.add-entry($selected
+                              ?? span('blue on_white',
+                                      "Radio button {$selected.id} selected")
+                              !! span('red on_white',
+                                      "No radio button selected"));
+
         $log-viewer.full-refresh;
     }
 
