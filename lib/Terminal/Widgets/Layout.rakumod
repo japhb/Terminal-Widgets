@@ -488,7 +488,7 @@ class Builder {
     #| Helper method for building leaf nodes
     method build-leaf($node-type, :%style, *%extra) {
         my $default = $node-type.default-styles(locale => $.context.locale,
-                                                :$.context, |%extra);
+                                                :$.context, :%style, |%extra);
         $node-type.new(:$.context, :%extra,
                        requested => Style.new(|$default, |%style))
     }
@@ -496,7 +496,7 @@ class Builder {
     #| Helper method for building nodes with optional children
     method build-node($node-type, *@children, :$vertical, :%style, *%extra) {
         my $default = $node-type.default-styles(locale => $.context.locale,
-                                                :$.context, |%extra);
+                                                :$.context, :%style, |%extra);
         $node-type.new(:$.context, :@children, :$vertical, :%extra,
                        requested => Style.new(|$default, |%style))
     }
