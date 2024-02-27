@@ -2,6 +2,7 @@
 
 use Terminal::Capabilities;
 
+use Terminal::Widgets::I18N::Locale;
 use Terminal::Widgets::TopLevel;
 use Terminal::Widgets::Terminal;
 
@@ -16,7 +17,8 @@ class Terminal::Widgets::App {
     multi method add-terminal(IO::Path:D   :$tty!,
                               IO::Handle:D :$input  = $tty.open(:r),
                               IO::Handle:D :$output = $tty.open(:a),
-                              *%caps) {
+                              Terminal::Widgets::I18N::Locale :$locale,
+                              :%ui-prefs, *%caps) {
         die "Terminal input and output are not both connected to a valid tty"
             unless $input.t && $output.t;
 
@@ -29,18 +31,21 @@ class Terminal::Widgets::App {
         }
 
         my $caps = Terminal::Capabilities.new(|%caps);
-        %!terminal{$tty.path} = Terminal::Widgets::Terminal.new(:$input, :$output,
-                                                                :$caps, :app(self));
+
+        %!terminal{$tty.path}
+        = Terminal::Widgets::Terminal.new(:$input, :$output, :$caps, :app(self),
+                                          |(:%ui-prefs if %ui-prefs),
+                                          |(:$locale if $locale));
     }
 
     #| add-terminal by IO::Path tty object
-    multi method add-terminal(IO::Path:D $tty, *%caps) {
-        self.add-terminal(:$tty, |%caps);
+    multi method add-terminal(IO::Path:D $tty, *%config) {
+        self.add-terminal(:$tty, |%config);
     }
 
     #| add-terminal by Str tty-name, defaulting to '/dev/tty' (controlling terminal)
-    multi method add-terminal(Str:D $tty-name = '/dev/tty', *%caps) {
-        self.add-terminal($tty-name.IO, |%caps);
+    multi method add-terminal(Str:D $tty-name = '/dev/tty', *%config) {
+        self.add-terminal($tty-name.IO, |%config);
     }
 
     #| Create a new top-level widget of a given class, add it to the known

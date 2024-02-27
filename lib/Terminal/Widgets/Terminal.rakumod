@@ -16,6 +16,7 @@ class Terminal::Widgets::Terminal
     has Terminal::Widgets::TopLevel       $.current-toplevel;
     has Terminal::Capabilities:D          $.caps   .= new;
     has Terminal::Widgets::I18N::Locale:D $.locale .= new;
+    has                                   %.ui-prefs;
 
     has Promise:D $.has-initialized .= new;
     has Promise:D $.has-started     .= new;
@@ -29,6 +30,7 @@ class Terminal::Widgets::Terminal
     has UInt:D    $.w = 0;
     has UInt:D    $.h = 0;
     has           $.app;
+
 
     # XXXX: Multiple T::P's in an app?
     has Terminal::Print:D $!terminal-print = PROCESS::<$TERMINAL> //= Terminal::Print.new;
@@ -162,6 +164,12 @@ class Terminal::Widgets::Terminal
 
     #| Change current locale and relayout to match
     method set-locale(Terminal::Widgets::I18N::Locale:D $!locale) {
+        self.set-toplevel($.current-toplevel);
+    }
+
+    #| Change UI preferences and relayout to match
+    method set-ui-prefs(%!ui-prefs) {
+        # XXXX: BROKEN
         self.set-toplevel($.current-toplevel);
     }
 
