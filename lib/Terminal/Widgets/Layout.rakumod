@@ -432,24 +432,34 @@ class Menu is Leaf {
 
 #| Single line inputs
 class SingleLineInput is Leaf {
-    method default-styles() { hash(set-h => 1) }
+    method input-class() { ... }
+
+    method default-styles(|c) {
+        my $min-w = self.input-class.min-width(|c);
+        %( :$min-w, set-h => 1 )
+    }
 }
 
 #| A single button
 class Button is SingleLineInput {
-    method default-styles(:$locale!, :$label = '') {
-        %( |callsame, min-w => 2 + $locale.width($label) )
-    }
+    method input-class() { ::('Terminal::Widgets::Input::Button') }
 }
 
 #| A single checkbox
-class Checkbox is SingleLineInput { }
+class Checkbox is SingleLineInput {
+    method input-class() { ::('Terminal::Widgets::Input::Checkbox') }
+}
 
 #| A single radio button
-class RadioButton is SingleLineInput { }
+class RadioButton is SingleLineInput {
+    method input-class() { ::('Terminal::Widgets::Input::RadioButton') }
+}
 
 #| A single-line text input field
-class TextInput is SingleLineInput { }
+class TextInput is SingleLineInput {
+    method input-class() { ::('Terminal::Widgets::Input::Text') }
+    method default-styles() { hash(set-h => 1) }
+}
 
 
 #| A widget node; localizes xy coordinate frame for children

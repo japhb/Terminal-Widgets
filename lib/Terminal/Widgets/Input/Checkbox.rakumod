@@ -9,14 +9,27 @@ use Terminal::Widgets::Input::Labeled;
 class Terminal::Widgets::Input::Checkbox
  does Terminal::Widgets::Input::Boolean
  does Terminal::Widgets::Input::Labeled {
-    #| Checkbox glyphs
-    method checkbox-text() {
+    #| Compute minimum content width for requested style and attributes
+    method min-width(:$locale!, :$context!, :$label = '') {
+        my @boxes  = self.checkboxes($context.caps);
+        my $maxbox = @boxes.map({ $locale.width($_) }).max;
+
+        $maxbox + ?$label + $locale.width($label)
+    }
+
+    #| Checkbox glyphs for given terminal capabilities
+    method checkboxes($caps = self.terminal.caps) {
         my constant %boxes =
             ASCII => « '[ ]' [x] »,
             Uni1  => «   ☐    ☒  »,
             Uni7  => «   🞏    🞕  »;
 
-        self.terminal.caps.best-symbol-choice(%boxes)[+$.state]
+        $caps.best-symbol-choice(%boxes)
+    }
+
+    #| Checkbox glyphs for current state
+    method checkbox-text($caps = self.terminal.caps) {
+        self.checkboxes($caps)[+$.state]
     }
 
     #| Refresh just the value, without changing anything else

@@ -12,6 +12,13 @@ use Terminal::Widgets::Input::Labeled;
 class Terminal::Widgets::Input::Button
  does Terminal::Widgets::Input
  does Terminal::Widgets::Input::Labeled {
+    #| Compute minimum content width for requested style and attributes
+    method min-width(:$locale!, :%style!, :$label = 'Button') {
+        my $bw         = %style<border-width>;
+        my $has-border = $bw ~~ Positional ?? $bw.grep(?*) !! ?$bw;
+        $locale.width($label) + 2 * !$has-border
+    }
+
     #| Refresh the whole input
     method full-refresh(Bool:D :$print = True) {
         self.clear-frame;

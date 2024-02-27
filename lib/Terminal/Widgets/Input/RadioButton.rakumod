@@ -35,14 +35,27 @@ class Terminal::Widgets::Input::RadioButton
         }
     }
 
-    #| Radio button glyphs
-    method button-text() {
+    #| Compute minimum content width for requested style and attributes
+    method min-width(:$locale!, :$context!, :$label = '') {
+        my @buttons   = self.buttons($context.caps);
+        my $maxbutton = @buttons.map({ $locale.width($_) }).max;
+
+        $maxbutton + ?$label + $locale.width($label)
+    }
+
+    #| Radio button glyphs for given terminal capabilities
+    method buttons($caps = self.terminal.caps) {
         my constant %buttons =
             ASCII => « '( )' (*) »,
             Uni1  => «   ○    ⊙  »,
             Uni7  => «   🞅    🞊  »;
 
-        self.terminal.caps.best-symbol-choice(%buttons)[+$.state]
+        $caps.best-symbol-choice(%buttons)
+    }
+
+    #| Radio button glyphs for current state
+    method button-text($caps = self.terminal.caps) {
+        self.buttons($caps)[+$.state]
     }
 
     #| Refresh just the value, without changing anything else
