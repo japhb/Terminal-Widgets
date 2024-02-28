@@ -8,7 +8,6 @@ class Terminal::Widgets::Input::Menu
  does Terminal::Widgets::Input {
     has UInt:D $.selected = 0;
     has UInt:D $.top-item = 0;
-    has        $.hint-target;
     has        $.items;
     has        %.icons;
     has        %!hotkey;
@@ -28,7 +27,6 @@ class Terminal::Widgets::Input::Menu
         "top-item:$!top-item",
         "selected:$!selected",
         "hotkeys:%!hotkey.elems()",
-        "hint-target:$!hint-target.gist()"
     }
 
     #| Refresh the whole input
@@ -63,20 +61,6 @@ class Terminal::Widgets::Input::Menu
                                              !! $item<color> // $base-color;
             $.grid.set-span($x, $y + $_, $formatted ~ $padding, $color);
         }
-    }
-
-    #| Set the hint to a plain Str
-    multi method set-hint(Str:D $hint) {
-        my $target = $.hint-target;
-           $target = self.toplevel.by-id{$target} if $target ~~ Str:D;
-
-        # XXXX: Defang the hint text?
-        $target.?set-text($hint);
-    }
-
-    #| Set the hint to a translatable
-    multi method set-hint($hint) {
-        self.set-hint(~$.terminal.locale.translate($hint))
     }
 
     #| Scroll to keep the selected element visible

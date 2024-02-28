@@ -1,6 +1,7 @@
 # ABSTRACT: Base role for input field widgets
 
 use Terminal::Widgets::Utils::Color;
+use Terminal::Widgets::Events;
 use Terminal::Widgets::Widget;
 use Terminal::Widgets::Form;
 
@@ -10,6 +11,8 @@ role Terminal::Widgets::Input
     has Bool:D $.enabled = True;
     has Bool:D $!active  = False;   # XXXX: Handle this for all inputs?
     has        &.process-input;
+    has        $.hint-target;
+    has        $.hint;
     has        $.error;
     has        %.color;
 
@@ -19,10 +22,11 @@ role Terminal::Widgets::Input
     # Input-specific gist flags
     method gist-flags() {
        |callsame,
+       ('ERROR'   if $!error),
+       ('ACTIVE'  if $!active),
        ('FOCUSED' if self.toplevel.focused-widget === self),
        ('enabled' if $!enabled),
-       ('ACTIVE'  if $!active),
-       ('ERROR'   if $!error)
+       ("hint-target:$!hint-target.gist()" if $!hint-target),
     }
 
 
@@ -81,6 +85,20 @@ role Terminal::Widgets::Input
         color-merge(@colors)
     }
 
+    #| Set the hint to a plain Str
+    multi method set-hint(Str:D $hint) {
+        my $target = $.hint-target;
+           $target = self.toplevel.by-id{$target} if $target ~~ Str:D;
+
+        # XXXX: Defang the hint text?
+        $target.?set-text($hint) if $target;
+    }
+
+    #| Set the hint to a translatable
+    multi method set-hint($hint) {
+        self.set-hint(~$.terminal.locale.translate($hint))
+    }
+
     # Set error state, then refresh
     method set-error($!error) { self.full-refresh }
 
@@ -101,5 +119,11 @@ role Terminal::Widgets::Input
     }
     method focus-prev-input() {
         self.toplevel.focus-on($_) with self.prev-widget(Terminal::Widgets::Input)
+    }
+
+    # Handle taking focus
+    multi method handle-event(Terminal::Widgets::Events::TakeFocus:D $event, AtTarget) {
+        self.Terminal::Widgets::Widget::handle-event($event, AtTarget);
+        self.set-hint($.hint) if $.hint.defined;
     }
 }
