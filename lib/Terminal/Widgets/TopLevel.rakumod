@@ -1,8 +1,8 @@
 # ABSTRACT: A top-level (full-screen) widget
 
-use Terminal::Widgets::Widget;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Layout;
+use Terminal::Widgets::Widget;
 
 
 #| A top-level full-screen widget with modal access to its controlling terminal
