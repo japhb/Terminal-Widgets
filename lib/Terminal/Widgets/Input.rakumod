@@ -100,6 +100,7 @@ role Terminal::Widgets::Input
     }
 
     # Set error state, then refresh
+    # XXXX: error-target and human-friendly error display?
     method set-error($!error) { self.full-refresh }
 
     # Set enabled flag, then refresh
