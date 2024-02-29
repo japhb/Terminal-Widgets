@@ -45,6 +45,7 @@ class Terminal::Widgets::Input::Menu
         my $w          = $.w - $layout.width-correction;
         my $h          = $.h - $layout.height-correction;
         my $base-color = self.current-color;
+        my $highlight  = $.colorset.highlight;
 
         self.draw-framing;
 
@@ -57,7 +58,7 @@ class Terminal::Widgets::Input::Menu
             my $formatted = ' ' ~ ("$icon " if $icon) ~ $title ~ ' ';
             my $extra     = 0 max $w - $locale.width($formatted);
             my $padding   = ' ' x $extra;
-            my $color     = $i == $!selected ?? %.color<highlight>
+            my $color     = $i == $!selected ?? $highlight
                                              !! $item<color> // $base-color;
             $.grid.set-span($x, $y + $_, $formatted ~ $padding, $color);
         }

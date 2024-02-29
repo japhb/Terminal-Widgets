@@ -1,6 +1,8 @@
 # ABSTRACT: Base role for input field widgets
 
 use Terminal::Widgets::Utils::Color;
+use Terminal::Widgets::ColorTheme;
+use Terminal::Widgets::ColorThemes;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Widget;
 use Terminal::Widgets::Form;
@@ -16,7 +18,8 @@ role Terminal::Widgets::Input
     has        $.error;
     has        %.color;
 
-    has Terminal::Widgets::Form $.form;
+    has Terminal::Widgets::ColorSet:D $.colorset = $DEFAULT-THEME.variants<attr4bit>;
+    has Terminal::Widgets::Form       $.form;
 
 
     # Input-specific gist flags
@@ -45,44 +48,23 @@ role Terminal::Widgets::Input
 
     # Make sure unset colors are defaulted, and optionally add input to a form
     submethod TWEAK() {
-        self.default-colors;
+        $!colorset .= clone(|%!color) if %!color;
         .add-input(self) with $!form;
-    }
-
-    # Set color defaults
-    method default-colors() {
-        my constant %defaults =
-            error     => 'red',
-            disabled  => gray-color(.5e0),
-            active    => 'bold inverse',
-            highlight => 'bold white on_blue',
-            blurred   => 'on_' ~ gray-color(.25e0),
-            focused   => 'on_' ~ rgb-color(.2e0, .2e0, 0e0),  # Dim yellow
-            default   => 'on_' ~ gray-color(.1e0),
-        ;
-
-        for %defaults.kv -> $state, $color {
-            %!color{$state} //= $color;
-        }
     }
 
     #| Determine proper color based on state variables, taking care to handle
     #| whatever color style mixtures have been requested
     method current-color() {
+        # Determine current state flags
         my $toplevel = self.toplevel;
         my $focused  = $toplevel.focused-widget === self;
         my $blurred  = $focused && !($toplevel.is-current-toplevel &&
                                      $toplevel.terminal.terminal-focused);
+        my %states = :text, :$focused, :$blurred, :$!active,
+                     error => ?$.error, disabled => !$.enabled;
 
-        # Merge all relevant colors into a single list of attribute requests
-        my @colors =  %.color<default>,
-                     (%.color<focused>  if     $focused),
-                     (%.color<blurred>  if     $blurred),
-                     (%.color<active>   if     $!active),
-                     (%.color<disabled> unless $.enabled),
-                     (%.color<error>    if     $.error);
-
-        color-merge(@colors)
+        # Map and merge colors according to current ColorSet
+        $.colorset.current-color(%states);
     }
 
     #| Set the hint to a plain Str
