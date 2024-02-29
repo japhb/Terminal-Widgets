@@ -53,7 +53,7 @@ class Terminal::Widgets::Input::Menu
             last if $!items.end < my $i = $.top-item + $_;
 
             my $item      = $!items[$i];
-            my $icon      = %.icons{$item<id>} || '';
+            my $icon      = ($item<id> && %.icons{$item<id>}) // '';
             my $title     = $locale.translate($item<title>);
             my $formatted = ' ' ~ ("$icon " if $icon) ~ $title ~ ' ';
             my $extra     = 0 max $w - $locale.width($formatted);
