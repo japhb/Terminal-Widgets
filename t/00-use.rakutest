@@ -5,6 +5,10 @@ use Terminal::Widgets;
 use Terminal::Widgets::Utils;
 use Terminal::Widgets::Utils::Color;
 
+use Terminal::Widgets::ColorTheme;
+use Terminal::Widgets::ColorThemes;
+use Terminal::Widgets::SpanStyle;
+
 use Terminal::Widgets::I18N::Locale;
 use Terminal::Widgets::I18N::Translation;
 
