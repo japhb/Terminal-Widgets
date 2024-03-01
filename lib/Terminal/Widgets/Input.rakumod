@@ -60,10 +60,13 @@ role Terminal::Widgets::Input
     #| Determine current active states affecting color choices
     method current-color-states() {
         my $toplevel = self.toplevel;
+        my $terminal = $toplevel.terminal;
         my $focused  = $toplevel.focused-widget === self;
         my $blurred  = $focused && !($toplevel.is-current-toplevel &&
-                                     $toplevel.terminal.terminal-focused);
-        my %states = :text, :input, :$focused, :$blurred, :$!active,
+                                     $terminal.terminal-focused);
+        my $active   = $!active && $terminal.ui-prefs<input-activation-flash>;
+
+        my %states = :text, :input, :$focused, :$blurred, :$active,
                      error => ?$.error, disabled => !$.enabled;
     }
 
