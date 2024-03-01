@@ -60,7 +60,7 @@ role Terminal::Widgets::Input
         my $focused  = $toplevel.focused-widget === self;
         my $blurred  = $focused && !($toplevel.is-current-toplevel &&
                                      $toplevel.terminal.terminal-focused);
-        my %states = :text, :$focused, :$blurred, :$!active,
+        my %states = :text, :input, :$focused, :$blurred, :$!active,
                      error => ?$.error, disabled => !$.enabled;
 
         # Map and merge colors according to current ColorSet
