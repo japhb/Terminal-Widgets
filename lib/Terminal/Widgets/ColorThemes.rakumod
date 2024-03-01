@@ -44,6 +44,18 @@ constant $default-attr8bit = Terminal::Widgets::ColorSet.new:
                              disabled  =>         gray-color(.5),
                              error     =>         rgb-color-flat(1, 0, 0);
 
+constant $default-attr8tango = Terminal::Widgets::ColorSet.new:
+                             text      => '',
+                             hint      => 'italic',
+                             link      => 'underline 75',
+                             input     => 'on_233',
+                             focused   => 'on_236',
+                             blurred   => 'on_239',
+                             highlight => '255 on_62',
+                             active    => 'inverse',
+                             disabled  => '244',
+                             error     => '160';
+
 
 ### 'pure' variants: ColorSets with no attributes or mixed color depth requirements
 
@@ -73,6 +85,32 @@ constant $default-pure8bit = Terminal::Widgets::ColorSet.new:
                              disabled  =>         gray-color(.5),
                              error     =>         rgb-color-flat(1, 0, 0);
 
+# Reference: Approximation of Tango terminal color scheme using 8-bit color palette
+#
+#   BASE      DIM   BRIGHT
+#   Black     236   240
+#   Red       160   196
+#   Green      70   113
+#   Yellow    178   227
+#   Blue       62    75
+#   Magenta    96   139
+#   Cyan       30    80
+#   White     252   255
+
+# Pure 8-bit, but using Tango + xterm-256 palette mapping to pseudo-match Tango 4-bit
+constant $default-tango8bit = Terminal::Widgets::ColorSet.new:
+                             text      => '',
+                             hint      => '30',
+                             link      => '75',
+                             input     => 'on_233',
+                             focused   => 'on_236',
+                             blurred   => 'on_239',
+                             highlight => '255 on_62',
+                             active    => '75 on_252',
+                             disabled  => '244',
+                             error     => '160';
+
+
 ### Default ColorTheme
 
 constant $DEFAULT-THEME is export = Terminal::Widgets::ColorTheme.new:
@@ -80,9 +118,11 @@ constant $DEFAULT-THEME is export = Terminal::Widgets::ColorTheme.new:
                                     name     => 'color-themes' ¢¿ 'Default',
                                     desc     => 'color-themes' ¢¿ 'Default color theme',
                                     variants => %(
-                                        attrmono => $default-attrmono,
-                                        attr4bit => $default-attr4bit,
-                                        attr8bit => $default-attr8bit,
-                                        pure4bit => $default-pure4bit,
-                                        pure8bit => $default-pure8bit,
+                                        attrmono   => $default-attrmono,
+                                        attr4bit   => $default-attr4bit,
+                                        attr8bit   => $default-attr8bit,
+                                        attr8tango => $default-attr8tango,
+                                        pure4bit   => $default-pure4bit,
+                                        pure8bit   => $default-pure8bit,
+                                        tango8bit  => $default-tango8bit,
                                     );
