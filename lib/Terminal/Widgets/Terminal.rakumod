@@ -7,6 +7,8 @@ use Terminal::LineEditor::RawTerminalInput;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::TopLevel;
 use Terminal::Widgets::I18N::Locale;
+use Terminal::Widgets::ColorTheme;
+use Terminal::Widgets::ColorThemes;
 
 
 #| A container for the unique ANSI terminal event pump for a given terminal
@@ -16,6 +18,8 @@ class Terminal::Widgets::Terminal
     has Terminal::Widgets::TopLevel       $.current-toplevel;
     has Terminal::Capabilities:D          $.caps   .= new;
     has Terminal::Widgets::I18N::Locale:D $.locale .= new;
+    has Terminal::Widgets::ColorTheme:D   $.color-theme = $DEFAULT-THEME;
+    has Terminal::Widgets::ColorSet:D     $.colorset = $!color-theme.variants<attr8tango>;
     has                                   %.ui-prefs;
 
     has Promise:D $.has-initialized .= new;

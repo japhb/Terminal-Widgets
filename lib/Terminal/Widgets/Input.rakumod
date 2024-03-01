@@ -2,7 +2,6 @@
 
 use Terminal::Widgets::Utils::Color;
 use Terminal::Widgets::ColorTheme;
-use Terminal::Widgets::ColorThemes;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Widget;
 use Terminal::Widgets::Form;
@@ -18,7 +17,7 @@ role Terminal::Widgets::Input
     has        $.error;
     has        %.color;
 
-    has Terminal::Widgets::ColorSet:D $.colorset = $DEFAULT-THEME.variants<attr8tango>;
+    has Terminal::Widgets::ColorSet:D $.colorset = self.terminal.colorset;
     has Terminal::Widgets::Form       $.form;
 
 
