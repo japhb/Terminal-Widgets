@@ -53,17 +53,18 @@ role Terminal::Widgets::Input
 
     #| Determine proper color based on state variables, taking care to handle
     #| whatever color style mixtures have been requested
-    method current-color() {
-        # Determine current state flags
+    method current-color($states = self.current-color-states) {
+        $.colorset.current-color($states)
+    }
+
+    #| Determine current active states affecting color choices
+    method current-color-states() {
         my $toplevel = self.toplevel;
         my $focused  = $toplevel.focused-widget === self;
         my $blurred  = $focused && !($toplevel.is-current-toplevel &&
                                      $toplevel.terminal.terminal-focused);
         my %states = :text, :input, :$focused, :$blurred, :$!active,
                      error => ?$.error, disabled => !$.enabled;
-
-        # Map and merge colors according to current ColorSet
-        $.colorset.current-color(%states);
     }
 
     #| Set the hint to a plain Str
