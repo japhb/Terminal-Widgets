@@ -35,8 +35,8 @@ constant $default-attr8bit = Terminal::Widgets::ColorSet.new:
                              text      => '',
                              hint      => 'italic',
                              link      => 'underline ' ~ rgb-color-flat(.2, .2, 1),
-                             input     => 'on_' ~ gray-color(.05),
-                             focused   => 'on_' ~ gray-color(.15),
+                             input     => 'on_' ~ gray-color(.06),
+                             focused   => 'on_' ~ gray-color(.18),
                              blurred   => 'on_' ~ gray-color(.3),
                              highlight =>         rgb-color-flat(1, 1,  1)
                                        ~ ' on_' ~ rgb-color-flat(0, 0, .8),
@@ -75,8 +75,8 @@ constant $default-pure8bit = Terminal::Widgets::ColorSet.new:
                              text      => '',
                              hint      =>         rgb-color-flat( 0, .8, .8),
                              link      =>         rgb-color-flat(.2, .2,  1),
-                             input     => 'on_' ~ gray-color(.05),
-                             focused   => 'on_' ~ gray-color(.15),
+                             input     => 'on_' ~ gray-color(.06),
+                             focused   => 'on_' ~ gray-color(.18),
                              blurred   => 'on_' ~ gray-color(.3),
                              highlight =>         rgb-color-flat(1, 1,  1)
                                        ~ ' on_' ~ rgb-color-flat(0, 0, .8),
