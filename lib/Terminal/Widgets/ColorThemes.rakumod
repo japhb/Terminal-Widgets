@@ -110,7 +110,7 @@ constant $default-pure8bit = Terminal::Widgets::ColorSet.new:
 #   White     252   255
 
 # Pure 8-bit, but using Tango + xterm-256 palette mapping to pseudo-match Tango 4-bit
-constant $default-tango8bit = Terminal::Widgets::ColorSet.new:
+constant $default-pure8tango = Terminal::Widgets::ColorSet.new:
                              text      => '',
                              hint      => '30',
                              link      => '75',
@@ -138,5 +138,5 @@ constant $DEFAULT-THEME is export = Terminal::Widgets::ColorTheme.new:
                                         attr8tango => $default-attr8tango,
                                         pure4bit   => $default-pure4bit,
                                         pure8bit   => $default-pure8bit,
-                                        tango8bit  => $default-tango8bit,
+                                        pure8tango => $default-pure8tango,
                                     );
