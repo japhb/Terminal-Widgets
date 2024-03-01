@@ -10,16 +10,18 @@ class Terminal::Widgets::ColorSet {
     has Str:D $.hint      is required;
     has Str:D $.link      is required;
     has Str:D $.input     is required;
+    has Str:D $.prompt    is required;
     has Str:D $.focused   is required;
     has Str:D $.blurred   is required;
     has Str:D $.highlight is required;
+    has Str:D $.cursor    is required;
     has Str:D $.active    is required;
     has Str:D $.disabled  is required;
     has Str:D $.error     is required;
 
     # Selectors in priority override order, lowest to highest priority
-    has @.selector-order  = < text hint link input focused blurred
-                              highlight active disabled error >;
+    has @.selector-order  = < text hint link input prompt focused blurred
+                              highlight cursor active disabled error >;
 
     #| Determine current color by merging selectors for all active states
     method current-color(%states) {
