@@ -104,7 +104,11 @@ class Terminal::Widgets::Input::Text
         my $x       = $layout.left-correction;
         my $y       = $layout.top-correction;
 
-        my $color   = self.current-color;
+        my $states  = self.current-color-states;
+        my $color   = self.current-color($states);
+        my $prompt  = self.current-color(%( |$states, :prompt ));
+        my $cursor  = self.current-color(%( |$states, :cursor ));
+
         my $refresh = $.input-field.render(:$edited);
         my $start   = $.input-field.field-start;
         my $pos     = $start
@@ -114,9 +118,9 @@ class Terminal::Widgets::Input::Text
         self.clear-frame;
         self.draw-framing;
 
-        $.grid.set-span($x,     $y, $.prompt-string, "$color bold");
+        $.grid.set-span($x,     $y, $.prompt-string, $prompt);
         $.grid.set-span($start, $y, $refresh, $color);
-        $.grid.set-span-color($pos, $pos, $y, "$color inverse");
+        $.grid.set-span-color($pos, $pos, $y, $cursor);
     }
 
     #| Fetch completions based on current buffer contents and cursor pos
