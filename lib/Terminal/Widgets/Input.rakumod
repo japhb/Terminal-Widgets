@@ -18,7 +18,7 @@ role Terminal::Widgets::Input
     has        $.error;
     has        %.color;
 
-    has Terminal::Widgets::ColorSet:D $.colorset = $DEFAULT-THEME.variants<attr4bit>;
+    has Terminal::Widgets::ColorSet:D $.colorset = $DEFAULT-THEME.variants<attr8tango>;
     has Terminal::Widgets::Form       $.form;
 
 
