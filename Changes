@@ -1,6 +1,8 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+
+0.1.4  2024-03-02T14:00:05-08:00
   [API Simplification]
   - Provide helper methods for cleaner form group handling
   - Allow App.add-terminal to set locale and ui-prefs as well
