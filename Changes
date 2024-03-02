@@ -1,6 +1,45 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [API Simplification]
+  - Provide helper methods for cleaner form group handling
+  - Allow App.add-terminal to set locale and ui-prefs as well
+
+  [Bug Fixes]
+  - Silence an uninitialized warning in Menu icon handling (when a particular
+    menu item doesn't have an icon associated with it)
+  - Much more correct min width defaults for SingleLineInput layouts
+
+  [Debugging]
+  - Improve Input.gist-flags for glanceability
+
+  [Examples]
+  - Demo group introspection in form example
+
+  [Functionality]
+  - All Inputs will set their hint (if any) when focused
+  - Initial sketch of ColorSet and ColorTheme functionality; API expected to
+    change in the future, especially for theme variants and variant selection
+  - Define a number of terminal capability variants on a default dark/cool theme
+  - Add Tango-approximating variants of default theme, for a less harsh look
+    than the highly saturated xterm-style variants
+  - Convert Input widgets to use ColorSets instead of hardcoding
+  - Add additional color selectors to configure additional UI elements
+    (hint, link, prompt, cursor)
+  - Allow Input activation flash to be turned off (activate/deactivate still
+    _happen_ in that case, but don't cause a widget to flash when they do)
+
+  [Testing]
+  - Update GitHub Workflow definition to clear deprecation warning
+
+  [Refactoring]
+  - Refactor min width default handling for SingleLineInput layouts
+  - Move hint handling from Input::Menu to Input base class
+
+  [Layout Styles]
+  - Pass requested layout style info into default-styles as well, so
+    default-styles can build out the implications of requested styles
+
 
 0.1.3  2024-02-22T23:38:50-08:00
   [Debugging]
