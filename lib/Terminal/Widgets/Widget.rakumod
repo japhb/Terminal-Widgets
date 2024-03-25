@@ -80,7 +80,7 @@ class Terminal::Widgets::Widget
         ~ " xo:{$.x-offset // '*'},yo:{$.y-offset // '*'},zo:{$.z-offset // '*'}"
     }
 
-    # Shorted name for gists
+    # Shortened name for gists
     method gist-name() {
         self.^name.subst('Terminal::Widgets::', '')
     }
