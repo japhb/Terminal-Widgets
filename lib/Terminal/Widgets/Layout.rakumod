@@ -408,6 +408,9 @@ class Divider is Leaf { }
 #| A multi-line auto-scrolling log viewer
 class LogViewer is Leaf { }
 
+#| A simple smoke chart visualization
+class SmokeChart is Leaf { }
+
 #| A minimal plain text container
 class PlainText is Leaf {
     method default-styles(:$locale!, :$text = '') {
@@ -517,6 +520,7 @@ class Builder {
     method divider(|c)      { self.build-leaf(Divider,     |c) }
     method log-viewer(|c)   { self.build-leaf(LogViewer,   |c) }
     method plain-text(|c)   { self.build-leaf(PlainText,   |c) }
+    method smoke-chart(|c)  { self.build-leaf(SmokeChart,  |c) }
 
     # Input leaf nodes (no children ever)
     method menu(|c)         { self.build-leaf(Menu,        |c) }

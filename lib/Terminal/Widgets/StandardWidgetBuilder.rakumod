@@ -8,6 +8,7 @@ use Terminal::Widgets::Input::Checkbox;
 use Terminal::Widgets::Input::RadioButton;
 use Terminal::Widgets::Input::Text;
 use Terminal::Widgets::Viewer::Log;
+use Terminal::Widgets::Viz::SmokeChart;
 
 
 #| Base class for dynamically building widgets, with knowledge of standard library
@@ -23,6 +24,7 @@ class Terminal::Widgets::StandardWidgetBuilder {
             Terminal::Widgets::Layout::RadioButton => Terminal::Widgets::Input::RadioButton,
             Terminal::Widgets::Layout::TextInput   => Terminal::Widgets::Input::Text,
             Terminal::Widgets::Layout::LogViewer   => Terminal::Widgets::Viewer::Log,
+            Terminal::Widgets::Layout::SmokeChart  => Terminal::Widgets::Viz::SmokeChart,
         }
     }
 
