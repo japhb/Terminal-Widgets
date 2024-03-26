@@ -377,12 +377,14 @@ class Terminal::Widgets::Widget
 
     #| Copy from a source grid to the content area of this widget, protected by
     #| this widget's grid lock (as per Terminal::Print::Grid rules).
-    method copy-to-content-area($source) {
+    method copy-to-content-area($source, $srect = (0, 0, $source.w, $source.h)) {
         # NOTE: Micro-optimized a bit because it's on a very hot path
 
         # Clip to our content area and check that the result is non-empty
-        my $clipped = self.clip-to-content-area($source.x, $source.y,
-                                                $source.w, $source.h);
+        my $clipped = self.clip-to-content-area($source.x + $srect[0],
+                                                $source.y + $srect[1],
+                                                $srect[2],  $srect[3],
+                                                $srect[0],  $srect[1]);
         my ($dx, $dy, $w, $h, $sx, $sy) = @$clipped;
         return $clipped unless $w && $h;
 
@@ -413,10 +415,10 @@ class Terminal::Widgets::Widget
     #| Copy from a source grid to the content area of this widget as with
     #| .copy-to-content-area, and then print the modified area, all while
     #| holding this widget's grid lock (as per Terminal::Print::Grid rules).
-    method print-to-content-area($source) {
+    method print-to-content-area($source, $srect = (0, 0, $source.w, $source.h)) {
         # NOTE: Micro-optimized a bit because it's on a very hot path
         $.grid.with-grid-lock: {
-            my ($x1, $y1, $w, $h) = self.copy-to-content-area($source);
+            my ($x1, $y1, $w, $h) = self.copy-to-content-area($source, $srect);
             my $x2 = $x1 + $w - 1;
             my $g  = $.grid;
 
