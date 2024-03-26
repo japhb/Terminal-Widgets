@@ -43,10 +43,7 @@ role Terminal::Widgets::DirtyAreas {
         $!dirty-lock.protect: {
             @dirty = $!all-dirty ?? ((0, 0, $.w, $.h),) !! @!dirty-rects;
             @!dirty-rects = Empty;
-
-            # Intentionally *NOT* turning off $!all-dirty here; will do that at
-            # composite time instead iff the widget understands how to do so
-            # XXXX: Flag to change this behavior?
+            $!all-dirty   = False;
         }
         @dirty
     }
@@ -488,35 +485,40 @@ class Terminal::Widgets::Widget
 
     #| Union all dirty areas, update parent's dirty list if needed, and composite
     method composite(|) {
-        my @dirty := self.snapshot-dirty-areas;
-        my $debug  = +($*DEBUG // 0);
+        my @dirty  := self.snapshot-dirty-areas;
+        my @merged := self.merge-dirty-areas(@dirty);
+        my $debug   = +($*DEBUG // 0);
 
         note "Compositing:" if $debug >= 2;
         note Backtrace.new.Str.subst(/' at ' \S+/, '', :g) if $debug >= 3;
 
-        # XXXX: HACK, just assumes entire composed area is dirty on both paths
         if $.parent ~~ Terminal::Widgets::Widget:D {
             if $.parent.is-current-toplevel && $.parent.grid === $*TERMINAL.current-grid {
                 note "  Printing to content area: $.gist" if $debug;
                 note self.debug-grid if $debug >= 2;
 
-                $.parent.print-to-content-area(self);
+                $.parent.print-to-content-area(self, $_) for @merged;
             }
             else {
                 note "  Copying to content area and dirtying parent: $.gist" if $debug;
                 note self.debug-grid if $debug >= 2;
 
-                my ($x, $y, $w, $h) = $.parent.copy-to-content-area(self);
-                $.parent.add-dirty-rect($x, $y, $w, $h);
+                for @merged {
+                    my ($x, $y, $w, $h) = $.parent.copy-to-content-area(self, $_);
+                    $.parent.add-dirty-rect($x, $y, $w, $h);
+                }
             }
         }
         else {
             note "  FOLLOWING OLD COMPOSITE PATH FOR {self.^name} WITH PARENT {$.parent.^name}" if $debug;
             note self.debug-grid if $debug >= 2;
 
+            # XXXX: HACK, just assumes entire composed area is dirty
             $.parent.add-dirty-rect($.x, $.y, $.w, $.h) if self.parent-dirtyable;
+
             # Invalidate T::P::Grid::grid-string cache
             $.grid.change-cell(0, 0, $.grid.grid[0][0]);
+
             nextsame;
         }
     }
