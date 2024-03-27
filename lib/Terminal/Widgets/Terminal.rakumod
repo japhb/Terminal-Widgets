@@ -197,10 +197,10 @@ class Terminal::Widgets::Terminal
     method quit() {
         if $.has-started {
             self.set-done;            # Stop input parser reactor
-            $.control.send: 'done';   # Stop main event reactor
+            $.control.send: 'done';   # Stop main event reactor (triggering shutdown)
         }
         else {
-            self!shutdown;
+            self!shutdown;            # Nothing to stop; just go straight to shutdown
         }
     }
 
