@@ -32,7 +32,8 @@ does Terminal::Widgets::Input {
             ;
 
         with %keymap{$event.keyname} {
-            when 'toggle-state' { self.toggle-state     }
+            # Allow navigation always, but only change state if enabled
+            when 'toggle-state' { self.toggle-state if $.enabled }
             when 'next-input'   { self.focus-next-input }
             when 'prev-input'   { self.focus-prev-input }
         }
@@ -40,7 +41,8 @@ does Terminal::Widgets::Input {
 
     multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
                               $event where !*.mouse.pressed, AtTarget) {
+        # Always focus on click, but only change state if enabled
         self.toplevel.focus-on(self);
-        self.toggle-state;
+        self.toggle-state if $.enabled;
     }
 }

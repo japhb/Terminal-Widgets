@@ -126,7 +126,8 @@ class Terminal::Widgets::Input::Menu
 
         my $keyname = $event.keyname;
         with %keymap{$keyname} {
-            when 'select'     { self.select }
+            # Allow navigation always, but only allow selection if enabled
+            when 'select'     { self.select if $.enabled }
             when 'prev-item'  { self.prev-item }
             when 'next-item'  { self.next-item }
             when 'next-input' { self.focus-next-input }
@@ -140,8 +141,9 @@ class Terminal::Widgets::Input::Menu
     #| Handle mouse events
     multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
                               $event where !*.mouse.pressed, AtTarget) {
+        # Always focus on click, but only allow selection if enabled
         self.toplevel.focus-on(self);
-        self.select($.top-item + $event.relative-to(self)[1]);
+        self.select($.top-item + $event.relative-to(self)[1]) if $.enabled;
     }
 
     #| Handle LayoutBuilt event by updating hint and scrolling

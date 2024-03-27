@@ -165,6 +165,10 @@ class Terminal::Widgets::Input::Text
     #| Dispatch a key event when enabled for editing
     multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D
                               $event where *.key.defined, AtTarget) {
+        # Ignore keyboard input if disabled
+        return unless $.enabled;
+
+        # Otherwise extract, decode, and dispatch key
         my $raw-key = $event.key;
         if $!literal-mode {
             my $string = $raw-key ~~ Str ?? $raw-key !! ~($raw-key.value);
@@ -209,7 +213,7 @@ class Terminal::Widgets::Input::Text
     multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
                               $event where !*.mouse.pressed, AtTarget) {
         self.toplevel.focus-on(self);
-        # XXXX: Move cursor?
+        # XXXX: Move cursor if enabled?  What about scroll?
     }
 
     #| Abort entry in progress

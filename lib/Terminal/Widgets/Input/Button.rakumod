@@ -66,7 +66,8 @@ class Terminal::Widgets::Input::Button
             ;
 
         with %keymap{$event.keyname} {
-            when 'click'      { self.click }
+            # Allow navigation always, but only activate if enabled
+            when 'click'      { self.click if $.enabled }
             when 'next-input' { self.focus-next-input }
             when 'prev-input' { self.focus-prev-input }
         }
@@ -74,7 +75,8 @@ class Terminal::Widgets::Input::Button
 
     multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
                               $event where !*.mouse.pressed, AtTarget) {
+        # Always focus on click, but only activate if enabled
         self.toplevel.focus-on(self);
-        self.click;
+        self.click if $.enabled;
     }
 }
