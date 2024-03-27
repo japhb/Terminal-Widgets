@@ -9,11 +9,13 @@ use Terminal::Widgets::Viz::SmokeChart;
 class HeatPingUI is TopLevel {
     has Form:D    $.form .= new;
     has Channel:D $.stop .= new;
-    has UInt:D    $.ms-per-pixel = 2;
+    has UInt:D    $.ms-per-pixel   = 2;
+    has Str:D     $.default-target = '8.8.8.8';
 
     method initial-layout($builder, $width, $height) {
         with $builder {
-            .text-input(:$.form, id => 'target', prompt-string => 'Ping Target >'),
+            .text-input(:$.form, id => 'target', :!clear-on-finish,
+                        prompt-string => 'Ping Target >'),
             .node(
                 .button(:$.form, id => 'start', label => 'Start',
                         process-input  => { self.start-ping }),
@@ -40,7 +42,8 @@ class HeatPingUI is TopLevel {
         self.focus-on(%.by-id<chart>);
 
         # Prepare a `ping` child process that the reactor will listen to
-        my $target = %.by-id<target>.input-field.buffer.contents || '8.8.8.8';
+        my $target = %.by-id<target>.input-field.buffer.contents
+                     || $.default-target;
         my $ping = Proc::Async.new('ping', $target);
 
         # Update window title to indicate target
@@ -89,6 +92,11 @@ class HeatPingUI is TopLevel {
     multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D $event
                               where *.keyname eq 'Ctrl-C', BubbleUp) {
         self.stop-ping if self.focused-child === %.by-id<chart>;
+    }
+
+    # Add an initial value to the Text input when building is complete
+    multi method handle-event(Terminal::Widgets::Events::LayoutBuilt:D $event, BubbleUp) {
+        %.by-id<target>.full-refresh($.default-target);
     }
 }
 
