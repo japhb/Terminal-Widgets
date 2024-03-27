@@ -23,6 +23,8 @@ class Terminal::Widgets::Input::Text
     has UInt $!completion-index;
 
     has Bool:D $!literal-mode    = False;
+    has Bool:D $.trim-input      = True;
+    has Bool:D $.clear-on-finish = True;
     has Str:D  $.prompt-string   = '>';
     has Str:D  $.disabled-string = '';
 
@@ -223,18 +225,20 @@ class Terminal::Widgets::Input::Text
 
     #| Finish entry in progress
     method finish-entry() {
-        my $input = $.input-field.buffer.contents.trim;
-        self.reset-entry-state;
+        my $input  = $.input-field.buffer.contents;
+           $input .= trim if $.trim-input;
+
+        self.reset-entry-state($.clear-on-finish ?? '' !! $input);
 
         self.add-history($input) if $input;
         $_($input) with &.process-input;
     }
 
     #| Clear entry state, clear input field, and refresh
-    method reset-entry-state() {
+    method reset-entry-state($replacement-content = '') {
         $!literal-mode = False;
         $.unfinished-entry = '';
-        self.full-refresh('');
+        self.full-refresh($replacement-content);
     }
 
     # History helpers
