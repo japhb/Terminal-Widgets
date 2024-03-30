@@ -1,7 +1,5 @@
 # ABSTRACT: Simple auto-scrolling log viewer
 
-use Text::MiscUtils::Layout;
-
 use Terminal::Widgets::Widget;
 use Terminal::Widgets::SpanStyle;
 

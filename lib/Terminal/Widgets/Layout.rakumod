@@ -2,7 +2,6 @@
 
 unit module Terminal::Widgets::Layout;
 
-use Text::MiscUtils::Layout;
 use Terminal::Widgets::Layout::BoxModel;
 
 

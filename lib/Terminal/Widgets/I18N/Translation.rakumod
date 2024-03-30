@@ -2,7 +2,6 @@
 
 unit module Terminal::Widgets::I18N::Translation;
 
-use Text::MiscUtils::English;
 use Text::MiscUtils::Layout;
 
 
