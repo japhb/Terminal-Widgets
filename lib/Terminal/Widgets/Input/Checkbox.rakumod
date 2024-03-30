@@ -1,5 +1,7 @@
 # ABSTRACT: A single checkbox, optionally labeled
 
+use Text::MiscUtils::Layout;
+
 use Terminal::Widgets::I18N::Translation;
 use Terminal::Widgets::Input::Boolean;
 use Terminal::Widgets::Input::Labeled;
@@ -38,7 +40,9 @@ class Terminal::Widgets::Input::Checkbox
         my $x      = $layout.left-correction;
         my $y      = $layout.top-correction;
 
-        $.grid.set-span-text($x, $y, self.checkbox-text);
+        my $text = self.checkbox-text;
+        $.grid.set-span-text($x, $y, $text);
+        self.add-dirty-rect($x, $y, duospace-width($text), 1);
         self.composite(:$print);
     }
 
