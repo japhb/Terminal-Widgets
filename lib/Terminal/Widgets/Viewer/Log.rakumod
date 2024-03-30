@@ -97,7 +97,7 @@ class Terminal::Widgets::Viewer::Log
                 my $x = $l;
                 for @spans {
                     $.grid.set-span($x, $t + $y, .text, .color);
-                    $x += duospace-width(.text);
+                    $x += .width;
                 }
                 last VIEWER_LINE if ++$y >= $h;
             }

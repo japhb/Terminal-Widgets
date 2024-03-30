@@ -2,6 +2,8 @@
 
 unit module Terminal::Widgets::SpanStyle;
 
+use Text::MiscUtils::Layout;
+
 use Terminal::Widgets::Utils::Color;
 
 
@@ -9,6 +11,12 @@ use Terminal::Widgets::Utils::Color;
 class Span {
     has Str:D $.color = '';  #= Color/SGR attributes to apply to this span
     has Str:D $.text  = '';  #= Actual (unstyled) textual content
+    has UInt  $!width;
+
+    #| Lazily calculate and cache duospace width
+    method width(--> UInt:D) {
+        $!width //= duospace-width($!text)
+    }
 
     #| Apply current span attributes on top of parent attributes, returning a
     #| new Span if needed or self if parent attributes were empty.  This method
