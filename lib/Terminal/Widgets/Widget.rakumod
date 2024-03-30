@@ -61,22 +61,21 @@ role Terminal::Widgets::DirtyAreas {
         # Otherwise, start merging axis-aligned bounding boxes, converting
         # as needed between rect (x, y, w, h) and AABB (x1, y1, x2, y2) forms.
         my $first = @dirty[0];
-        my $aabb  = ($first[0],  $first[1],
-                     $first[0] + $first[2] - 1,
-                     $first[1] + $first[3] - 1);
+        my $x1    = $first[0];
+        my $y1    = $first[1];
+        my $x2    = $first[0] + $first[2] - 1;
+        my $y2    = $first[1] + $first[3] - 1;
 
         for 1 ..^ @dirty {
             my $dirty = @dirty[$_];
-            $aabb[0] min= $dirty[0];
-            $aabb[1] min= $dirty[1];
-            $aabb[2] max= $dirty[0] + $dirty[2] - 1;
-            $aabb[3] max= $dirty[1] + $dirty[3] - 1;
+            $x1 min= $dirty[0];
+            $y1 min= $dirty[1];
+            $x2 max= $dirty[0] + $dirty[2] - 1;
+            $y2 max= $dirty[1] + $dirty[3] - 1;
         }
 
         # Final conversion back to (x, y, w, h) form as only merged rect
-        my $rect   = ($aabb[0],  $aabb[1],
-                      $aabb[2] - $aabb[0] + 1,
-                      $aabb[3] - $aabb[1] + 1);
+        my $rect   = ($x1, $y1, $x2 - $x1 + 1, $y2 - $y1 + 1);
         my @merged = $rect,;
     }
 }
