@@ -26,6 +26,7 @@ use Terminal::Widgets::PlainText;
 
 use Terminal::Widgets::Scrollable;
 use Terminal::Widgets::ScrollBar;
+use Terminal::Widgets::SpanBuffer;
 
 use Terminal::Widgets::Input;
 use Terminal::Widgets::Input::Menu;
