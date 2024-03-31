@@ -404,6 +404,20 @@ class Spacer is Leaf { }
 #| A visual divider (such as box-drawing lines) between layout nodes
 class Divider is Leaf { }
 
+#| A horizontal scrollbar
+class HScrollBar is Leaf {
+    method default-styles(:$show-end-arrows) {
+        %( set-h => 1, min-w => 1 + ?$show-end-arrows )
+    }
+}
+
+#| A vertical scrollbar
+class VScrollBar is Leaf {
+    method default-styles(:$show-end-arrows) {
+        %( set-w => 1, min-h => 1 + ?$show-end-arrows )
+    }
+}
+
 #| A multi-line auto-scrolling log viewer
 class LogViewer is Leaf { }
 
@@ -517,6 +531,8 @@ class Builder {
     method leaf(|c)         { self.build-leaf(Leaf,        |c) }
     method spacer(|c)       { self.build-leaf(Spacer,      |c) }
     method divider(|c)      { self.build-leaf(Divider,     |c) }
+    method hscroll(|c)      { self.build-leaf(HScrollBar,  |c) }
+    method vscroll(|c)      { self.build-leaf(VScrollBar,  |c) }
     method log-viewer(|c)   { self.build-leaf(LogViewer,   |c) }
     method plain-text(|c)   { self.build-leaf(PlainText,   |c) }
     method smoke-chart(|c)  { self.build-leaf(SmokeChart,  |c) }

@@ -24,7 +24,7 @@ role Terminal::Widgets::DirtyAreas {
     }
 
     #| Set the all-dirty flag
-    method set-all-dirty(Bool:D $dirty) {
+    method set-all-dirty(Bool:D $dirty = True) {
         $!dirty-lock.protect: {
             $!all-dirty = $dirty;
         }
@@ -308,10 +308,20 @@ class Terminal::Widgets::Widget
         $.parent.add-dirty-rect($x, $y, $w, $h) if $add-dirt;
     }
 
+    #| Compute the width of the content area (widget minus framing), min 0
+    method content-width(--> UInt:D) {
+        0 max $.w - $.layout.computed.width-correction
+    }
+
+    #| Compute the height of the content area (widget minus framing), min 0
+    method content-height(--> UInt:D) {
+        0 max $.h - $.layout.computed.height-correction
+    }
+
     #| Clear the frame and set it all-dirty (so it requires composite)
     method clear-frame() {
         $.grid.clear;
-        self.set-all-dirty(True);
+        self.set-all-dirty;
     }
 
     #| Composite children with painter's algorithm (in Z order, back to front)

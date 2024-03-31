@@ -2,6 +2,7 @@
 
 use Terminal::Widgets::Layout;
 use Terminal::Widgets::PlainText;
+use Terminal::Widgets::ScrollBar;
 use Terminal::Widgets::Input::Menu;
 use Terminal::Widgets::Input::Button;
 use Terminal::Widgets::Input::Checkbox;
@@ -18,6 +19,8 @@ class Terminal::Widgets::StandardWidgetBuilder {
         :{
             Terminal::Widgets::Layout::Widget      => Terminal::Widgets::Widget,
             Terminal::Widgets::Layout::PlainText   => Terminal::Widgets::PlainText,
+            Terminal::Widgets::Layout::HScrollBar  => Terminal::Widgets::HScrollBar,
+            Terminal::Widgets::Layout::VScrollBar  => Terminal::Widgets::VScrollBar,
             Terminal::Widgets::Layout::Menu        => Terminal::Widgets::Input::Menu,
             Terminal::Widgets::Layout::Button      => Terminal::Widgets::Input::Button,
             Terminal::Widgets::Layout::Checkbox    => Terminal::Widgets::Input::Checkbox,
