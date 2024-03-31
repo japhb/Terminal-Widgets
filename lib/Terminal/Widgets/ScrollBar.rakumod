@@ -124,6 +124,29 @@ class Terminal::Widgets::HScrollBar
         self.set-all-dirty;
         self.composite;
     }
+
+    #| Handle keyboard events
+    multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D
+                              $event where *.key.defined, AtTarget) {
+        my constant %keymap =
+            CursorLeft       => 'arrow-left-scroll',
+            CursorRight      => 'arrow-right-scroll',
+            Ctrl-CursorLeft  => 'bar-left-scroll',
+            Ctrl-CursorRight => 'bar-right-scroll',
+            Home             => 'home-scroll',
+            End              => 'end-scroll',
+            ;
+
+        my $keyname = $event.keyname;
+        with %keymap{$keyname} {
+            when 'arrow-left-scroll'  { self.arrow-left-scroll  }
+            when 'arrow-right-scroll' { self.arrow-right-scroll }
+            when 'bar-left-scroll'    { self.bar-left-scroll    }
+            when 'bar-right-scroll'   { self.bar-right-scroll   }
+            when 'home-scroll'        { self.home-scroll        }
+            when 'end-scroll'         { self.end-scroll         }
+        }
+    }
 }
 
 
@@ -193,5 +216,28 @@ class Terminal::Widgets::VScrollBar
         # Everything was changed
         self.set-all-dirty;
         self.composite;
+    }
+
+    #| Handle keyboard events
+    multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D
+                              $event where *.key.defined, AtTarget) {
+        my constant %keymap =
+            CursorUp        => 'arrow-up-scroll',
+            CursorDown      => 'arrow-down-scroll',
+            Ctrl-CursorUp   => 'bar-up-scroll',
+            Ctrl-CursorDown => 'bar-down-scroll',
+            Home            => 'home-scroll',
+            End             => 'end-scroll',
+            ;
+
+        my $keyname = $event.keyname;
+        with %keymap{$keyname} {
+            when 'arrow-up-scroll'   { self.arrow-up-scroll   }
+            when 'arrow-down-scroll' { self.arrow-down-scroll }
+            when 'bar-up-scroll'     { self.bar-up-scroll     }
+            when 'bar-down-scroll'   { self.bar-down-scroll   }
+            when 'home-scroll'       { self.home-scroll       }
+            when 'end-scroll'        { self.end-scroll        }
+        }
     }
 }
