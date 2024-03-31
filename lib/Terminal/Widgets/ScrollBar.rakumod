@@ -1,18 +1,24 @@
 # ABSTRACT: Roles and classes for scrollbars
 
-use Terminal::Widgets::Scrollable;
+use Terminal::Widgets::Events;
 use Terminal::Widgets::Widget;
+use Terminal::Widgets::Scrollable;
+
+subset ScrollTarget where Str | Terminal::Widgets::Scrollable;
 
 
 #| Role for scrollbars of any orientation
 role Terminal::Widgets::Scrollbar {
-    has Terminal::Widgets::Scrollable:D $.scroll-target is required;
+    has ScrollTarget:D $.scroll-target is required;
 
     has Bool:D $.show-end-arrows      = True;
     has UInt:D $.end-arrow-scroll-inc = 0;
     has UInt:D $.bar-click-scroll-inc = 0;
 
     has %!glyphs = self.scrollbar-glyphs;
+
+    # Required methods
+    method update-bar-position() { ... }
 
     #| Choose glyphs appropriate to terminal capabilities
     method scrollbar-glyphs($caps = self.terminal.caps) {
@@ -43,8 +49,11 @@ role Terminal::Widgets::Scrollbar {
         $caps.best-symbol-choice(%glyphs);
     }
 
-    # Required methods
-    method update-bar-position() { ... }
+    #| Handle LayoutBuilt event by resolving scroll-target
+    multi method handle-event(Terminal::Widgets::Events::LayoutBuilt:D, AtTarget) {
+        $!scroll-target = self.toplevel.by-id{$!scroll-target}
+            if $!scroll-target ~~ Str:D;
+    }
 }
 
 
@@ -74,6 +83,16 @@ class Terminal::Widgets::HScrollBar
 
     method bar-right-scroll() {
         $.scroll-target.change-x-scroll(+$.bar-click-scroll-inc);
+        self.update-bar-position;
+    }
+
+    method home-scroll() {
+        $.scroll-target.set-x-scroll(0);
+        self.update-bar-position;
+    }
+
+    method end-scroll() {
+        $.scroll-target.set-x-scroll($.scroll-target.x-max);
         self.update-bar-position;
     }
 
@@ -134,6 +153,16 @@ class Terminal::Widgets::VScrollBar
 
     method bar-down-scroll() {
         $.scroll-target.change-y-scroll(+$.bar-click-scroll-inc);
+        self.update-bar-position;
+    }
+
+    method home-scroll() {
+        $.scroll-target.set-y-scroll(0);
+        self.update-bar-position;
+    }
+
+    method end-scroll() {
+        $.scroll-target.set-y-scroll($.scroll-target.y-max);
         self.update-bar-position;
     }
 
