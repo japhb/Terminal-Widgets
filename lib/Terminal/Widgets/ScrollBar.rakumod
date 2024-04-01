@@ -100,9 +100,9 @@ class Terminal::Widgets::HScrollBar
         # Compute left and right column of handle on scrollbar,
         # safely accounting for several possible edge cases
         my $width  = self.content-width - 2 * $.show-end-arrows;
-        my $max    = $.target.x-max || 1;
-        my $scroll = $.target.x-scroll min $max;
-        my $end    = 0 max ($max min $scroll + $.target.content-width - 1);
+        my $max    = $.scroll-target.x-max || 1;
+        my $scroll = $.scroll-target.x-scroll min $max;
+        my $end    = 0 max ($max min $scroll + $.scroll-target.content-width - 1);
         my $right  = floor(  $width * $end    / $max);
         my $left   = ceiling($width * $scroll / $max) min $right;
 
@@ -111,13 +111,13 @@ class Terminal::Widgets::HScrollBar
         my $y      =           $layout.top-correction;
         my $x1     =           $layout.left-correction  + $.show-end-arrows;
         my $x2     = $.w - 1 - $layout.right-correction - $.show-end-arrows;
-        $.grid.change-cell($_, $y, %.glyphs<bar>)    for $x1   .. $x2;
-        $.grid.change-cell($_, $y, %.glyphs<handle>) for $left .. $right;
+        $.grid.change-cell($_, $y, %!glyphs<bar>)    for $x1   .. $x2;
+        $.grid.change-cell($_, $y, %!glyphs<handle>) for $left .. $right;
 
         # Draw optional end arrows
         if $.show-end-arrows {
-            $.grid.change-cell($x1 - 1, $y, %.glyphs<left>);
-            $.grid.change-cell($x2 + 1, $y, %.glyphs<right>);
+            $.grid.change-cell($x1 - 1, $y, %!glyphs<left>);
+            $.grid.change-cell($x2 + 1, $y, %!glyphs<right>);
         }
 
         # Everything was changed
@@ -193,9 +193,9 @@ class Terminal::Widgets::VScrollBar
         # Compute top and bottom row of handle on scrollbar,
         # safely accounting for several possible edge cases
         my $height = self.content-height - 2 * $.show-end-arrows;
-        my $max    = $.target.y-max || 1;
-        my $scroll = $.target.y-scroll min $max;
-        my $end    = 0 max ($max min $scroll + $.target.content-height - 1);
+        my $max    = $.scroll-target.y-max || 1;
+        my $scroll = $.scroll-target.y-scroll min $max;
+        my $end    = 0 max ($max min $scroll + $.scroll-target.content-height - 1);
         my $bottom = floor(  $height * $end    / $max);
         my $top    = ceiling($height * $scroll / $max) min $bottom;
 
@@ -204,13 +204,13 @@ class Terminal::Widgets::VScrollBar
         my $x      =           $layout.left-correction;
         my $y1     =           $layout.top-correction    + $.show-end-arrows;
         my $y2     = $.h - 1 - $layout.bottom-correction - $.show-end-arrows;
-        $.grid.change-cell($x, $_, %.glyphs<bar>)    for $y1  .. $y2;
-        $.grid.change-cell($x, $_, %.glyphs<handle>) for $top .. $bottom;
+        $.grid.change-cell($x, $_, %!glyphs<bar>)    for $y1  .. $y2;
+        $.grid.change-cell($x, $_, %!glyphs<handle>) for $top .. $bottom;
 
         # Draw optional end arrows
         if $.show-end-arrows {
-            $.grid.change-cell($x, $y1 - 1, %.glyphs<up>);
-            $.grid.change-cell($x, $y2 + 1, %.glyphs<down>);
+            $.grid.change-cell($x, $y1 - 1, %!glyphs<up>);
+            $.grid.change-cell($x, $y2 + 1, %!glyphs<down>);
         }
 
         # Everything was changed
