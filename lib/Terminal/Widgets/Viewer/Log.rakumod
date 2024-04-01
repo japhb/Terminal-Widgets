@@ -35,6 +35,10 @@ class Terminal::Widgets::Viewer::Log
         my $id    = ~$entry.id;
         my $lines = %!hard-lines{$id} = self.hard-lines($entry);
 
+        # Widen horizontal scrolling if new lines are longer
+        my $widest = $lines.map(*.map(*.width).sum).max;
+        self.set-x-max($widest) if $widest > $.x-max;
+
         # Update for next start line
         my $after = $!next-start + $lines.elems;
         %!start-line{$id} = $!next-start;
