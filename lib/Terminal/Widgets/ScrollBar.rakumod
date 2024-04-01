@@ -53,6 +53,7 @@ role Terminal::Widgets::Scrollbar {
     multi method handle-event(Terminal::Widgets::Events::LayoutBuilt:D, AtTarget) {
         $!scroll-target = self.toplevel.by-id{$!scroll-target}
             if $!scroll-target ~~ Str:D;
+        $!scroll-target.scrollbars.set(self);
     }
 }
 
@@ -68,32 +69,26 @@ class Terminal::Widgets::HScrollBar
 
     method arrow-left-scroll() {
         $.scroll-target.change-x-scroll(-$.end-arrow-scroll-inc);
-        self.update-bar-position;
     }
 
     method arrow-right-scroll() {
         $.scroll-target.change-x-scroll(+$.end-arrow-scroll-inc);
-        self.update-bar-position;
     }
 
     method bar-left-scroll() {
         $.scroll-target.change-x-scroll(-$.bar-click-scroll-inc);
-        self.update-bar-position;
     }
 
     method bar-right-scroll() {
         $.scroll-target.change-x-scroll(+$.bar-click-scroll-inc);
-        self.update-bar-position;
     }
 
     method home-scroll() {
         $.scroll-target.set-x-scroll(0);
-        self.update-bar-position;
     }
 
     method end-scroll() {
         $.scroll-target.set-x-scroll($.scroll-target.x-max);
-        self.update-bar-position;
     }
 
     method update-bar-position() {
@@ -161,32 +156,26 @@ class Terminal::Widgets::VScrollBar
 
     method arrow-up-scroll() {
         $.scroll-target.change-y-scroll(-$.end-arrow-scroll-inc);
-        self.update-bar-position;
     }
 
     method arrow-down-scroll() {
         $.scroll-target.change-y-scroll(+$.end-arrow-scroll-inc);
-        self.update-bar-position;
     }
 
     method bar-up-scroll() {
         $.scroll-target.change-y-scroll(-$.bar-click-scroll-inc);
-        self.update-bar-position;
     }
 
     method bar-down-scroll() {
         $.scroll-target.change-y-scroll(+$.bar-click-scroll-inc);
-        self.update-bar-position;
     }
 
     method home-scroll() {
         $.scroll-target.set-y-scroll(0);
-        self.update-bar-position;
     }
 
     method end-scroll() {
         $.scroll-target.set-y-scroll($.scroll-target.y-max);
-        self.update-bar-position;
     }
 
     method update-bar-position() {

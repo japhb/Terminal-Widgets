@@ -6,17 +6,39 @@ role Terminal::Widgets::Scrollable {
     has UInt:D $.y-scroll = 0;
     has UInt:D $.x-max    = self.content-width;
     has UInt:D $.y-max    = self.content-height;
+    has Bool:D $!scrolled = False;
+    has %.scrollbars is SetHash;
 
-    method set-x-max(UInt:D $!x-max) { }
-    method set-y-max(UInt:D $!y-max) { }
+    method refresh-for-scroll() {
+        if $!scrolled {
+            .update-bar-position for %.scrollbars.keys;
+            self.full-refresh;
+            $!scrolled = False;
+        }
+    }
+
+    # NOTE: If changing both x-max and x-scroll, call this one first!
+    method set-x-max(UInt:D $x-max) {
+        if  $!x-max != $x-max {
+            $!x-max  = $x-max;
+            $!scrolled = True;
+        }
+    }
+
+    # NOTE: If changing both y-max and y-scroll, call this one first!
+    method set-y-max(UInt:D $y-max) {
+        if  $!y-max != $y-max {
+            $!y-max  = $y-max;
+            $!scrolled = True;
+        }
+    }
 
     method set-x-scroll(Int:D $x-scroll) {
         # Refresh widget if scroll position changed
         my $new  = 0 max ($x-scroll min $!x-max);
         if $new != $!x-scroll {
             $!x-scroll = $new;
-            # XXXX: Is this how I want to refresh?
-            self.set-all-dirty;
+            $!scrolled = True;
         }
     }
 
@@ -25,8 +47,7 @@ role Terminal::Widgets::Scrollable {
         my $new  = 0 max ($y-scroll min $!y-max);
         if $new != $!y-scroll {
             $!y-scroll = $new;
-            # XXXX: Is this how I want to refresh?
-            self.set-all-dirty;
+            $!scrolled = True;
         }
     }
 
