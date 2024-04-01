@@ -66,10 +66,12 @@ class Terminal::Widgets::Viewer::Log
 
         for @.log {
             my $lines = %!hard-lines{.id};
+            my $prev  = $pos;
             $pos += $lines.elems;
             next if $start >= $pos;
 
-            @found.append(@$lines);
+            @found.append($start > $prev ?? @$lines[($start - $prev)..*]
+                                         !! @$lines);
             last if @found >= $wanted;
         }
 
