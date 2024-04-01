@@ -155,7 +155,7 @@ class Terminal::Widgets::HScrollBar
         # Determine relative click location and bounds
         my $layout = $.layout.computed;
         my $x      = 0 max $event.relative-to(self)[0] - $layout.left-correction;
-        my $end    = 0 max $.h - 1 - $layout.right-correction;
+        my $end    = 0 max $.w - 1 - $layout.right-correction;
 
         # Handle end arrows if any
         if $.show-end-arrows {
