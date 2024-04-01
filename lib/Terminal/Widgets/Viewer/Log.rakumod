@@ -35,16 +35,17 @@ class Terminal::Widgets::Viewer::Log
         my $id    = ~$entry.id;
         my $lines = %!hard-lines{$id} = self.hard-lines($entry);
 
-        # Auto-scroll to make room for new entry if needed
-        my $ch = self.content-height;
-        if $ch + $.y-scroll >= $!next-start {
-            self.set-y-scroll(0 max $!next-start + $lines.elems - $ch);
-        }
-
         # Update for next start line
+        my $after = $!next-start + $lines.elems;
         %!start-line{$id} = $!next-start;
-        $!next-start     += $lines.elems;
-        self.set-y-max($!next-start);
+        self.set-y-max($after);
+
+        # Auto-scroll to make room for new entry if previous line visible
+        my $ch = self.content-height;
+        if $.y-scroll + $ch >= $!next-start {
+            self.set-y-scroll($after - $ch);
+        }
+        $!next-start = $after;
 
         # Finally, push new LogEntry to log history
         @!log.push($entry);
