@@ -147,6 +147,39 @@ class Terminal::Widgets::HScrollBar
             when 'end-scroll'         { self.end-scroll         }
         }
     }
+
+    #| Handle mouse events
+    #  XXXX: Handle drag events
+    multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
+                              $event where !*.mouse.pressed, AtTarget) {
+        # Determine relative click location and bounds
+        my $layout = $.layout.computed;
+        my $x      = 0 max $event.relative-to(self)[0] - $layout.left-correction;
+        my $end    = 0 max $.h - 1 - $layout.right-correction;
+
+        # Handle end arrows if any
+        if $.show-end-arrows {
+            if $x == 0 {
+                self.arrow-left-scroll;
+                $.scroll-target.refresh-for-scroll;
+                return;
+            }
+            elsif $x == $end {
+                self.arrow-right-scroll;
+                $.scroll-target.refresh-for-scroll;
+                return;
+            }
+            else {
+                $end -= 2;
+                $x--;
+            }
+        }
+
+        # Handle bar events
+        my $scroll = floor($.scroll-target.x-max * $x / ($end max 1));
+        $.scroll-target.set-x-scroll($scroll);
+        $.scroll-target.refresh-for-scroll;
+    }
 }
 
 
@@ -234,5 +267,38 @@ class Terminal::Widgets::VScrollBar
             when 'home-scroll'       { self.home-scroll       }
             when 'end-scroll'        { self.end-scroll        }
         }
+    }
+
+    #| Handle mouse events
+    #  XXXX: Handle drag events
+    multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
+                              $event where !*.mouse.pressed, AtTarget) {
+        # Determine relative click location and bounds
+        my $layout = $.layout.computed;
+        my $y      = 0 max $event.relative-to(self)[1] - $layout.top-correction;
+        my $end    = 0 max $.h - 1 - $layout.bottom-correction;
+
+        # Handle end arrows if any
+        if $.show-end-arrows {
+            if $y == 0 {
+                self.arrow-up-scroll;
+                $.scroll-target.refresh-for-scroll;
+                return;
+            }
+            elsif $y == $end {
+                self.arrow-down-scroll;
+                $.scroll-target.refresh-for-scroll;
+                return;
+            }
+            else {
+                $end -= 2;
+                $y--;
+            }
+        }
+
+        # Handle bar events
+        my $scroll = floor($.scroll-target.y-max * $y / ($end max 1));
+        $.scroll-target.set-y-scroll($scroll);
+        $.scroll-target.refresh-for-scroll;
     }
 }
