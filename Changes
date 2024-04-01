@@ -1,6 +1,39 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Bug Fixes]
+  - Ignore Input events that change state when the Input is disabled, but
+    continue to allow navigation events regardless
+
+  [Cleanup]
+  - Fix and clarify a few comments
+  - Remove unused imports in several files
+
+  [Debugging]
+  - Show widget dirty state in Widget.gist
+
+  [Examples]
+  - Add a heat-ping example based on the new SmokeChart widget
+  - Add proper log scrolling to the basic form example
+
+  [Functionality]
+  - Support for scrollable, ragged, lazy, span-styled buffers via new
+    Scrollable, ScrollBar, and SpanBuffer roles
+  - New HScrollBar and VScrollBar widgets with full symbol set support and
+    both keyboard and mouse event handling
+  - Experimental support for slice-addressed visualizations
+  - New SmokeChart visualization widget
+  - Support overriding default behavior of Input::Text.finish-entry
+  - Add content-width and content-height helper methods to Widget
+
+  [Performance]
+  - Actually optimize copies and prints based on real dirty areas, rather than
+    always assuming every widget is always fully dirty
+  - Lazily cache span width in Span itself
+
+  [Refactoring]
+  - Refactor Viewer::Log in terms of SpanBuffer, vastly simplifying it
+
 
 0.1.4  2024-03-02T14:00:05-08:00
   [API Simplification]
