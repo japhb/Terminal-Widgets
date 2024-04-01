@@ -11,7 +11,7 @@ role Terminal::Widgets::Scrollable {
 
     method refresh-for-scroll() {
         if $!scrolled {
-            .update-bar-position for %.scrollbars.keys;
+            .full-refresh for %.scrollbars.keys;
             self.full-refresh;
             $!scrolled = False;
         }

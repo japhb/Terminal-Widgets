@@ -17,9 +17,6 @@ role Terminal::Widgets::Scrollbar {
 
     has %!glyphs = self.scrollbar-glyphs;
 
-    # Required methods
-    method update-bar-position() { ... }
-
     #| Choose glyphs appropriate to terminal capabilities
     method scrollbar-glyphs($caps = self.terminal.caps) {
         my constant %ASCII =
@@ -54,6 +51,13 @@ role Terminal::Widgets::Scrollbar {
         $!scroll-target = self.toplevel.by-id{$!scroll-target}
             if $!scroll-target ~~ Str:D;
         $!scroll-target.scrollbars.set(self);
+    }
+
+    #| Refresh scrollbar display completely
+    method full-refresh(Bool:D :$print = True) {
+        self.clear-frame;
+        self.draw-frame;
+        self.composite(:$print);
     }
 }
 
@@ -91,7 +95,10 @@ class Terminal::Widgets::HScrollBar
         $.scroll-target.set-x-scroll($.scroll-target.x-max);
     }
 
-    method update-bar-position() {
+    method draw-frame() {
+        # Draw framing first
+        self.draw-framing;
+
         # Compute left and right column of handle on scrollbar,
         # safely accounting for several possible edge cases
         my $width  = self.content-width - 2 * $.show-end-arrows;
@@ -114,10 +121,6 @@ class Terminal::Widgets::HScrollBar
             $.grid.change-cell($x1 - 1, $y, %!glyphs<left>);
             $.grid.change-cell($x2 + 1, $y, %!glyphs<right>);
         }
-
-        # Everything was changed
-        self.set-all-dirty;
-        self.composite;
     }
 
     #| Handle keyboard events
@@ -178,7 +181,10 @@ class Terminal::Widgets::VScrollBar
         $.scroll-target.set-y-scroll($.scroll-target.y-max);
     }
 
-    method update-bar-position() {
+    method draw-frame() {
+        # Draw framing first
+        self.draw-framing;
+
         # Compute top and bottom row of handle on scrollbar,
         # safely accounting for several possible edge cases
         my $height = self.content-height - 2 * $.show-end-arrows;
@@ -201,10 +207,6 @@ class Terminal::Widgets::VScrollBar
             $.grid.change-cell($x, $y1 - 1, %!glyphs<up>);
             $.grid.change-cell($x, $y2 + 1, %!glyphs<down>);
         }
-
-        # Everything was changed
-        self.set-all-dirty;
-        self.composite;
     }
 
     #| Handle keyboard events
