@@ -101,15 +101,17 @@ class Terminal::Widgets::HScrollBar
 
         # Compute left and right column of handle on scrollbar,
         # safely accounting for several possible edge cases
+        my $layout = self.layout.computed;
         my $width  = self.content-width - 2 * $.show-end-arrows;
         my $max    = $.scroll-target.x-max || 1;
         my $scroll = $.scroll-target.x-scroll min $max;
-        my $end    = 0 max ($max min $scroll + $.scroll-target.content-width - 1);
-        my $right  = floor(  $width * $end    / $max);
-        my $left   = ceiling($width * $scroll / $max) min $right;
+        my $end    = $max min $scroll + $.scroll-target.content-width;
+        my $right  = floor(  ($width - 1) * $end    / $max);
+        my $left   = ceiling(($width - 1) * $scroll / $max) min $right;
+        $right    += $layout.left-correction + $.show-end-arrows;
+        $left     += $layout.left-correction + $.show-end-arrows;
 
         # Actually draw updated bar and handle
-        my $layout = self.layout.computed;
         my $y      =           $layout.top-correction;
         my $x1     =           $layout.left-correction  + $.show-end-arrows;
         my $x2     = $.w - 1 - $layout.right-correction - $.show-end-arrows;
@@ -187,15 +189,17 @@ class Terminal::Widgets::VScrollBar
 
         # Compute top and bottom row of handle on scrollbar,
         # safely accounting for several possible edge cases
+        my $layout = self.layout.computed;
         my $height = self.content-height - 2 * $.show-end-arrows;
         my $max    = $.scroll-target.y-max || 1;
         my $scroll = $.scroll-target.y-scroll min $max;
-        my $end    = 0 max ($max min $scroll + $.scroll-target.content-height - 1);
-        my $bottom = floor(  $height * $end    / $max);
-        my $top    = ceiling($height * $scroll / $max) min $bottom;
+        my $end    = $max min $scroll + $.scroll-target.content-height;
+        my $bottom = floor(  ($height - 1) * $end    / $max);
+        my $top    = ceiling(($height - 1) * $scroll / $max) min $bottom;
+        $bottom   += $layout.top-correction + $.show-end-arrows;
+        $top      += $layout.top-correction + $.show-end-arrows;
 
         # Actually draw updated bar and handle
-        my $layout = self.layout.computed;
         my $x      =           $layout.left-correction;
         my $y1     =           $layout.top-correction    + $.show-end-arrows;
         my $y2     = $.h - 1 - $layout.bottom-correction - $.show-end-arrows;
