@@ -32,8 +32,7 @@ does Terminal::Widgets::Scrollable {
         my $layout = self.layout.computed;
         my $w      = 0 max $.w - $layout.width-correction;
         my $h      = 0 max $.h - $layout.height-correction;
-        my $xs     = $.x-scroll;
-        return unless $w && $h && $w > $xs;
+        return unless $w && $h;
 
         # Grab a chunk of lines to render
         my $chunk = self.span-line-chunk($.y-scroll, $h);
@@ -42,6 +41,7 @@ does Terminal::Widgets::Scrollable {
         my $l      = $layout.left-correction;
         my $t      = $layout.top-correction;
         my $y      = 0;
+        my $xs     = $.x-scroll;
         my $locale = self.terminal.locale;
 
         # Render available lines
@@ -55,7 +55,7 @@ does Terminal::Widgets::Scrollable {
             for @$line {
                 my $next = $span-x + .width;
                 if .width == .text.chars {
-                    if $next <= $w && $xs <= $span-x {
+                    if $next <= $xs + $w && $xs <= $span-x {
                         # Span fully visible and monospace; render entire span.
                         # This is the fastest span path.
                         $.grid.set-span($line-x, $line-y, .text, .color);
@@ -65,11 +65,11 @@ does Terminal::Widgets::Scrollable {
                         # Span partially visible and monospace; render
                         # visible substring.  This is the medium speed path.
                         my $start   = 0 max $xs - $span-x;
-                        my $max-len = 0 max $w  - $start;
+                        my $max-len = 0 max $w - (0 max $span-x - $xs);
                         my $text    = substr(.text, $start, $max-len);
 
                         $.grid.set-span($line-x, $line-y, $text, .color);
-                        $line-x += .width - $start;
+                        $line-x += $text.chars;
                     }
                 }
                 elsif $xs < $next {
