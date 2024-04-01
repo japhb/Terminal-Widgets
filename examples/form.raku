@@ -33,7 +33,14 @@ class FormUI is TopLevel {
                                    process-input  => { $.terminal.quit }),
             ),
             .divider(line-style => 'light1', style => %(set-h => 1)),
-            .log-viewer(id => 'lv', :%style),
+            .node(
+                .log-viewer(id => 'lv', :%style),
+                .vscroll(scroll-target => 'lv'),
+            ),
+            .node(
+                .hscroll(scroll-target => 'lv'),
+                .spacer(style => %(set-w => 1, set-h => 1)),
+            ),
         }
     }
 
@@ -54,14 +61,14 @@ class FormUI is TopLevel {
                               !! span('red on_white',
                                       "No radio button selected"));
 
-        $log-viewer.full-refresh;
+        $log-viewer.refresh-for-scroll;
     }
 
     method show-layout() {
         my $log-viewer = %.by-id<lv>;
         $log-viewer.add-entry("\n") if $log-viewer.log;
         $log-viewer.add-entry(span('green', self.layout.gist));
-        $log-viewer.full-refresh;
+        $log-viewer.refresh-for-scroll;
     }
 }
 
