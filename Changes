@@ -1,6 +1,8 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+
+0.1.5  2024-04-01T00:35:56-07:00
   [Bug Fixes]
   - Ignore Input events that change state when the Input is disabled, but
     continue to allow navigation events regardless
