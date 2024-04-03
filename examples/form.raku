@@ -17,11 +17,11 @@ class FormUI is TopLevel {
         #          margin-width  => 1;
 
         with $builder {
-            .checkbox(    :$.form, :%style, label => "It's a checkbox"),
-            .checkbox(    :$.form, :%style, label => "It's another checkbox"),
-            .radio-button(:$.form, :%style, label => "It's a radio button",
+            .checkbox(    :$.form, :%style, label => 'It\'s a checkbox'),
+            .checkbox(    :$.form, :%style, label => 'It\'s another checkbox'),
+            .radio-button(:$.form, :%style, label => 'It\'s a radio button',
                                             group => 'my-radios', id => 'one'),
-            .radio-button(:$.form, :%style, label => "It's a second radio button",
+            .radio-button(:$.form, :%style, label => 'It\'s a second radio button',
                                             group => 'my-radios', id => 'two'),
             .text-input(  :$.form, :%style),
             .node(
@@ -46,7 +46,7 @@ class FormUI is TopLevel {
 
     method show-state() {
         my $log-viewer = %.by-id<lv>;
-        $log-viewer.add-entry("\n") if $log-viewer.log;
+        $log-viewer.add-entry($?NL) if $log-viewer.log;
 
         for $.form.inputs {
             $log-viewer.add-entry(span-tree('on_white',
@@ -57,16 +57,16 @@ class FormUI is TopLevel {
         my $selected = %.by-id<one>.selected-member;
         $log-viewer.add-entry($selected
                               ?? span('blue on_white',
-                                      "Radio button {$selected.id} selected")
+                                      'Radio button ' ~ $selected.id ~ ' selected')
                               !! span('red on_white',
-                                      "No radio button selected"));
+                                      'No radio button selected'));
 
         $log-viewer.refresh-for-scroll;
     }
 
     method show-layout() {
         my $log-viewer = %.by-id<lv>;
-        $log-viewer.add-entry("\n") if $log-viewer.log;
+        $log-viewer.add-entry($?NL) if $log-viewer.log;
         $log-viewer.add-entry(span('green', self.layout.gist));
         $log-viewer.refresh-for-scroll;
     }

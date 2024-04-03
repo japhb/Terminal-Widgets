@@ -16,7 +16,7 @@ class FormUI is TopLevel {
 
         # NOTE: Resize terminal to see effect of min-h and max-h on the menu
         my %menu-style = |%style, min-h => 10, max-h => 20;
-        my @items = (1..100).map({ %(title => "Item $_",
+        my @items = (1..100).map({ %(title => 'Item ' ~ $_,
                                      color => ~(16 + $_)) });
 
         with $builder {
@@ -34,7 +34,7 @@ class FormUI is TopLevel {
 
     method show-state() {
         my $log-viewer = %.by-id<lv>;
-        $log-viewer.add-entry("\n") if $log-viewer.log;
+        $log-viewer.add-entry($?NL) if $log-viewer.log;
 
         for $.form.inputs {
             $log-viewer.add-entry(.gist);

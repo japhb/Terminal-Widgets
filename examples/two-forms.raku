@@ -34,8 +34,8 @@ class Form2UI is TopLevel {
         my $select2 = $menu2.items[$menu2.selected];
 
         my $log-viewer = %.by-id<lv>;
-        $log-viewer.add-entry("First selection:  $select1<title>");
-        $log-viewer.add-entry("Second selection: $select2<title>");
+        $log-viewer.add-entry('First selection:  ' ~ $select1<title>);
+        $log-viewer.add-entry('Second selection: ' ~ $select2<title>);
         $log-viewer.full-refresh;
     }
 }

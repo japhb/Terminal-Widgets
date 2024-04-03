@@ -49,7 +49,7 @@ use Terminal::Widgets::Simple::App;
 use Terminal::Widgets::Simple;
 
 
-pass "all modules loaded successfully";
+pass 'all modules loaded successfully';
 
 
 done-testing;

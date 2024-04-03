@@ -47,7 +47,7 @@ class HeatPingUI is TopLevel {
         my $ping = Proc::Async.new('ping', $target);
 
         # Update window title to indicate target
-        my $title = "$target - heat-ping";
+        my $title = $target ~ ' - heat-ping';
         self.terminal.set-window-title($title);
 
         # Run ping event reactor until interrupt signal or `ping` exits
@@ -75,7 +75,7 @@ class HeatPingUI is TopLevel {
         $.stop.send('stop');
 
         # Update window title to indicate ping is now idle
-        my $title = "idle - heat-ping";
+        my $title = 'idle - heat-ping';
         self.terminal.set-window-title($title);
     }
 
