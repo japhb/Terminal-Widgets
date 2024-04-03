@@ -76,6 +76,9 @@ does Terminal::Widgets::Scrollable {
                     # Span duospaced and cut off by x-scroll or width; need to
                     # render cell-by-cell.  This is a potentially slow path!
 
+                    # XXXX: Run this for loop with grid lock held and update
+                    #       cells manually to avoid repeated call overhead?
+
                     # XXXX: Currently leaves untouched split character cells;
                     #       should this overwrite with ' ' instead?
 
