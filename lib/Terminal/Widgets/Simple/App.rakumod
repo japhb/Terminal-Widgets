@@ -77,7 +77,7 @@ class Terminal::Widgets::Simple::App is Terminal::Widgets::App {
         # Ready to switch to alternate screen, cleanup boot message if any
         if PROCESS::<$BOOTSTRAP_MESSAGE> -> $message {
             my $chars = $message.chars;
-            print "\b" x $chars ~ ' ' x $chars ~ "\b" x $chars;
+            print chr(8) x $chars ~ ' ' x $chars ~ chr(8) x $chars;  # chr(8) = Backspace
         }
 
         # Record end of bootup

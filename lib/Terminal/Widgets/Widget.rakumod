@@ -53,7 +53,7 @@ role Terminal::Widgets::DirtyAreas {
         #  Note: There is a lot of room for optimization tradeoffs here.
         #  The initial algorithm is very simple (simply bounding the AABBs),
         #  but a more advanced algorithm might for instance try to isolate
-        #  disjoint areas to reduce unneeded "clean area" copying.
+        #  disjoint areas to reduce unneeded 'clean area' copying.
 
         # If there's nothing to merge, just pass through
         return @dirty if @dirty <= 1;
@@ -106,8 +106,8 @@ class Terminal::Widgets::Widget
         # Determine dirty areas without changing dirty state
         my $dirty;
         $!dirty-lock.protect: {
-            # Heuristic for "a single dirty rect covers the whole widget by
-            # itself, even if $!all-dirty is not set"
+            # Heuristic for 'a single dirty rect covers the whole widget by
+            # itself, even if $!all-dirty is not set'
             my $soft-all = @!dirty-rects.first({ .[0] <= 0
                                               && .[1] <= 0
                                               && .[2] >= $.w - .[0]
@@ -173,7 +173,7 @@ class Terminal::Widgets::Widget
     method is-current-toplevel(--> False) { }
 
     #| Find the nearest ancestor (or self) that doesn't have a Widget parent,
-    #| and thus should be the nearest "toplevel" (without use'ing TopLevel)
+    #| and thus should be the nearest 'toplevel' (without use'ing TopLevel)
     method toplevel() {
         my $toplevel = self;
         $toplevel .= parent while $toplevel.parent ~~ Terminal::Widgets::Widget;
@@ -199,7 +199,7 @@ class Terminal::Widgets::Widget
 
     #| Gain focus and ensure that proper child is focused
     method gain-focus(Bool:D :$redraw = True) {
-        # note "default-focus is {self.default-focus.^name}";
+        # note 'default-focus is ' ~ self.default-focus.^name;
         self.toplevel.focus-on(self.default-focus, :$redraw);
     }
 
@@ -487,9 +487,9 @@ class Terminal::Widgets::Widget
         my $grid = $.grid.grid;
         my $vert = $framed ?? '│' !! '';
 
-        ('┌' ~ '─' x $.w ~ "┐\n" if $framed) ~
-        $grid.map({ $vert ~ .join ~ $vert ~ "\n" }).join ~
-        ('└' ~ '─' x $.w ~ '┘'   if $framed)
+        ('┌' ~ '─' x $.w ~ '┐' ~ $?NL if $framed) ~
+        $grid.map({ $vert ~ .join ~ $vert ~ $?NL }).join ~
+        ('└' ~ '─' x $.w ~ '┘'        if $framed)
     }
 
     #| Union all dirty areas, update parent's dirty list if needed, and composite
@@ -498,18 +498,18 @@ class Terminal::Widgets::Widget
         my @merged := self.merge-dirty-areas(@dirty);
         my $debug   = +($*DEBUG // 0);
 
-        note "Compositing:" if $debug >= 2;
+        note 'Compositing:' if $debug >= 2;
         note Backtrace.new.Str.subst(/' at ' \S+/, '', :g) if $debug >= 3;
 
         if $.parent ~~ Terminal::Widgets::Widget:D {
             if $.parent.is-current-toplevel && $.parent.grid === $*TERMINAL.current-grid {
-                note "  Printing to content area: $.gist" if $debug;
+                note '  Printing to content area: ' ~ $.gist if $debug;
                 note self.debug-grid if $debug >= 2;
 
                 $.parent.print-to-content-area(self, $_) for @merged;
             }
             else {
-                note "  Copying to content area and dirtying parent: $.gist" if $debug;
+                note '  Copying to content area and dirtying parent: ' ~ $.gist if $debug;
                 note self.debug-grid if $debug >= 2;
 
                 for @merged {
@@ -519,7 +519,7 @@ class Terminal::Widgets::Widget
             }
         }
         else {
-            note "  FOLLOWING OLD COMPOSITE PATH FOR {self.^name} WITH PARENT {$.parent.^name}" if $debug;
+            note '  FOLLOWING OLD COMPOSITE PATH FOR ' ~ self.^name ~ ' WITH PARENT ' ~ $.parent.^name if $debug;
             note self.debug-grid if $debug >= 2;
 
             # XXXX: HACK, just assumes entire composed area is dirty

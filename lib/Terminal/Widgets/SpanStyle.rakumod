@@ -62,7 +62,7 @@ class SpanTree {
     method lines(Bool:D :$chomp = True) {
         my @spans;
         gather for self.flatten.map(*.lines(:!chomp)).flat {
-            if .text.ends-with("\n") {
+            if .text.ends-with($?NL) {
                 @spans.push($chomp ?? span(.color, .text.chomp) !! $_);
                 take @spans.clone;
                 @spans = ();

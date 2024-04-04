@@ -48,7 +48,7 @@ does Terminal::Widgets::Layout::WidgetBuilding {
     #| and do necessary unfocus/refocus redraws
     method focus-on(Terminal::Widgets::Widget:D $target,
                     Bool:D :$redraw = True) {
-        # Determine if focus is "really" changing
+        # Determine if focus is *really* changing
         my $prev    = $!focused-widget;
         my $changed = $prev && $prev !=== $target;
 

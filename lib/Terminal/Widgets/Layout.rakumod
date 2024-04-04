@@ -212,7 +212,7 @@ class Node does Dynamic {
         "x:{$.x // '*'} y:{$.y // '*' }" ~
         (" :vertical" if $.vertical) ~
         (" --- [$.widget.gist()]" if $.widget) ~
-        ("\n" ~ @child-gists.join("\n") if @.children)
+        ($?NL ~ @child-gists.join($?NL) if @.children)
     }
 
     method uncompute() {
@@ -311,7 +311,7 @@ class Node does Dynamic {
                 my $node   = @unset-w.shift;
                 my $before = $node.computed;
                 $remain-w -= $before.width-correction(MarginBox);
-                fail "Insufficient remaining width to distribute" if $remain-w < 0;
+                fail 'Insufficient remaining width to distribute' if $remain-w < 0;
 
                 my $share  = floor($remain-w * $before.share-w / $sum);
                 $share     = 0              if $before.minimize-w;
@@ -349,7 +349,7 @@ class Node does Dynamic {
                 my $node   = @unset-h.shift;
                 my $before = $node.computed;
                 $remain-h -= $before.height-correction(MarginBox);
-                fail "Insufficient remaining height to distribute" if $remain-h < 0;
+                fail 'Insufficient remaining height to distribute' if $remain-h < 0;
 
                 my $share  = floor($remain-h * $before.share-h / $sum);
                 $share     = 0             if $before.minimize-h;

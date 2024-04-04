@@ -70,7 +70,7 @@ class Terminal::Widgets::Terminal
                 when 'done' { done }
 
                 # Something is coded wrong if the control channel hits the default
-                default { !!! "Unknown control channel event: '$_'" }
+                default { !!! 'Unknown control channel event: ' ~ .raku }
             }
 
             # Send the window resize request to the control channel
@@ -114,12 +114,12 @@ class Terminal::Widgets::Terminal
         # XXXX: Cannot use locking I/O methods on $.input here, such as .t or
         #       .native-descriptor; they will deadlock inside MoarVM with the
         #       pending $.input.read in RawTerminalInput.start-parser.
-        die "Cannot detect terminal size on closed or non-TTY I/O handles"
+        die 'Cannot detect terminal size on closed or non-TTY I/O handles'
             unless $.input.opened && $.output.t;
 
         self.detect-terminal-size.then: {
             my $size = .result;
-            die "Unable to detect terminal size!" unless $size.elems == 2;
+            die 'Unable to detect terminal size!' unless $size.elems == 2;
 
             if $!h != $size[0] || $!w != $size[1] {
                 ($!h, $!w) = @$size;

@@ -157,7 +157,7 @@ role EventHandling {
             $at-target ?? ($event, AtTarget) !! ($event, $phase)
         }
         else {
-            # Consider leaves to be the "target" for untargeted events
+            # Consider leaves to be the 'target' for untargeted events
             @.event-handling-children ?? ($event, $phase) !! ($event, AtTarget)
         }
     }

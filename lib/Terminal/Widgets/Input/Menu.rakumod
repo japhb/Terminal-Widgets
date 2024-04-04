@@ -23,10 +23,10 @@ class Terminal::Widgets::Input::Menu
     # Menu-specific gist flags
     method gist-flags() {
         |self.Terminal::Widgets::Input::gist-flags,
-        "items:$!items.elems()",
-        "top-item:$!top-item",
-        "selected:$!selected",
-        "hotkeys:%!hotkey.elems()",
+        'items:' ~ $!items.elems,
+        'top-item:' ~ $!top-item,
+        'selected:' ~ $!selected,
+        'hotkeys:' ~ %!hotkey.elems,
     }
 
     #| Refresh the whole input

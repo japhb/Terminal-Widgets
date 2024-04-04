@@ -28,7 +28,7 @@ role Terminal::Widgets::Input
        ('ACTIVE'  if $!active),
        ('FOCUSED' if self.toplevel.focused-widget === self),
        ('enabled' if $!enabled),
-       ("hint-target:$!hint-target.gist()" if $!hint-target),
+       ('hint-target:' ~ $!hint-target.gist if $!hint-target),
     }
 
 

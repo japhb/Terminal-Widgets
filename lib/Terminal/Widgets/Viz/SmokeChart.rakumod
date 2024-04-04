@@ -219,8 +219,8 @@ class Terminal::Widgets::Viz::SmokeChart
             my $lower-color = self.color-map($lower);
             %!bucket-cell-cache{$upper-color}{$lower-color}
               //= $upper-color eq $lower-color
-                   ?? $.grid.cell(' ', "on_$upper-color")
-                   !! $.grid.cell('▄', "$lower-color on_$upper-color")
+                   ?? $.grid.cell(' ', 'on_' ~ $upper-color)
+                   !! $.grid.cell('▄', $lower-color ~ ' on_' ~ $upper-color)
         }
         else {
             my $color = 'on_' ~ self.color-map($upper max $lower);

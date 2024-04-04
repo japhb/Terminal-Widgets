@@ -19,7 +19,7 @@ class Terminal::Widgets::App {
                               IO::Handle:D :$output = $tty.open(:a),
                               Terminal::Widgets::I18N::Locale :$locale,
                               :%ui-prefs, *%caps) {
-        die "Terminal input and output are not both connected to a valid tty"
+        die 'Terminal input and output are not both connected to a valid tty'
             unless $input.t && $output.t;
 
         %caps<symbol-set> //= symbol-set(%caps<symbols> || %*ENV<TW_SYMBOLS> || 'Full');
@@ -63,7 +63,7 @@ class Terminal::Widgets::App {
     #| Shutdown and remove a terminal by terminal moniker
     multi method remove-terminal(Str:D $moniker) {
         my $terminal = %!terminal{$moniker}:delete
-             or die "Terminal moniker '$moniker' not found";
+             or die 'Terminal moniker ' ~ $moniker.raku ~ ' not found';
 
         # XXXX: Disconnect/destroy matching toplevels?
 
@@ -73,7 +73,7 @@ class Terminal::Widgets::App {
     #| Shutdown and remove a terminal by terminal object
     multi method remove-terminal(Terminal::Widgets::Terminal:D $terminal) {
         my $moniker = %!terminal.pairs.first(*.value === $terminal).key
-            or die "Terminal object not known to app";
+            or die 'Terminal object not known to app';
         self.remove-terminal($moniker);
     }
 }

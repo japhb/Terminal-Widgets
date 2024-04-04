@@ -11,7 +11,7 @@ does Terminal::Widgets::Input {
     # Boolean-specific gist flags
     method gist-flags() {
         |self.Terminal::Widgets::Input::gist-flags,
-        "state:$!state"
+        'state:' ~ $!state
     }
 
     # Set boolean state, then refresh
