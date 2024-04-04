@@ -118,10 +118,14 @@ class Terminal::Widgets::Widget
                                       'none';
         }
 
+        # Defang possibly undefined values
+        my sub d($v) { $v // '*' }
+
         self.gist-name ~ '|' ~ @flags.join(',')
-        ~ " w:$.w,h:$.h x:$.x,y:$.y,z:$.z"
-        ~ " xo:{$.x-offset // '*'},yo:{$.y-offset // '*'},zo:{$.z-offset // '*'}"
-        ~ " dirty:$dirty"
+        ~ ' w:' ~ d($.w) ~ ',h:' ~ d($.h)
+        ~ ' x:' ~ d($.x) ~ ',y:' ~ d($.y) ~ ',z:' ~ d($.z)
+        ~ ' xo:' ~ d($.x-offset) ~ ',yo:' ~ d($.y-offset) ~ ',zo:' ~ d($.z-offset)
+        ~ ' dirty:' ~ $dirty
     }
 
     # Shortened name for gists
@@ -133,7 +137,7 @@ class Terminal::Widgets::Widget
     method gist-flags() {
         my $is-toplevel = self.toplevel === self;
 
-        ("id:$.id" if $.id),
+        ('id:' ~ $.id.raku if $.id),
         ((self.is-current-toplevel ?? 'CURRENT-TOPLEVEL' !! 'is-toplevel') if $is-toplevel)
     }
 

@@ -55,7 +55,7 @@ class Terminal::Widgets::Input::Menu
             my $item      = $!items[$i];
             my $icon      = ($item<id> && %.icons{$item<id>}) // '';
             my $title     = $locale.translate($item<title>);
-            my $formatted = ' ' ~ ("$icon " if $icon) ~ $title ~ ' ';
+            my $formatted = ' ' ~ ($icon ~ ' ' if $icon) ~ $title ~ ' ';
             my $extra     = 0 max $w - $locale.width($formatted);
             my $padding   = ' ' x $extra;
             my $color     = $i == $!selected ?? $highlight

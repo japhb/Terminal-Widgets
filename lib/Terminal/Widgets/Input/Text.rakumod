@@ -32,15 +32,15 @@ class Terminal::Widgets::Input::Text
     method gist-flags() {
         |self.Terminal::Widgets::Input::gist-flags,
         ('literal-mode' if $!literal-mode),
-        ("prompt:'$!prompt-string'" if $!prompt-string),
-        ("disabled:'$!disabled-string'" if $!disabled-string),
-        ("completion:$!completion-index/$!completions.elems()" if $!completions),
-        ("contents:'$!input-field.buffer.contents()'" if $!input-field);
+        ('prompt:' ~ $!prompt-string.raku if $!prompt-string),
+        ('disabled:' ~ $!disabled-string.raku if $!disabled-string),
+        ('completion:' ~ $!completion-index.raku ~ '/' ~ $!completions.elems if $!completions),
+        ('contents:' ~ $!input-field.buffer.contents.raku if $!input-field);
     }
 
     #| Set $!input-field, with both compile-time and runtime type checks
     method set-input-field(Terminal::LineEditor::ScrollingSingleLineInput:D $new-field) {
-        die "New input-field is not a $.input-class"
+        die 'New input-field is not a ' ~ $.input-class.^name
             unless $new-field ~~ $.input-class;
         $!input-field = $new-field;
     }

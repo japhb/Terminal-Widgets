@@ -134,7 +134,7 @@ class Terminal::Widgets::Terminal
         with $.current-toplevel {
             my $is-current-grid = .grid === $!terminal-print.current-grid;
 
-            # note "Updating toplevel geometry to $!w x $!h"; $*ERR.flush;
+            # note 'Updating toplevel geometry to ' ~ $!w ~ ' x ' ~ $!h;
             my $old-grid = .grid;
             .update-geometry(:$!w, :$!h);
             my $new-grid = .grid;
@@ -185,7 +185,7 @@ class Terminal::Widgets::Terminal
 
     #| Set terminal emulator window title to a plain Str
     multi method set-window-title(Str:D $title) {
-        $.output.print("\e]2;" ~ self.sanitize-text($title) ~ "\e\\");
+        $.output.print(chr(27) ~ ']2;' ~ self.sanitize-text($title) ~ chr(27) ~ '\\');
     }
 
     #| Set terminal emulator window title to a translatable

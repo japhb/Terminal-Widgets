@@ -34,7 +34,7 @@ class TranslatableString is export {
 
     #| Translate this string by looking up its context in a translation table
     multi method translate-via(%translation-table) {
-        die "Context '$.context' not found in translation table"
+        die 'Context ' ~ $.context.raku ~ ' not found in translation table'
             unless my $in-context = %translation-table{$.context};
 
         self.translate-via($in-context{$.string} // $.string)
@@ -51,7 +51,7 @@ class TranslatableString is export {
         my $translated = $interpolatable.contains('$')
                          ?? $interpolatable.subst(/\$(\w+)/,
                                                   { %.vars{$0}
-                                                    // "[MISSING TRANSLATION VARIABLE '$0']" },
+                                                    // '[MISSING TRANSLATION VARIABLE ' ~ (~$0 .raku) ~ ']' },
                                                   :g)
                          !! $interpolatable;
 
@@ -60,7 +60,7 @@ class TranslatableString is export {
 
     #| Disallow direct .Str without translation
     method Str() {
-        die "Cannot directly stringify a TranslatableString; use translate-via method instead.";
+        die 'Cannot directly stringify a TranslatableString; use translate-via method instead.';
     }
 
     #| Provide a common method name that provides the TranslatableString
