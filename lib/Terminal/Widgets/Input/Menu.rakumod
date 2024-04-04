@@ -39,7 +39,8 @@ class Terminal::Widgets::Input::Menu
     #| Draw framing and full input
     method draw-frame() {
         my $layout     = self.layout.computed;
-        my $locale     = self.terminal.locale;
+        my $terminal   = self.terminal;
+        my $locale     = $terminal.locale;
         my $x          = $layout.left-correction;
         my $y          = $layout.top-correction;
         my $w          = $.w - $layout.width-correction;
@@ -60,7 +61,8 @@ class Terminal::Widgets::Input::Menu
             my $padding   = ' ' x $extra;
             my $color     = $i == $!selected ?? $highlight
                                              !! $item<color> // $base-color;
-            $.grid.set-span($x, $y + $_, $formatted ~ $padding, $color);
+            $.grid.set-span($x, $y + $_,
+                            $terminal.sanitize-text($formatted) ~ $padding, $color);
         }
     }
 

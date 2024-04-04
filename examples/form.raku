@@ -57,7 +57,7 @@ class FormUI is TopLevel {
         my $selected = %.by-id<one>.selected-member;
         $log-viewer.add-entry($selected
                               ?? span('blue on_white',
-                                      'Radio button ' ~ $selected.id ~ ' selected')
+                                      'Radio button ' ~ $selected.id.raku ~ ' selected')
                               !! span('red on_white',
                                       'No radio button selected'));
 
