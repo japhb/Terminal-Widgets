@@ -194,6 +194,8 @@ class Terminal::Widgets::Terminal
     }
 
     #| Exit from various per-terminal reactors and allow shutdown to proceed
+    #  XXXX: Protect from multi-call
+    #  XXXX: Call on crash (in END?)
     method quit() {
         if $.has-started {
             self.set-done;            # Stop input parser reactor
