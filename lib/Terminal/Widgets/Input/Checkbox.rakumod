@@ -32,18 +32,6 @@ class Terminal::Widgets::Input::Checkbox
         self.checkboxes($caps)[+$.state]
     }
 
-    #| Refresh just the value, without changing anything else
-    method refresh-value(Bool:D :$print = True) {
-        my $layout = self.layout.computed;
-        my $x      = $layout.left-correction;
-        my $y      = $layout.top-correction;
-
-        my $text = self.checkbox-text;
-        $.grid.set-span-text($x, $y, $text);
-        self.add-dirty-rect($x, $y, $.terminal.locale.width($text), 1);
-        self.composite(:$print);
-    }
-
     #| Draw framing and full input
     method draw-frame() {
         my $layout = self.layout.computed;
