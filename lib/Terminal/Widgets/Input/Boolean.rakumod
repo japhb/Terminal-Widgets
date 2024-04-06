@@ -1,5 +1,6 @@
 # ABSTRACT: Base role for various boolean-valued input field widgets
 
+use Terminal::Widgets::I18N::Translation;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Input;
 
@@ -24,6 +25,18 @@ does Terminal::Widgets::Input {
         self.clear-frame;
         self.draw-frame;
         self.composite(:$print);
+    }
+
+    #| Draw framing and full input
+    method draw-frame() {
+        my $layout = self.layout.computed;
+        my $x      = $layout.left-correction;
+        my $y      = $layout.top-correction;
+        my $label  = $.label ~~ TranslatableString
+                     ?? ~$.terminal.locale.translate($.label) !! ~$.label;
+
+        self.draw-framing;
+        $.grid.set-span($x, $y, self.content-text($label), self.current-color);
     }
 
     # Handle basic events

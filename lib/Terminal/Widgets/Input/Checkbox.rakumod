@@ -27,21 +27,8 @@ class Terminal::Widgets::Input::Checkbox
         $caps.best-symbol-choice(%boxes)
     }
 
-    #| Checkbox glyphs for current state
-    method checkbox-text($caps = self.terminal.caps) {
-        self.checkboxes($caps)[+$.state]
-    }
-
-    #| Draw framing and full input
-    method draw-frame() {
-        my $layout = self.layout.computed;
-        my $x      = $layout.left-correction;
-        my $y      = $layout.top-correction;
-        my $label  = $.label ~~ TranslatableString
-                     ?? ~$.terminal.locale.translate($.label) !! ~$.label;
-        my $text   = self.checkbox-text ~ (' ' ~ $label if $label);
-
-        self.draw-framing;
-        $.grid.set-span($x, $y, $text, self.current-color);
+    #| Content (text inside framing)
+    method content-text($label) {
+        self.checkboxes()[+$.state] ~ (' ' ~ $label if $label)
     }
 }

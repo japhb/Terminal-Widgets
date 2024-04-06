@@ -53,21 +53,8 @@ class Terminal::Widgets::Input::RadioButton
         $caps.best-symbol-choice(%buttons)
     }
 
-    #| Radio button glyphs for current state
-    method button-text($caps = self.terminal.caps) {
-        self.buttons($caps)[+$.state]
-    }
-
-    #| Draw framing and full input
-    method draw-frame() {
-        my $layout = self.layout.computed;
-        my $x      = $layout.left-correction;
-        my $y      = $layout.top-correction;
-        my $label  = $.label ~~ TranslatableString
-                     ?? ~$.terminal.locale.translate($.label) !! ~$.label;
-        my $text   = self.button-text ~ (' ' ~ $label if $label);
-
-        self.draw-framing;
-        $.grid.set-span($x, $y, $text, self.current-color);
+    #| Content (text inside framing)
+    method content-text($label) {
+        self.buttons()[+$.state] ~ (' ' ~ $label if $label)
     }
 }
