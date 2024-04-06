@@ -91,7 +91,7 @@ class DebuggerMockup is TopLevel {
         my $source    = %.by-id<source>;
         my $inspector = %.by-id<inspector>;
 
-        $source.add-entry: q:to/SOURCE/;
+        my @code-lines = q:to/SOURCE/.lines;
             # Defining My::ClassyClass ...
             # It's such a classy class,
             # I can't even handle it,
@@ -102,6 +102,16 @@ class DebuggerMockup is TopLevel {
                 }
             }
             SOURCE
+
+        my $max-lineno-width = ($source.y-max + @code-lines).chars;
+        for @code-lines.kv -> $i, $line {
+            my $lineno      = $i + 1;
+            my $lineno-span = $lineno == 7 ?? span('bold yellow', $lineno ~ '>')
+                                           !! $lineno ~ ' ';
+            $source.add-entry(span-tree('',
+                                        ' ' x ($max-lineno-width - $lineno.chars),
+                                        $lineno-span, '│', $line));
+        }
 
         $inspector.add-entry: q:to/INSPECTOR/;
             > $foo (Str)  = iea
