@@ -44,13 +44,6 @@ class Terminal::Widgets::Input::Checkbox
         self.composite(:$print);
     }
 
-    #| Refresh the whole input
-    method full-refresh(Bool:D :$print = True) {
-        self.clear-frame;
-        self.draw-frame;
-        self.composite(:$print);
-    }
-
     #| Draw framing and full input
     method draw-frame() {
         my $layout = self.layout.computed;

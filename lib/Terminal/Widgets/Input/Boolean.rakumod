@@ -19,6 +19,13 @@ does Terminal::Widgets::Input {
                                        $_(self) with &.process-input; }
     method toggle-state()            { self.set-state(!$!state) }
 
+    #| Refresh the whole input
+    method full-refresh(Bool:D :$print = True) {
+        self.clear-frame;
+        self.draw-frame;
+        self.composite(:$print);
+    }
+
     # Handle basic events
     multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D
                               $event where *.key.defined, AtTarget) {
