@@ -5,6 +5,7 @@ use Terminal::Widgets::Events;
 use Terminal::Widgets::Input;
 
 
+#| Base functionality for any boolean-valued input widget
 role Terminal::Widgets::Input::Boolean
 does Terminal::Widgets::Input {
     has Bool:D $.state = False;
@@ -64,5 +65,36 @@ does Terminal::Widgets::Input {
         # Always focus on click, but only change state if enabled
         self.toplevel.focus-on(self);
         self.toggle-state if $.enabled;
+    }
+}
+
+
+#| Additional functionality for grouped boolean widgets, such as radio buttons
+class Terminal::Widgets::Input::GroupedBoolean
+ does Terminal::Widgets::Input::Boolean {
+    has Str:D $.group is required;
+
+    #| Make sure grouped boolean widget is added to group within toplevel
+    submethod TWEAK() {
+        self.Terminal::Widgets::Input::TWEAK;
+        self.toplevel.add-to-group(self, $!group);
+    }
+
+    #| All grouped boolean widgets in this widget's group
+    method group-members() {
+        self.toplevel.group-members($!group)
+    }
+
+    #| Selected member of this widget's group
+    method selected-member() {
+        self.group-members.first(*.state)
+    }
+
+    #| If setting this widget, unset remainder in group
+    method set-state(Bool:D $state) {
+        self.Terminal::Widgets::Input::Boolean::set-state($state);
+        if $state {
+            .set-state(False) for self.group-members.grep(* !=== self);
+        }
     }
 }
