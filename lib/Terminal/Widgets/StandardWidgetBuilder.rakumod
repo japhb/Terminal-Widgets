@@ -7,6 +7,7 @@ use Terminal::Widgets::Input::Menu;
 use Terminal::Widgets::Input::Button;
 use Terminal::Widgets::Input::Checkbox;
 use Terminal::Widgets::Input::RadioButton;
+use Terminal::Widgets::Input::ToggleButton;
 use Terminal::Widgets::Input::Text;
 use Terminal::Widgets::Viewer::Log;
 use Terminal::Widgets::Viz::SmokeChart;
@@ -17,17 +18,18 @@ class Terminal::Widgets::StandardWidgetBuilder {
     #| Map layout nodes with default build rules
     method default-build-nodes() {
         :{
-            Terminal::Widgets::Layout::Widget      => Terminal::Widgets::Widget,
-            Terminal::Widgets::Layout::PlainText   => Terminal::Widgets::PlainText,
-            Terminal::Widgets::Layout::HScrollBar  => Terminal::Widgets::HScrollBar,
-            Terminal::Widgets::Layout::VScrollBar  => Terminal::Widgets::VScrollBar,
-            Terminal::Widgets::Layout::Menu        => Terminal::Widgets::Input::Menu,
-            Terminal::Widgets::Layout::Button      => Terminal::Widgets::Input::Button,
-            Terminal::Widgets::Layout::Checkbox    => Terminal::Widgets::Input::Checkbox,
-            Terminal::Widgets::Layout::RadioButton => Terminal::Widgets::Input::RadioButton,
-            Terminal::Widgets::Layout::TextInput   => Terminal::Widgets::Input::Text,
-            Terminal::Widgets::Layout::LogViewer   => Terminal::Widgets::Viewer::Log,
-            Terminal::Widgets::Layout::SmokeChart  => Terminal::Widgets::Viz::SmokeChart,
+            Terminal::Widgets::Layout::Widget       => Terminal::Widgets::Widget,
+            Terminal::Widgets::Layout::PlainText    => Terminal::Widgets::PlainText,
+            Terminal::Widgets::Layout::HScrollBar   => Terminal::Widgets::HScrollBar,
+            Terminal::Widgets::Layout::VScrollBar   => Terminal::Widgets::VScrollBar,
+            Terminal::Widgets::Layout::Menu         => Terminal::Widgets::Input::Menu,
+            Terminal::Widgets::Layout::Button       => Terminal::Widgets::Input::Button,
+            Terminal::Widgets::Layout::Checkbox     => Terminal::Widgets::Input::Checkbox,
+            Terminal::Widgets::Layout::RadioButton  => Terminal::Widgets::Input::RadioButton,
+            Terminal::Widgets::Layout::ToggleButton => Terminal::Widgets::Input::ToggleButton,
+            Terminal::Widgets::Layout::TextInput    => Terminal::Widgets::Input::Text,
+            Terminal::Widgets::Layout::LogViewer    => Terminal::Widgets::Viewer::Log,
+            Terminal::Widgets::Layout::SmokeChart   => Terminal::Widgets::Viz::SmokeChart,
         }
     }
 

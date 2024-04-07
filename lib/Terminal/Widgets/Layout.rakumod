@@ -477,6 +477,11 @@ class RadioButton is SingleLineInput {
     method input-class() { ::('Terminal::Widgets::Input::RadioButton') }
 }
 
+#| A single toggle button (looks like a button, acts like a checkbox)
+class ToggleButton is SingleLineInput {
+    method input-class() { ::('Terminal::Widgets::Input::ToggleButton') }
+}
+
 #| A single-line text input field
 class TextInput is SingleLineInput {
     method input-class() { ::('Terminal::Widgets::Input::Text') }
@@ -534,25 +539,26 @@ class Builder {
     }
 
     # Misc leaf nodes (no children ever)
-    method leaf(|c)         { self.build-leaf(Leaf,        |c) }
-    method spacer(|c)       { self.build-leaf(Spacer,      |c) }
-    method divider(|c)      { self.build-leaf(Divider,     |c) }
-    method hscroll(|c)      { self.build-leaf(HScrollBar,  |c) }
-    method vscroll(|c)      { self.build-leaf(VScrollBar,  |c) }
-    method log-viewer(|c)   { self.build-leaf(LogViewer,   |c) }
-    method plain-text(|c)   { self.build-leaf(PlainText,   |c) }
-    method smoke-chart(|c)  { self.build-leaf(SmokeChart,  |c) }
+    method leaf(|c)          { self.build-leaf(Leaf,         |c) }
+    method spacer(|c)        { self.build-leaf(Spacer,       |c) }
+    method divider(|c)       { self.build-leaf(Divider,      |c) }
+    method hscroll(|c)       { self.build-leaf(HScrollBar,   |c) }
+    method vscroll(|c)       { self.build-leaf(VScrollBar,   |c) }
+    method log-viewer(|c)    { self.build-leaf(LogViewer,    |c) }
+    method plain-text(|c)    { self.build-leaf(PlainText,    |c) }
+    method smoke-chart(|c)   { self.build-leaf(SmokeChart,   |c) }
 
     # Input leaf nodes (no children ever)
-    method menu(|c)         { self.build-leaf(Menu,        |c) }
-    method button(|c)       { self.build-leaf(Button,      |c) }
-    method checkbox(|c)     { self.build-leaf(Checkbox,    |c) }
-    method text-input(|c)   { self.build-leaf(TextInput,   |c) }
-    method radio-button(|c) { self.build-leaf(RadioButton, |c) }
+    method menu(|c)          { self.build-leaf(Menu,         |c) }
+    method button(|c)        { self.build-leaf(Button,       |c) }
+    method checkbox(|c)      { self.build-leaf(Checkbox,     |c) }
+    method text-input(|c)    { self.build-leaf(TextInput,    |c) }
+    method radio-button(|c)  { self.build-leaf(RadioButton,  |c) }
+    method toggle-button(|c) { self.build-leaf(ToggleButton, |c) }
 
     # Nodes with optional children
-    method node(|c)         { self.build-node(Node,        |c) }
-    method widget(|c)       { self.build-node(Widget,      |c) }
+    method node(|c)          { self.build-node(Node,         |c) }
+    method widget(|c)        { self.build-node(Widget,       |c) }
 }
 
 
