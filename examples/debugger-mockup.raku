@@ -103,7 +103,7 @@ class DebuggerMockup is TopLevel {
             }
             SOURCE
 
-        my $max-lineno-width = ($source.y-max + @code-lines).chars;
+        my $max-lineno-width = @code-lines.elems.chars;
         for @code-lines.kv -> $i, $line {
             my $lineno      = $i + 1;
             my $lineno-span = $lineno == 7 ?? span('bold yellow', $lineno ~ '>')
