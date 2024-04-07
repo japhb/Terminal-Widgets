@@ -1,14 +1,11 @@
 # ABSTRACT: A single radio button, optionally labeled
 
-use Terminal::Widgets::I18N::Translation;
 use Terminal::Widgets::Input::Boolean;
-use Terminal::Widgets::Input::Labeled;
 
 
 #| A single optionally labeled radio button
 class Terminal::Widgets::Input::RadioButton
-   is Terminal::Widgets::Input::GroupedBoolean
- does Terminal::Widgets::Input::Labeled {
+   is Terminal::Widgets::Input::GroupedBoolean {
     #| Compute minimum content width for requested style and attributes
     method min-width(:$locale!, :$context!, :$label = '') {
         my @buttons   = self.buttons($context.caps);

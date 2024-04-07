@@ -31,6 +31,7 @@ use Terminal::Widgets::SpanBuffer;
 use Terminal::Widgets::Input;
 use Terminal::Widgets::Input::Menu;
 use Terminal::Widgets::Input::Labeled;
+use Terminal::Widgets::Input::SimpleClickable;
 use Terminal::Widgets::Input::Button;
 use Terminal::Widgets::Input::Boolean;
 use Terminal::Widgets::Input::Checkbox;
