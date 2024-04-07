@@ -65,19 +65,20 @@ class DebuggerMockup is TopLevel {
             .node(style => %( :minimize-h, ),
                   # Button bar
                   .node(style => %( :minimize-w, ),
-                        .button(style => %button-style, label => ¿'Source',
-                                process-input => { $.terminal.quit }),
-                        .button(style => %button-style, label => ¿'Locals',
-                                process-input => { $.terminal.quit }),
-                        .button(style => %button-style, label => ¿'REPL',
-                                process-input => { $.terminal.quit }),
-                        .button(style => %button-style, label => ¿'Console',
-                                process-input => { $.terminal.quit }),
+                        .toggle-button(style => %button-style, label => ¿'Source'),
+                        .toggle-button(style => %button-style, label => ¿'Locals'),
                         # XXXX: Fix up translation of Breakpoints with interpolant
-                        .button(style => %button-style, label => 'Breakpoints' ~ ' (7)',
-                                process-input => { $.terminal.quit }),
-                        .button(style => %button-style, label => ¿'Help',
-                                process-input => { $.terminal.quit }),
+                        .toggle-button(style => %button-style,
+                                       label => 'Breakpoints' ~ ' (7)'),
+
+                        .toggle-button(style => %button-style, label => ¿'REPL'),
+                        .toggle-button(style => %button-style, label => ¿'STDIO'),
+
+                        .toggle-button(style => %button-style, label => ¿'Thread'),
+                        .toggle-button(style => %button-style, label => ¿'Frame'),
+                        .toggle-button(style => %button-style, label => ¿'Protocol'),
+                        .toggle-button(style => %button-style, label => ¿'Help'),
+
                         .button(style => %button-style, label => ¿'Quit',
                                 process-input => { $.terminal.quit }),
                        ),
