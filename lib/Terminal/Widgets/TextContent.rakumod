@@ -19,11 +19,9 @@ class X::CannotStringify {
 }
 
 
-#| Convenience helper to throw X::Text::CannotStringify easily
+#| Convenience helper to throw X::CannotStringify easily
 sub throw-cannot-stringify($type, $conversion-method, $conversion-result) {
-    X::TextContent::CannotStringify.new(:$type,
-                                        :$conversion-method,
-                                        :$conversion-result).throw
+    X::CannotStringify.new(:$type, :$conversion-method, :$conversion-result).throw
 }
 
 
