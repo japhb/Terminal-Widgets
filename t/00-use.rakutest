@@ -9,6 +9,8 @@ use Terminal::Widgets::ColorTheme;
 use Terminal::Widgets::ColorThemes;
 use Terminal::Widgets::SpanStyle;
 
+use Terminal::Widgets::TextContent;
+
 use Terminal::Widgets::I18N::Locale;
 use Terminal::Widgets::I18N::Translation;
 
