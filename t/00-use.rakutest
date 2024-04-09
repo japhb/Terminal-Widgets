@@ -10,9 +10,8 @@ use Terminal::Widgets::ColorThemes;
 use Terminal::Widgets::SpanStyle;
 
 use Terminal::Widgets::TextContent;
-
-use Terminal::Widgets::I18N::Locale;
 use Terminal::Widgets::I18N::Translation;
+use Terminal::Widgets::I18N::Locale;
 
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Layout::BoxModel;
