@@ -393,6 +393,69 @@ class Terminal::Widgets::Widget
     method draw-padding() {
     }
 
+    #| Render spans on a single line, optimizing for monospace spans
+    #  NOTE: This is a core rendering routine in the span-centric drawing
+    #        model and must optimize for performance.  Thus draw-line-spans
+    #        assumes that the surrounding drawing code has validated its
+    #        arguments BEFORE passing them in, rather than validating them
+    #        anew on every single call.
+    method draw-line-spans(UInt:D $line-x is copy, UInt:D $line-y,
+                           UInt:D $w, @line, UInt:D :$x-scroll = 0,
+                           :$locale = self.terminal.locale) {
+        my $span-x = 0;
+        for @line {
+            my $next = $span-x + .width;
+            if .width == .text.chars {
+                if $next <= $x-scroll + $w && $x-scroll <= $span-x {
+                    # Span fully visible and monospace; render entire span.
+                    # This is the fastest span path.
+                    $.grid.set-span($line-x, $line-y, .text, .color);
+                    $line-x += .width;
+                }
+                elsif $x-scroll < $next {
+                    # Span partially visible and monospace; render
+                    # visible substring.  This is the medium speed path.
+                    my $start   = 0 max $x-scroll - $span-x;
+                    my $max-len = 0 max $w - (0 max $span-x - $x-scroll);
+                    my $text    = substr(.text, $start, $max-len);
+
+                    $.grid.set-span($line-x, $line-y, $text, .color);
+                    $line-x += $text.chars;
+                }
+            }
+            elsif $x-scroll < $next {
+                # Span duospaced and cut off by x-scroll or width; need to
+                # render cell-by-cell.  This is a potentially slow path!
+
+                # XXXX: Run this for loop with grid lock held and update
+                #       cells manually to avoid repeated call overhead?
+
+                # XXXX: Currently leaves untouched split character cells;
+                #       should this overwrite with ' ' instead?
+
+                for .text.comb {
+                    my $width  = $locale.width($_);
+                    my $c-next = $line-x + $width;
+                    last if $c-next > $w;
+
+                    if $x-scroll <= $span-x {
+                        # Update optionally-colored first cell;
+                        # empty second cell if character was wide.
+                        my $cell = .color ?? $.grid.cell($_, .color) !! $_;
+                        $.grid.change-cell($line-x,     $line-y, $cell);
+                        $.grid.change-cell($line-x + 1, $line-y, '')
+                            if $width > 1;
+                    }
+
+                    $span-x += $width;
+                    $line-x  = $c-next;
+                }
+            }
+
+            last if ($span-x = $next) >= $w;
+        }
+    }
+
     #| Clip a rectangle to the content area of this widget
     method clip-to-content-area($dx is copy, $dy is copy, $w is copy, $h is copy,
                                 $sx is copy = 0, $sy is copy = 0) {
