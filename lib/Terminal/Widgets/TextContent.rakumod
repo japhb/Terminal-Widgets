@@ -6,7 +6,7 @@ use Text::MiscUtils::Layout;
 
 
 #| An exception preventing stringification for content that requires more processing
-class X::CannotStringify {
+class X::CannotStringify is Exception {
     has       $.type              is required;
     has Str:D $.conversion-method is required;
     has Str:D $.conversion-result is required;
@@ -60,13 +60,13 @@ class StringSpan does SemanticSpan {
     #| Render the string into a RenderSpan according to its attributes
     method render(--> RenderSpan:D) {
         # XXXX: Hack: Just transfer over the color attribute
-        RenderSpan.new(:$.string, color => %.attributes<color> // '')
+        RenderSpan.new(text => $.string, color => %.attributes<color> // '')
     }
 
     #| Apply current span attributes on top of parent attributes, returning a
     #| new StringSpan if needed or self if parent attributes were empty.
     #| This method is used primarily as a base case for SpanTree.flatten.
-    method flatten(%parent-attributes --> StringSpan:D) {
+    method flatten(%parent-attributes? --> StringSpan:D) {
         %parent-attributes ?? do {
             my $attributes = merge-attributes(%parent-attributes, %.attributes);
             self.new(:$.string, :$attributes)
@@ -103,7 +103,7 @@ class InterpolantSpan does SemanticSpan {
     #| Apply current span attributes on top of parent attributes, returning a
     #| new InterpolantSpan if needed or self if parent attributes were empty.
     #| This method is used primarily as a base case for SpanTree.flatten.
-    method flatten(%parent-attributes --> InterpolantSpan:D) {
+    method flatten(%parent-attributes? --> InterpolantSpan:D) {
         %parent-attributes ?? do {
             my $attributes = merge-attributes(%parent-attributes, %.attributes);
             self.new(:$.var-name, :%.flags, :$attributes)
@@ -128,7 +128,7 @@ class SpanTree {
     #| Flatten the SpanTree into a single list of SemanticSpans, with parent
     #| attributes fanned out to children; child node attributes are allowed
     #| to override parent attributes or add new ones.
-    method flatten(%parent-attributes) {
+    method flatten(%parent-attributes?) {
         my %child-base-attributes = |%parent-attributes, |%.attributes;
         @.children.map(*.flatten(%child-base-attributes)).flat
     }
@@ -142,7 +142,7 @@ class SpanTree {
 
 
 #| A parseable (and optionally interpolatable) string containing markup
-class MarkupString {
+class MarkupString is export {
     has Str:D  $.string is required;
     has Bool:D $.interpolatable = False;
 
