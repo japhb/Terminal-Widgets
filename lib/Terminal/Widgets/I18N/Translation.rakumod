@@ -2,70 +2,54 @@
 
 unit module Terminal::Widgets::I18N::Translation;
 
-use Text::MiscUtils::Layout;
+use Terminal::Widgets::TextContent;
 
 
-#| A translated string that knows what it was translated from and
-#| its own duospace width
-class TranslatedString is export {
-    has       $.original   is required;
-    has Str:D $.translated is required;
-    has UInt  $!width;
-
-    #| Lazily calculate and cache duospace width
-    method width(--> UInt:D) {
-        $!width //= duospace-width($!translated)
-    }
-
-    #| Stringification is just translated string
-    method Str(--> Str:D) { $!translated }
-
-    #| Provide a common method name that provides the TranslatableString
-    #| for this string, whether or not it has been translated already
-    method translatable() { $!original }
-}
-
-
-#| A string that knows the context for which it should be translated
+#| A translatable (and optionally interpolatable) string that knows its own
+#| translation context
 class TranslatableString is export {
-    has Str:D $.string  is required;
-    has Str:D $.context is required;
-    has %.vars;
+    has Str:D  $.string  is required;
+    has Str:D  $.context is required;
+    has Bool:D $.interpolatable = False;
 
     #| Translate this string by looking up its context in a translation table
-    multi method translate-via(%translation-table) {
+    multi method translate-via(%translation-table, :%vars --> MarkupString:D) {
         die 'Context ' ~ $.context.raku ~ ' not found in translation table'
             unless my $in-context = %translation-table{$.context};
 
-        self.translate-via($in-context{$.string} // $.string)
+        self.translate-via($in-context{$.string} // $.string, :%vars)
     }
 
     #| Translate this string by calling a translator function
-    multi method translate-via(&translator) {
-        self.translate-via(translator(self))
+    multi method translate-via(&translator, :%vars --> MarkupString:D) {
+        self.translate-via(translator(self, :%vars), :%vars)
     }
 
-    #| Translate by interpolating variables into a pre-translated string
-    multi method translate-via(Str:D $interpolatable) {
-        # XXXX: This method doesn't handle \$ or \\$
-        my $translated = $interpolatable.contains('$')
-                         ?? $interpolatable.subst(/\$(\w+)/,
-                                                  { %.vars{$0}
-                                                    // '[MISSING TRANSLATION VARIABLE ' ~ (~$0 .raku) ~ ']' },
-                                                  :g)
-                         !! $interpolatable;
-
-        TranslatedString.new(:$translated, :original(self))
+    #| Base case for translate-via: we've reached a raw Str:D representing
+    #| the translation, and need to wrap it into a MarkupString for further
+    #| processing.
+    multi method translate-via(Str:D $translated --> MarkupString:D) {
+        MarkupString.new(string => $translated, :$.interpolatable)
     }
 
     #| Disallow direct .Str without translation
     method Str() {
-        die 'Cannot directly stringify a TranslatableString; use translate-via method instead.';
+        Terminal::Widgets::TextContent::throw-cannot-stringify(self, 'translate-via', 'a parseable MarkupString');
     }
+}
 
-    #| Provide a common method name that provides the TranslatableString
-    #| for this string, whether or not it has been translated already
-    method translatable() { self }
+
+#| Convert translatable content step by step towards a list of RenderSpans
+class TranslatableContentRenderer
+   is Terminal::Widgets::TextContent::ContentRenderer {
+    has $.locale is required;
+
+    #| Convert TranslatableString -> MarkupString and continue rendering
+    multi method render(TranslatableString:D $ts) {
+        my $ms = $ts.interpolatable ?? $.locale.translate($ts, :%.vars)
+                                    !! $.locale.translate($ts);
+        self.render($ms)
+    }
 }
 
 
