@@ -190,7 +190,7 @@ class Terminal::Widgets::Terminal
 
     #| Set terminal emulator window title to a translatable
     multi method set-window-title($title) {
-        self.set-window-title(~$.locale.translate($title))
+        self.set-window-title($.locale.plain-text($title));
     }
 
     #| Exit from various per-terminal reactors and allow shutdown to proceed

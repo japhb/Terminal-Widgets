@@ -81,7 +81,7 @@ role Terminal::Widgets::Input
 
     #| Set the hint to a translatable
     multi method set-hint($hint) {
-        self.set-hint(~$.terminal.locale.translate($hint))
+        self.set-hint($.terminal.locale.plain-text($hint))
     }
 
     # Set error state, then refresh

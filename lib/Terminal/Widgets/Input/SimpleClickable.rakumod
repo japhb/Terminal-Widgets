@@ -31,8 +31,9 @@ does Terminal::Widgets::Input::Labeled {
         my $layout = self.layout.computed;
         my $x      = $layout.left-correction;
         my $y      = $layout.top-correction;
-        my $label  = $.label ~~ TranslatableString
-                     ?? ~$.terminal.locale.translate($.label) !! ~$.label;
+
+        # XXXX: Temporary hack
+        my $label  = $.terminal.locale.plain-text($.label);
 
         self.draw-framing;
         $.grid.set-span($x, $y, self.content-text($label), self.current-color);

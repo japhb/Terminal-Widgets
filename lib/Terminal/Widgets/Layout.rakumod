@@ -433,7 +433,7 @@ class SmokeChart is Leaf { }
 #| A minimal plain text container
 class PlainText is Leaf {
     method default-styles(:$locale!, :$text = '') {
-        my @lines = $locale.translate($text).Str.lines;
+        my @lines = $locale.plain-text($text).lines;
 
         %( min-h => @lines.elems,
            min-w => 0 max @lines.map({ $locale.width($_) }).max )
