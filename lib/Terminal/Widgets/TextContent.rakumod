@@ -162,35 +162,56 @@ class MarkupString is export {
 }
 
 
-#| A translatable (and optionally interpolatable) string that knows its own
-#| translation context
-class TranslatableString {
-    has Str:D  $.string  is required;
-    has Str:D  $.context is required;
-    has Bool:D $.interpolatable = False;
+#| Convert content step by step towards a list of RenderSpans
+class ContentRenderer {
+    has %.vars;
 
-    #| Translate this string by looking up its context in a translation table
-    multi method translate-via(%translation-table, :%vars --> MarkupString:D) {
-        die 'Context ' ~ $.context.raku ~ ' not found in translation table'
-            unless my $in-context = %translation-table{$.context};
-
-        self.translate-via($in-context{$.string} // $.string, :%vars)
+    #| Convert MarkupString -> SpanTree and continue rendering
+    multi method render(MarkupString:D $ms) {
+        my $st = $ms.parse;
+        self.render($st)
     }
 
-    #| Translate this string by calling a translator function
-    multi method translate-via(&translator, :%vars --> MarkupString:D) {
-        self.translate-via(translator(self, :%vars), :%vars)
+    #| Convert SpanTree -> flattened list of StringSpans and continue rendering
+    multi method render(SpanTree:D $st) {
+        # XXXX: Performance could be improved by inlining the render pass
+        #       inside the map, but this is easier to test at the moment.
+        my @flat-ss = $st.flatten.map: {
+            .isa(InterpolantSpan) ?? .interpolate(%.vars) !! $_;
+        };
+        self.render(@flat-ss)
     }
 
-    #| Base case for translate-via: we've reached a raw Str:D representing
-    #| the translation, and need to wrap it into a MarkupString for further
-    #| processing.
-    multi method translate-via(Str:D $translated --> MarkupString:D) {
-        MarkupString.new(string => $translated, :$.interpolatable)
+    #| Convert a list of StringSpans -> a list of RenderSpans
+    #  XXXX: This does not constrain the types of entries in @flat-ss
+    multi method render(@flat-ss) {
+        @flat-ss.map(*.render)
     }
 
-    #| Disallow direct .Str without translation
-    method Str() {
-        throw-cannot-stringify(self, 'translate-via', 'a parseable MarkupString');
+    #| Convert a single StringSpan -> a single RenderSpan
+    multi method render(StringSpan:D $ss) {
+        $ss.render
+    }
+
+    #| Convert a single Str -> a single RenderSpan (for compatibility)
+    multi method render(Str:D $text) {
+        RenderSpan.new(:$text)
+    }
+
+    #| Trivial identity case for plain-text method
+    multi method plain-text(Str:D $content --> Str:D) {
+        $content
+    }
+
+    #| Plain text (--> Str:D) rendering for a piece of content
+    #  XXXX: Type of $content is not constrained
+    multi method plain-text($content --> Str:D) {
+        self.render($content).map(*.text).join
+    }
+
+    #| Total duospace width for a piece of content
+    #  XXXX: Type of $content is not constrained
+    method width($content) {
+        self.render($content).map(*.width).sum
     }
 }
