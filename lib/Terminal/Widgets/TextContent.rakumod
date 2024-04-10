@@ -26,7 +26,7 @@ sub throw-cannot-stringify($type, $conversion-method, $conversion-result) {
 
 
 #| A directly renderable styled text span
-class RenderSpan {
+class RenderSpan is export {
     # XXXX: Include an ID or reference marker of some type to handle user
     #       interaction with the rendered span?
 
