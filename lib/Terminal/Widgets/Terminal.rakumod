@@ -188,7 +188,7 @@ class Terminal::Widgets::Terminal
         $.output.print(chr(27) ~ ']2;' ~ self.sanitize-text($title) ~ chr(27) ~ '\\');
     }
 
-    #| Set terminal emulator window title to a translatable
+    #| Set terminal emulator window title to general TextContent
     multi method set-window-title($title) {
         self.set-window-title($.locale.plain-text($title));
     }

@@ -79,7 +79,7 @@ role Terminal::Widgets::Input
         $target.?set-text($hint) if $target;
     }
 
-    #| Set the hint to a translatable
+    #| Set the hint to general TextContent
     multi method set-hint($hint) {
         self.set-hint($.terminal.locale.plain-text($hint))
     }

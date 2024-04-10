@@ -1,6 +1,5 @@
 # ABSTRACT: Base for labeled inputs whose only interaction is click/press/select
 
-use Terminal::Widgets::I18N::Translation;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Input;
 use Terminal::Widgets::Input::Labeled;
