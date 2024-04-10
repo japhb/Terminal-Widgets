@@ -28,22 +28,16 @@ does Terminal::Widgets::Scrollable {
         # Draw framing first
         self.draw-framing;
 
-        # Compute available viewer area; bail if empty or scrolled away
-        my $layout = self.layout.computed;
-        my $w      = 0 max $.w - $layout.width-correction;
-        my $h      = 0 max $.h - $layout.height-correction;
+        # Compute available content area; bail if empty
+        my ($l, $t, $w, $h) = self.content-rect;
         return unless $w && $h;
 
         # Grab a chunk of lines to render and the locale to render in
         my $chunk  = self.span-line-chunk($.y-scroll, $h);
         my $locale = self.terminal.locale;
 
-        # Setup for rendering loop
-        my $l = $layout.left-correction;
-        my $t = $layout.top-correction;
-        my $y = 0;
-
         # Render available lines
+        my $y = 0;
         while $y < $h {
             my $line = $chunk[$y] // last;
             self.draw-line-spans($l, $t + $y++, $w, $line,
