@@ -322,6 +322,16 @@ class Terminal::Widgets::Widget
         0 max $.h - $.layout.computed.height-correction
     }
 
+    #| Compute the X, Y, W, H rect of the content area (widget minus framing);
+    #| all values are returned as UInt:D (>= 0)
+    method content-rect(Terminal::Widgets::Layout::Style:D $layout
+                        = self.layout.computed) {
+        (0 max $layout.left-correction,
+         0 max $layout.top-correction,
+         0 max $.w - $layout.width-correction,
+         0 max $.h - $layout.height-correction)
+    }
+
     #| Clear the frame and set it all-dirty (so it requires composite)
     method clear-frame() {
         $.grid.clear;
