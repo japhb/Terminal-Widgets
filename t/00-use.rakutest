@@ -42,6 +42,8 @@ use Terminal::Widgets::Input::Text;
 
 use Terminal::Widgets::Progress::Tracker;
 
+use Terminal::Widgets::SelectableSpanBuffer;
+
 use Terminal::Widgets::Viewer::Log;
 
 use Terminal::Widgets::Viz::SmokeChart;
