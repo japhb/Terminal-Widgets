@@ -433,15 +433,15 @@ class Terminal::Widgets::Widget
                 # XXXX: Currently leaves untouched split character cells;
                 #       should this overwrite with ' ' instead?
 
-                for .text.comb {
-                    my $width  = $locale.width($_);
+                for .text.comb -> $char {
+                    my $width  = $locale.width($char);
                     my $c-next = $line-x + $width;
                     last if $c-next > $w;
 
                     if $x-scroll <= $span-x {
                         # Update optionally-colored first cell;
                         # empty second cell if character was wide.
-                        my $cell = .color ?? $.grid.cell($_, .color) !! $_;
+                        my $cell = .color ?? $.grid.cell($char, .color) !! $char;
                         $.grid.change-cell($line-x,     $line-y, $cell);
                         $.grid.change-cell($line-x + 1, $line-y, '')
                             if $width > 1;
