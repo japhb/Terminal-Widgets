@@ -2,6 +2,7 @@
 
 use Text::MiscUtils::Layout;
 
+use Terminal::Widgets::Events;
 use Terminal::Widgets::SpanStyle;
 use Terminal::Widgets::SpanBuffer;
 
@@ -16,6 +17,7 @@ class Terminal::Widgets::RichText
     has $.wrap = False;
     has $!widest;
     has $!first-display-line = 0;
+    has &!process-click;
 
     method set-wrap($wrap) {
         $!wrap = $wrap;
@@ -132,5 +134,20 @@ class Terminal::Widgets::RichText
         }
 
         @result
+    }
+
+    method !display-pos-to-line-pos(@line, $x, $y) {
+        # TODO
+        ($x, $y)
+    }
+
+    multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
+                              $event where !*.mouse.pressed, AtTarget) {
+        my ($x, $y) = $event.relative-to(self);
+        my $clicked-display-line = $!first-display-line + $y;
+        my $line-index = @!display-lines[$clicked-display-line];
+        my $rel-y = $y - @!line-starts[$line-index];
+        ($x, $y) = self!display-pos-to-line-pos(@!lines[$line-index], $x, $rel-y);
+        &!process-click($line-index, $x, $y) with &!process-click;
     }
 }
