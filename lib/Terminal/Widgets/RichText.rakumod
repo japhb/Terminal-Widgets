@@ -10,11 +10,12 @@ class Terminal::Widgets::RichText
  does Terminal::Widgets::SpanBuffer {
     has @.lines;
     #| For each line, in which display line does it start?
-    has @.line-starts;
+    has @!line-starts;
     #| For each diplay line, which line is there?
     has @!display-lines;
     has $.wrap = False;
     has $!widest;
+    has $!first-display-line = 0;
 
     method set-wrap($wrap) {
         $!wrap = $wrap;
@@ -22,6 +23,12 @@ class Terminal::Widgets::RichText
     }
 
     method !my-refresh() {
+        my $first-line = 0;
+        my $sub-line = 0;
+        if @!display-lines {
+            $first-line = @!display-lines[$!first-display-line];
+            $sub-line = $!first-display-line - @!line-starts[$first-line];
+        }
         if !$!wrap {
             self.set-x-max($!widest) if $!widest > $.x-max;
         }
@@ -31,6 +38,9 @@ class Terminal::Widgets::RichText
         }
         self!calc-indexes;
         self.set-y-max(@!display-lines.end);
+        my $new-first-line-start = @!line-starts[$first-line];
+        my $new-first-line-height = self!height-of-line(@!lines[$first-line]);
+        self.set-y-scroll($new-first-line-start + min($sub-line, $new-first-line-height));
         self.full-refresh;
         self.refresh-for-scroll;
     }
@@ -39,7 +49,7 @@ class Terminal::Widgets::RichText
         my $dpos = 0;
         for @!lines.kv -> $pos, $l {
             @!line-starts[$pos] = $dpos;
-            my $line-height = 1;
+            my $line-height = self!height-of-line($l);
             @!display-lines[$dpos++] = $pos for ^$line-height;
         }
         @!line-starts.splice: @!lines.elems;
@@ -56,7 +66,6 @@ class Terminal::Widgets::RichText
                         ?? $content
                         !! span-tree('', $content);
         @!lines = $as-tree.lines.eager;
-        self!calc-indexes;
         self!calc-widest;
         self!my-refresh;
     }
@@ -104,8 +113,13 @@ class Terminal::Widgets::RichText
         }
     }
 
+    method !height-of-line(@line) {
+        self!wrap-line(@line).elems
+    }
+
     #| Grab a chunk of laid-out span lines to feed to SpanBuffer.draw-frame
     method span-line-chunk(UInt:D $start, UInt:D $wanted) {
+        $!first-display-line = $start;
         my $pos = 0;
         my $line-index = @!display-lines[$start];
         my $line-display-line = @!line-starts[$start];
