@@ -425,7 +425,7 @@ class VScrollBar is Leaf {
 }
 
 #| A line-selectable text viewer widget
-class SelectableSpanBuffer is Leaf { }
+class RichText is Leaf { }
 
 #| A multi-line auto-scrolling log viewer
 class LogViewer is Leaf { }
@@ -547,7 +547,7 @@ class Builder {
     method divider(|c)       { self.build-leaf(Divider,      |c) }
     method hscroll(|c)       { self.build-leaf(HScrollBar,   |c) }
     method vscroll(|c)       { self.build-leaf(VScrollBar,   |c) }
-    method selectable-span-buffer(|c) { self.build-leaf(SelectableSpanBuffer,    |c) }
+    method rich-text(|c)     { self.build-leaf(RichText,     |c) }
     method log-viewer(|c)    { self.build-leaf(LogViewer,    |c) }
     method plain-text(|c)    { self.build-leaf(PlainText,    |c) }
     method smoke-chart(|c)   { self.build-leaf(SmokeChart,   |c) }

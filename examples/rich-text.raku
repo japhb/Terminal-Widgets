@@ -27,7 +27,7 @@ class FormUI is TopLevel {
             ),
             .divider(line-style => 'light1', style => %(set-h => 1)),
             .node(
-                .selectable-span-buffer(id => 'text', :%style),
+                .rich-text(id => 'text', :%style),
                 .vscroll(scroll-target => 'text'),
             ),
             .node(
