@@ -1,5 +1,7 @@
 # ABSTRACT: A text widget that has clickable lines / a selected line.
 
+use Text::MiscUtils::Layout;
+
 use Terminal::Widgets::SpanStyle;
 use Terminal::Widgets::SpanBuffer;
 
@@ -81,12 +83,16 @@ class Terminal::Widgets::RichText
                     }
                     else {
                         my $remaining-space = $width - $len;
-                        #TODO: Deal with duowidth chars!
-                        @next.push: span($span.color, $span.text.substr(0, $remaining-space));
+                        my $first = $span.text.substr(0, $remaining-space);
+                        while duospace-width($first) > $remaining-space {
+                            $first .= substr(0, $first.chars - 1);
+                        }
+                        my $second = $span.text.substr($first.chars);
+                        @next.push: span($span.color, $first);
                         @wrapped.push: @next;
                         @next := [];
                         $len = 0;
-                        $span = span($span.color, $span.text.substr($remaining-space));
+                        $span = span($span.color, $second);
                     }
                 }
             }
