@@ -4,7 +4,7 @@ use Terminal::Widgets::SpanStyle;
 use Terminal::Widgets::SpanBuffer;
 
 #| Simple auto-scrolling log viewer
-class Terminal::Widgets::SelectableSpanBuffer
+class Terminal::Widgets::RichText
  does Terminal::Widgets::SpanBuffer {
     has @.lines;
     #| For each line, in which display line does it start?
