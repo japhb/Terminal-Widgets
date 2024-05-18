@@ -18,6 +18,8 @@ class Terminal::Widgets::RichText
     has $!widest;
     has $!first-display-line = 0;
     has &!process-click;
+    has $.selected-line = 0;
+    has $.selected-line-style is built = 'bold white on_blue';
 
     method set-wrap($wrap) {
         $!wrap = $wrap;
@@ -121,16 +123,24 @@ class Terminal::Widgets::RichText
 
     #| Grab a chunk of laid-out span lines to feed to SpanBuffer.draw-frame
     method span-line-chunk(UInt:D $start, UInt:D $wanted) {
+        sub line($i) {
+            if $i == $!selected-line {
+                span-tree($!selected-line-style, @!lines[$i]).lines.eager[0]
+            }
+            else {
+                @!lines[$i]
+            }
+        }
         $!first-display-line = $start;
         my $pos = 0;
         my $line-index = @!display-lines[$start];
         my $line-display-line = @!line-starts[$start];
 
         my $start-offset = $start - $line-display-line;
-        my @result = self!wrap-line(@!lines[$line-index++])[$start-offset..*];
+        my @result = self!wrap-line(line($line-index++))[$start-offset..*];
 
         while @result.elems < $wanted && $line-index < @!lines.elems {
-            @result.append(self!wrap-line(@!lines[$line-index++]));
+            @result.append(self!wrap-line(line($line-index++)));
         }
 
         @result
@@ -145,7 +155,11 @@ class Terminal::Widgets::RichText
                               $event where !*.mouse.pressed, AtTarget) {
         my ($x, $y) = $event.relative-to(self);
         my $clicked-display-line = $!first-display-line + $y;
-        my $line-index = @!display-lines[$clicked-display-line];
+        my $line-index = @!display-lines[min($clicked-display-line, @!display-lines.end)];
+        if $!selected-line != $line-index {
+            $!selected-line = $line-index;
+            self.full-refresh;
+        }
         my $rel-y = $y - @!line-starts[$line-index];
         ($x, $y) = self!display-pos-to-line-pos(@!lines[$line-index], $x, $rel-y);
         &!process-click($line-index, $x, $y) with &!process-click;

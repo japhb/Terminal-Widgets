@@ -1,4 +1,4 @@
-# ABSTRACT: Demonstrate the selectable text widget
+# ABSTRACT: Demonstrate the rich text widget
 
 use Terminal::Widgets::Simple;
 use Terminal::Widgets::Events;
