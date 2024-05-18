@@ -6,7 +6,7 @@ use Terminal::Widgets::Events;
 #| A top level UI container based on Terminal::Widgets::Simple::TopLevel
 class FormUI is TopLevel {
     has Form:D $.form .= new;
-    has        $!text = "Some demo text.";
+    has        $!text = "😂 😂 😂 😂 😂 😂 😂 😂 Some not so short demo text. This text is deliberately long, so one can test line wrapping without having to type in so much text first. So here is some more to really hit home and be sure that we definitely have enough text to fill a line even on very wide screen displays and very small fonts. We'll see if someone speaks up and says that this text is not long enough on their setup to test line wrapping. Here are some more duowidth chars: 😂 😂 😂 😂 😂 😂 😂 😂 😂 😂 😂 😂 ";
 
     method initial-layout($builder, $width, $height) {
         my %style;
