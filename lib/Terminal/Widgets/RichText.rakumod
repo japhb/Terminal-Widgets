@@ -11,9 +11,9 @@ class Terminal::Widgets::RichText
  does Terminal::Widgets::SpanBuffer {
     has @.lines;
     #| For each line, in which display line does it start?
-    has @!line-starts;
+    has @!l-dl;
     #| For each diplay line, which line is there?
-    has @!display-lines;
+    has @!dl-l;
     has $.wrap = False;
     has $!widest;
     has $!first-display-line = 0;
@@ -29,9 +29,9 @@ class Terminal::Widgets::RichText
     method !my-refresh() {
         my $first-line = 0;
         my $sub-line = 0;
-        if @!display-lines {
-            $first-line = @!display-lines[$!first-display-line];
-            $sub-line = $!first-display-line - @!line-starts[$first-line];
+        if @!dl-l {
+            $first-line = @!dl-l[$!first-display-line];
+            $sub-line = $!first-display-line - @!l-dl[$first-line];
         }
         if !$!wrap {
             self.set-x-max($!widest) if $!widest > $.x-max;
@@ -41,8 +41,8 @@ class Terminal::Widgets::RichText
             self.set-x-scroll(0);
         }
         self!calc-indexes;
-        self.set-y-max(@!display-lines.end);
-        my $new-first-line-start = @!line-starts[$first-line];
+        self.set-y-max(@!dl-l.end);
+        my $new-first-line-start = @!l-dl[$first-line];
         my $new-first-line-height = self!height-of-line(@!lines[$first-line]);
         self.set-y-scroll($new-first-line-start + min($sub-line, $new-first-line-height));
         self.full-refresh;
@@ -52,12 +52,12 @@ class Terminal::Widgets::RichText
     method !calc-indexes() {
         my $dpos = 0;
         for @!lines.kv -> $pos, $l {
-            @!line-starts[$pos] = $dpos;
+            @!l-dl[$pos] = $dpos;
             my $line-height = self!height-of-line($l);
-            @!display-lines[$dpos++] = $pos for ^$line-height;
+            @!dl-l[$dpos++] = $pos for ^$line-height;
         }
-        @!line-starts.splice: @!lines.elems;
-        @!display-lines.splice: $dpos;
+        @!l-dl.splice: @!lines.elems;
+        @!dl-l.splice: $dpos;
     }
 
     method !calc-widest() {
@@ -133,8 +133,8 @@ class Terminal::Widgets::RichText
         }
         $!first-display-line = $start;
         my $pos = 0;
-        my $line-index = @!display-lines[$start];
-        my $line-display-line = @!line-starts[$start];
+        my $line-index = @!dl-l[$start];
+        my $line-display-line = @!l-dl[$start];
 
         my $start-offset = $start - $line-display-line;
         my @result = self!wrap-line(line($line-index++))[$start-offset..*];
@@ -155,12 +155,12 @@ class Terminal::Widgets::RichText
                               $event where !*.mouse.pressed, AtTarget) {
         my ($x, $y) = $event.relative-to(self);
         my $clicked-display-line = $!first-display-line + $y;
-        my $line-index = @!display-lines[min($clicked-display-line, @!display-lines.end)];
+        my $line-index = @!dl-l[min($clicked-display-line, @!dl-l.end)];
         if $!selected-line != $line-index {
             $!selected-line = $line-index;
             self.full-refresh;
         }
-        my $rel-y = $y - @!line-starts[$line-index];
+        my $rel-y = $y - @!l-dl[$line-index];
         ($x, $y) = self!display-pos-to-line-pos(@!lines[$line-index], $x, $rel-y);
         &!process-click($line-index, $x, $y) with &!process-click;
     }
