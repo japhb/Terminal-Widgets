@@ -169,6 +169,7 @@ class Terminal::Widgets::RichText
         $no = max($no, 0);
         $no = min($no, @!lines.end);
         $!selected-line = $no;
+        self.ensure-y-span-visible(@!l-dl[$!selected-line], @!l-dl[$!selected-line] + self!height-of-line(@!lines[$no]) - 1);
         self.full-refresh;
     }
 
