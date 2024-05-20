@@ -151,8 +151,31 @@ class Terminal::Widgets::RichText
         ($x, $y)
     }
 
+    multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D
+                              $event where *.key.defined, AtTarget) {
+        my constant %keymap =
+            CursorDown       => 'select-next',
+            CursorUp         => 'select-prev',
+            ;
+
+        my $keyname = $event.keyname;
+        with %keymap{$keyname} {
+            when 'select-next' { self.select-line($!selected-line + 1) }
+            when 'select-prev' { self.select-line($!selected-line - 1) }
+        }
+    }
+
+    method select-line($no is copy) {
+        $no = max($no, 0);
+        $no = min($no, @!lines.end);
+        $!selected-line = $no;
+        self.full-refresh;
+    }
+
     multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
                               $event where !*.mouse.pressed, AtTarget) {
+        self.toplevel.focus-on(self);
+
         my ($x, $y) = $event.relative-to(self);
         my $clicked-display-line = $!first-display-line + $y;
         my $line-index = @!dl-l[min($clicked-display-line, @!dl-l.end)];
