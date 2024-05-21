@@ -134,7 +134,7 @@ class Terminal::Widgets::RichText
         $!first-display-line = $start;
         my $pos = 0;
         my $line-index = @!dl-l[$start];
-        my $line-display-line = @!l-dl[$start];
+        my $line-display-line = @!l-dl[$line-index];
 
         my $start-offset = $start - $line-display-line;
         my @result = self!wrap-line(line($line-index++))[$start-offset..*];
