@@ -167,6 +167,16 @@ class Terminal::Widgets::Input::Text
     #| Dispatch a key event when enabled for editing
     multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D
                               $event where *.key.defined, AtTarget) {
+        my constant %handling-keymap =
+            Ctrl-I       => 'next-input',    # Tab
+            ShiftTab     => 'prev-input',    # Shift-Tab is weird and special
+        ;
+
+        with %handling-keymap{$event.keyname} {
+            when 'next-input' { self.focus-next-input }
+            when 'prev-input' { self.focus-prev-input }
+        }
+
         # Ignore keyboard input if disabled
         return unless $.enabled;
 
