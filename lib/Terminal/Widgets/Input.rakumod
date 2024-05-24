@@ -101,10 +101,20 @@ role Terminal::Widgets::Input
 
     # Move focus to next or previous Input
     method focus-next-input() {
-        self.toplevel.focus-on($_) with self.next-widget(Terminal::Widgets::Input)
+        with self.next-widget(Terminal::Widgets::Input) {
+            self.toplevel.focus-on($_)
+        }
+        orwith self.toplevel.first-widget(Terminal::Widgets::Input) {
+            self.toplevel.focus-on($_)
+        }
     }
     method focus-prev-input() {
-        self.toplevel.focus-on($_) with self.prev-widget(Terminal::Widgets::Input)
+        with self.prev-widget(Terminal::Widgets::Input) {
+            self.toplevel.focus-on($_)
+        }
+        orwith self.toplevel.last-widget(Terminal::Widgets::Input) {
+            self.toplevel.focus-on($_)
+        }
     }
 
     # Handle taking focus
