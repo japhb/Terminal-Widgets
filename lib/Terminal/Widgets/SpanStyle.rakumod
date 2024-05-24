@@ -29,7 +29,14 @@ class Span {
     #| Split into a sequence of Spans that contain one line each
     #| (as delimited by textual newlines as usual for Str.lines)
     method lines(Bool:D :$chomp = True) {
-        $.text.lines(:$chomp).map({ Span.new(:$.color, :text($_)) })
+        if $.text eq "" {
+            # Str.lines returns an empty list, if text is the empty string.
+            # So we need to special case this here.
+            (Span.new(:$.color, :$.text),)
+        }
+        else {
+            $.text.lines(:$chomp).map({ Span.new(:$.color, :text($_)) })
+        }
     }
 
     #| Split into a sequence of Spans that contain one word each
