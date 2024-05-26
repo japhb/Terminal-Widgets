@@ -5,10 +5,12 @@ use Text::MiscUtils::Layout;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::SpanStyle;
 use Terminal::Widgets::SpanBuffer;
+use Terminal::Widgets::Focusable;
 
 #| Simple auto-scrolling log viewer
 class Terminal::Widgets::RichText
- does Terminal::Widgets::SpanBuffer {
+ does Terminal::Widgets::SpanBuffer
+ does Terminal::Widgets::Focusable {
     has @.lines;
     #| For each line, in which display line does it start?
     has @!l-dl;
@@ -21,12 +23,16 @@ class Terminal::Widgets::RichText
     has $.selected-line = 0;
     has $.selected-line-style is built = 'bold white on_blue';
 
-    method set-wrap($wrap) {
-        $!wrap = $wrap;
-        self!my-refresh;
+    submethod TWEAK() {
+        self.init-focusable;
     }
 
-    method !my-refresh() {
+    method set-wrap($wrap) {
+        $!wrap = $wrap;
+        self.my-refresh;
+    }
+
+    method my-refresh() {
         my $first-line = 0;
         my $sub-line = 0;
         if @!dl-l {
@@ -71,7 +77,7 @@ class Terminal::Widgets::RichText
                         !! span-tree('', $content);
         @!lines = $as-tree.lines.eager;
         self!calc-widest;
-        self!my-refresh;
+        self.my-refresh;
     }
 
     method !wrap-line(@line) {
@@ -125,7 +131,7 @@ class Terminal::Widgets::RichText
     method span-line-chunk(UInt:D $start, UInt:D $wanted) {
         sub line($i) {
             if $i == $!selected-line {
-                span-tree($!selected-line-style, @!lines[$i]).lines.eager[0]
+                span-tree(self.current-color(%( |self.current-color-states, :prompt )), @!lines[$i]).lines.eager[0]
             }
             else {
                 @!lines[$i]
@@ -154,14 +160,18 @@ class Terminal::Widgets::RichText
     multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D
                               $event where *.key.defined, AtTarget) {
         my constant %keymap =
-            CursorDown       => 'select-next',
-            CursorUp         => 'select-prev',
+            CursorDown => 'select-next',
+            CursorUp   => 'select-prev',
+            Ctrl-I     => 'next-input',    # Tab
+            ShiftTab   => 'prev-input',    # Shift-Tab is weird and special
             ;
 
         my $keyname = $event.keyname;
         with %keymap{$keyname} {
             when 'select-next' { self.select-line($!selected-line + 1) }
             when 'select-prev' { self.select-line($!selected-line - 1) }
+            when 'next-input'  { self.focus-next-input }
+            when 'prev-input'  { self.focus-prev-input }
         }
     }
 
