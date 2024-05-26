@@ -1,32 +1,26 @@
 # ABSTRACT: Base role for input field widgets
 
-use Terminal::Widgets::Utils::Color;
-use Terminal::Widgets::ColorTheme;
 use Terminal::Widgets::Events;
-use Terminal::Widgets::Widget;
 use Terminal::Widgets::Form;
+use Terminal::Widgets::Focusable;
 
 
-role Terminal::Widgets::Input {
-    has Bool:D $.enabled = True;
-    has Bool:D $!active  = False;   # XXXX: Handle this for all inputs?
+role Terminal::Widgets::Input
+does Terminal::Widgets::Focusable {
     has        &.process-input;
     has        $.hint-target;
     has        $.hint;
     has        $.error;
-    has        %.color;
+    has Bool:D $!active  = False;   # XXXX: Handle this for all inputs?
 
-    has Terminal::Widgets::ColorSet:D $.colorset = self.terminal.colorset;
     has Terminal::Widgets::Form       $.form;
 
 
     # Input-specific gist flags
     method gist-flags() {
        |callsame,
-       ('ERROR'   if $!error),
        ('ACTIVE'  if $!active),
-       ('FOCUSED' if self.toplevel.focused-widget === self),
-       ('enabled' if $!enabled),
+       ('ERROR'   if $!error),
        ('hint-target:' ~ $!hint-target.gist if $!hint-target),
     }
 
@@ -46,14 +40,8 @@ role Terminal::Widgets::Input {
 
     # Make sure unset colors are defaulted, and optionally add input to a form
     submethod TWEAK() {
-        $!colorset .= clone(|%!color) if %!color;
+        self.init-focusable;
         .add-input(self) with $!form;
-    }
-
-    #| Determine proper color based on state variables, taking care to handle
-    #| whatever color style mixtures have been requested
-    method current-color($states = self.current-color-states) {
-        $.colorset.current-color($states)
     }
 
     #| Determine current active states affecting color choices
@@ -86,18 +74,6 @@ role Terminal::Widgets::Input {
     # Set error state, then refresh
     # XXXX: error-target and human-friendly error display?
     method set-error($!error) { self.full-refresh }
-
-    # Set enabled flag, then refresh
-    method set-enabled(Bool:D $!enabled = True) { self.full-refresh }
-    method toggle-enabled()                     { self.set-enabled(!$!enabled) }
-
-    # Move focus to next or previous Input
-    method focus-next-input() {
-        self.toplevel.focus-on($_) with self.next-widget(Terminal::Widgets::Input)
-    }
-    method focus-prev-input() {
-        self.toplevel.focus-on($_) with self.prev-widget(Terminal::Widgets::Input)
-    }
 
     # Handle taking focus
     multi method handle-event(Terminal::Widgets::Events::TakeFocus:D $event, AtTarget) {
