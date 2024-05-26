@@ -2,9 +2,11 @@
 
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Input;
+use Terminal::Widgets::Widget;
 
 
 class Terminal::Widgets::Input::Menu
+ is Terminal::Widgets::Widget
  does Terminal::Widgets::Input {
     has UInt:D $.selected = 0;
     has UInt:D $.top-item = 0;

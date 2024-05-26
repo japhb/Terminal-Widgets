@@ -7,8 +7,7 @@ use Terminal::Widgets::Widget;
 use Terminal::Widgets::Form;
 
 
-role Terminal::Widgets::Input
-  is Terminal::Widgets::Widget {
+role Terminal::Widgets::Input {
     has Bool:D $.enabled = True;
     has Bool:D $!active  = False;   # XXXX: Handle this for all inputs?
     has        &.process-input;
@@ -91,13 +90,6 @@ role Terminal::Widgets::Input
     # Set enabled flag, then refresh
     method set-enabled(Bool:D $!enabled = True) { self.full-refresh }
     method toggle-enabled()                     { self.set-enabled(!$!enabled) }
-
-    # Convert animation drawing to full-refresh
-    method draw-frame() {
-        self.full-refresh;
-        # XXXX: Do we need to callsame here?
-        # callsame;
-    }
 
     # Move focus to next or previous Input
     method focus-next-input() {
