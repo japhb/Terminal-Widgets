@@ -21,6 +21,7 @@
     "Terminal::Widgets::ColorTheme": "lib/Terminal/Widgets/ColorTheme.rakumod",
     "Terminal::Widgets::ColorThemes": "lib/Terminal/Widgets/ColorThemes.rakumod",
     "Terminal::Widgets::Events": "lib/Terminal/Widgets/Events.rakumod",
+    "Terminal::Widgets::Focusable": "lib/Terminal/Widgets/Focusable.rakumod",
     "Terminal::Widgets::Form": "lib/Terminal/Widgets/Form.rakumod",
     "Terminal::Widgets::I18N::Locale": "lib/Terminal/Widgets/I18N/Locale.rakumod",
     "Terminal::Widgets::I18N::Translation": "lib/Terminal/Widgets/I18N/Translation.rakumod",
