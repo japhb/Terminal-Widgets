@@ -19,7 +19,7 @@ class Terminal::Widgets::RichText
     has $.wrap = False;
     has $!widest;
     has $!first-display-line = 0;
-    has &!process-click;
+    has &.process-click;
     has $.selected-line = 0;
     has $.selected-line-style is built = 'bold white on_blue';
 
@@ -102,10 +102,8 @@ class Terminal::Widgets::RichText
                     }
                     else {
                         my $remaining-space = $width - $len;
-                        my $first = $span.text.substr(0, $remaining-space);
-                        while duospace-width($first) > $remaining-space {
-                            $first .= substr(0, $first.chars - 1);
-                        }
+                        my $first = $span.text.substr(0,
+                                    self!count-fitting-in-width($span.text, $remaining-space));
                         my $second = $span.text.substr($first.chars);
                         @next.push: span($span.color, $first);
                         @wrapped.push: @next;
@@ -121,6 +119,58 @@ class Terminal::Widgets::RichText
         else {
             [@line,]
         }
+    }
+
+    method !display-pos-to-line-pos(@line, $x, $y) {
+        my $width = self.content-width;
+        my $lx = 0;
+        my $rx = 0;
+        my $ry = 0;
+        for @line -> $span is copy {
+            loop {
+                if $ry < $y {
+                    if $rx + $span.width < $width {
+                        $rx += $span.width;
+                        last;
+                    }
+                    elsif $rx + $span.width == $width {
+                        $lx += $rx + $span.width;
+                        $rx = 0;
+                        $ry++;
+                        last;
+                    }
+                    else {
+                        my $remaining-space = $width - $rx;
+                        my $fitting = self!count-fitting-in-width($span.text, $remaining-space);
+                        $span = span($span.color, $span.text.substr($fitting));
+                        $lx += $rx + $fitting;
+                        $rx = 0;
+                        $ry++;
+                    }
+                }
+                else {
+                    if $rx + $span.width < $x {
+                        $rx += $span.width;
+                        last;
+                    }
+                    elsif $rx + $span.width == $x {
+                        return ($lx + $rx + $span.width, 0);
+                    }
+                    else {
+                        my $remaining-space = $x - $rx;
+                        return ($lx + $rx + self!count-fitting-in-width($span.text, $remaining-space), 0);
+                    }
+                }
+            }
+        }
+    }
+
+    method !count-fitting-in-width($text, $width --> Int) {
+        my $count = $width;
+        while duospace-width($text.substr(0, $count)) > $width {
+            $count--;
+        }
+        $count
     }
 
     method !height-of-line(@line) {
@@ -150,11 +200,6 @@ class Terminal::Widgets::RichText
         }
 
         @result
-    }
-
-    method !display-pos-to-line-pos(@line, $x, $y) {
-        # TODO
-        ($x, $y)
     }
 
     multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D
@@ -195,7 +240,7 @@ class Terminal::Widgets::RichText
             self.full-refresh;
         }
         my $rel-y = $y - @!l-dl[$line-index];
-        ($x, $y) = self!display-pos-to-line-pos(@!lines[$line-index], $x, $rel-y);
+        ($x, $y) = self!display-pos-to-line-pos(@!lines[$line-index], self.x-scroll + $x, $rel-y);
         &!process-click($line-index, $x, $y) with &!process-click;
     }
 }
