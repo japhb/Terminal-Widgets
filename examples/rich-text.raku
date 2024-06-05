@@ -27,7 +27,7 @@ class FormUI is TopLevel {
             ),
             .divider(line-style => 'light1', style => %(set-h => 1)),
             .node(
-                .rich-text(id => 'text', :%style,
+                .rich-text(id => 'text', style => %(max-w => 50),
                                    process-click => -> $line, $x, $y {
                                        "out".IO.spurt: "pricess-click hit\n", :append;
                                        my $click-log = %.by-id<click-log>;
@@ -35,6 +35,7 @@ class FormUI is TopLevel {
                                        $click-log.refresh-for-scroll;
                                    }),
                 .vscroll(scroll-target => 'text'),
+                .spacer(),
             ),
             .node(
                 .hscroll(scroll-target => 'text'),
