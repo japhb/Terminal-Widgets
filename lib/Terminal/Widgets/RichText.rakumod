@@ -32,7 +32,7 @@ class Terminal::Widgets::RichText
         self.my-refresh;
     }
 
-    method my-refresh() {
+    method my-refresh($from = 0) {
         my $first-line = 0;
         my $sub-line = 0;
         if @!dl-l {
@@ -46,7 +46,7 @@ class Terminal::Widgets::RichText
             self.set-x-max(self.content-width);
             self.set-x-scroll(0);
         }
-        self!calc-indexes;
+        self!calc-indexes($from);
         self.set-y-max(@!dl-l.end);
         my $new-first-line-start = @!l-dl[$first-line];
         my $new-first-line-height = self!height-of-line(@!lines[$first-line]);
@@ -55,9 +55,10 @@ class Terminal::Widgets::RichText
         self.refresh-for-scroll;
     }
 
-    method !calc-indexes() {
-        my $dpos = 0;
-        for @!lines.kv -> $pos, $l {
+    method !calc-indexes($from = 0) {
+        my $dpos = @!l-dl[$from] // 0;
+        loop (my $pos = $from; $pos < @!lines.elems; $pos++) {
+            my $l = @!lines[$pos];
             @!l-dl[$pos] = $dpos;
             my $line-height = self!height-of-line($l);
             @!dl-l[$dpos++] = $pos for ^$line-height;
@@ -78,6 +79,17 @@ class Terminal::Widgets::RichText
         @!lines = $as-tree.lines.eager;
         self!calc-widest;
         self.my-refresh;
+    }
+
+    method splice-lines($from, $count, $replacement) {
+        my $as-tree = $replacement ~~ Terminal::Widgets::SpanStyle::SpanTree
+                        ?? $replacement
+                        !! span-tree('', $replacement);
+        my @repl-lines = $as-tree.lines.eager;
+        @!lines.splice: $from, $count, @repl-lines;
+
+        self!calc-widest;
+        self.my-refresh($from);
     }
 
     method !wrap-line(@line) {
