@@ -16,6 +16,10 @@ class FormUI is TopLevel {
                                    process-input => -> $cb {
                                        %.by-id<text>.set-wrap($cb.state);
                                    }),
+            .checkbox(    :$.form, :%style, label => 'Show cursor',
+                                   process-input => -> $cb {
+                                       %.by-id<text>.set-show-cursor($cb.state);
+                                   }),
             .text-input(  :$.form, :%style,
                                    process-input => -> $text {
                                        $!text ~= "\n" ~ $text;
