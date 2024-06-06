@@ -448,10 +448,10 @@ class Terminal::Widgets::Widget
                         $.grid.change-cell($line-x,     $line-y, $cell);
                         $.grid.change-cell($line-x + 1, $line-y, '')
                             if $width > 1;
+                        $line-x = $c-next;
                     }
 
                     $span-x += $width;
-                    $line-x  = $c-next;
                 }
             }
 
