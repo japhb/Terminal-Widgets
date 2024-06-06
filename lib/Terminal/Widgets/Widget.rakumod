@@ -455,7 +455,7 @@ class Terminal::Widgets::Widget
                 }
             }
 
-            last if ($span-x = $next) >= $w;
+            last if ($span-x = $next) - $x-scroll >= $w;
         }
     }
 
