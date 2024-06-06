@@ -482,6 +482,9 @@ class Terminal::Widgets::Widget
                     # Wide char cut off (split) by drawing area width, done
                     last if $c-next > $w;
 
+                    if $x-scroll == $span-x + 1 && $width == 2 {
+                        $line-x++;
+                    }
                     if $x-scroll <= $span-x {
                         # Character fully visible; update optionally-colored
                         # first cell, empty second cell if character was wide,
