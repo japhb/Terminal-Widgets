@@ -22,6 +22,8 @@ class Terminal::Widgets::RichText
     has &.process-click;
     has $.selected-line = 0;
     has $.selected-line-style is built = 'bold white on_blue';
+    has Bool $.show-cursor = False;
+    has $.cursor-pos = 0;
 
     submethod TWEAK() {
         self.init-focusable;
@@ -30,6 +32,11 @@ class Terminal::Widgets::RichText
     method set-wrap($wrap) {
         $!wrap = $wrap;
         self.my-refresh;
+    }
+
+    method set-show-cursor($show-cursor) {
+        $!show-cursor = $show-cursor;
+        self.full-refresh;
     }
 
     method my-refresh($from = 0) {
@@ -189,11 +196,71 @@ class Terminal::Widgets::RichText
         self!wrap-line(@line).elems
     }
 
+    method !chars-in-line(@line) {
+        log "chars-in-line";
+        log @line.raku;
+        @line.map(*.text.chars).sum
+    }
+
+    method !width-up-to-pos(@line, $pos is copy) {
+        $pos = min $pos, self!chars-in-line(@line) - 1;
+        my $width = 0;
+        my $x = 0;
+        for @line -> $span is copy {
+            my $chars = $span.text.chars;
+            if $pos <= $x + $chars {
+                return ($width + span($span.color, $span.text.substr(0, $pos - $x)).width, span($span.color, $span.text.substr($pos - $x, 1)).width);
+            }
+            else {
+                $x += $chars;
+                $width += $span.width;
+            }
+        }
+    }
+    
+    sub log($t) {
+        "o".IO.spurt: $t ~ "\n", :append;
+    }
+
+    method !add-cursor(@line, $pos is copy) {
+        $pos = min $pos, self!chars-in-line(@line);
+        my @new-line;
+        my $x = 0;
+        for @line -> $span is copy {
+            my $chars = $span.text.chars;
+            log "span: $x, $pos, $chars";
+            if $x <= $pos < $x + $chars {
+                log "hit";
+                if $pos - $x > 0 {
+                    @new-line.push: span($span.color, $span.text.substr(0, $pos - $x));
+                }
+                log "$x: " ~ $span.text.substr($pos - $x, 1);
+                @new-line.push: span-tree(
+                    self.current-color(%( |self.current-color-states, :cursor)),
+                    span($span.color, $span.text.substr($pos - $x, 1))).lines.eager[0][0];
+                if $pos - $x + 1 < $chars {
+                    @new-line.push: span($span.color, $span.text.substr($pos - $x + 1));
+                }
+            }
+            else {
+                log "other";
+                $x += $chars;
+                @new-line.push: $span;
+            }
+        }
+        @new-line
+    }
+
     #| Grab a chunk of laid-out span lines to feed to SpanBuffer.draw-frame
     method span-line-chunk(UInt:D $start, UInt:D $wanted) {
         sub line($i) {
             if $i == $!selected-line {
-                span-tree(self.current-color(%( |self.current-color-states, :prompt )), @!lines[$i]).lines.eager[0]
+                my @line = span-tree(self.current-color(%( |self.current-color-states, :prompt )), @!lines[$i]).lines.eager[0];
+                if $!show-cursor {
+                    @line = self!add-cursor: @line, $!cursor-pos;
+                }
+                log @line.raku;
+                @line
             }
             else {
                 @!lines[$i]
@@ -211,22 +278,27 @@ class Terminal::Widgets::RichText
             @result.append(self!wrap-line(line($line-index++)));
         }
 
+        log @result.raku;
         @result
     }
 
     multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D
                               $event where *.key.defined, AtTarget) {
         my constant %keymap =
-            CursorDown => 'select-next',
-            CursorUp   => 'select-prev',
-            Ctrl-I     => 'next-input',    # Tab
-            ShiftTab   => 'prev-input',    # Shift-Tab is weird and special
+            CursorDown  => 'select-next-line',
+            CursorUp    => 'select-prev-line',
+            CursorLeft  => 'select-prev-char',
+            CursorRight => 'select-next-char',
+            Ctrl-I      => 'next-input',    # Tab
+            ShiftTab    => 'prev-input',    # Shift-Tab is weird and special
             ;
 
         my $keyname = $event.keyname;
         with %keymap{$keyname} {
-            when 'select-next' { self.select-line($!selected-line + 1) }
-            when 'select-prev' { self.select-line($!selected-line - 1) }
+            when 'select-next-line' { self.select-line($!selected-line + 1) }
+            when 'select-prev-line' { self.select-line($!selected-line - 1) }
+            when 'select-next-char' { self.select-char($!cursor-pos + 1) }
+            when 'select-prev-char' { self.select-char($!cursor-pos - 1) }
             when 'next-input'  { self.focus-next-input }
             when 'prev-input'  { self.focus-prev-input }
         }
@@ -237,6 +309,24 @@ class Terminal::Widgets::RichText
         $no = min($no, @!lines.end);
         $!selected-line = $no;
         self.ensure-y-span-visible(@!l-dl[$!selected-line], @!l-dl[$!selected-line] + self!height-of-line(@!lines[$no]) - 1);
+        self.full-refresh;
+    }
+
+    method select-char($no is copy) {
+        $no = max($no, 0);
+        my $chars = self!chars-in-line(@!lines[$!selected-line]);
+        if $!cursor-pos >= $chars {
+            $no = $!cursor-pos;
+        }
+        else {
+            $no = min($no, $chars - 1);
+        }
+        $!cursor-pos = $no;
+        if !$!wrap {
+            my ($upto, $cursor) = self!width-up-to-pos(@!lines[$!selected-line], $!cursor-pos);
+            log "ensure $!cursor-pos $upto $cursor";
+            self.ensure-x-span-visible($upto, $upto);
+        }
         self.full-refresh;
     }
 
