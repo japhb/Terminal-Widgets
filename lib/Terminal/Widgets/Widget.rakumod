@@ -438,6 +438,9 @@ class Terminal::Widgets::Widget
                     my $c-next = $line-x + $width;
                     last if $c-next > $w;
 
+                    if $x-scroll == $span-x + 1 && $width == 2 {
+                        $line-x++;
+                    }
                     if $x-scroll <= $span-x {
                         # Update optionally-colored first cell;
                         # empty second cell if character was wide.
