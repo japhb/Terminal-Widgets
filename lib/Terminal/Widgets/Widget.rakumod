@@ -438,6 +438,9 @@ class Terminal::Widgets::Widget
                     my $c-next = $line-x + $width;
                     last if $c-next > $w;
 
+                    if $x-scroll == $span-x + 1 && $width == 2 {
+                        $line-x++;
+                    }
                     if $x-scroll <= $span-x {
                         # Update optionally-colored first cell;
                         # empty second cell if character was wide.
@@ -445,14 +448,14 @@ class Terminal::Widgets::Widget
                         $.grid.change-cell($line-x,     $line-y, $cell);
                         $.grid.change-cell($line-x + 1, $line-y, '')
                             if $width > 1;
+                        $line-x = $c-next;
                     }
 
                     $span-x += $width;
-                    $line-x  = $c-next;
                 }
             }
 
-            last if ($span-x = $next) >= $w;
+            last if ($span-x = $next) - $x-scroll >= $w;
         }
     }
 
