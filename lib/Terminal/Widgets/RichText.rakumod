@@ -7,7 +7,6 @@ use Terminal::Widgets::SpanStyle;
 use Terminal::Widgets::SpanBuffer;
 use Terminal::Widgets::Focusable;
 
-#| Simple auto-scrolling log viewer
 class Terminal::Widgets::RichText
  does Terminal::Widgets::SpanBuffer
  does Terminal::Widgets::Focusable {
@@ -99,45 +98,49 @@ class Terminal::Widgets::RichText
         self.my-refresh($from);
     }
 
-    method !wrap-line(@line) {
+    method !wrap(@line) {
         if $!wrap {
             my $width = self.content-width;
-            my @wrapped;
-            my @next;
-            my $len = 0;
-            for @line -> $span is copy {
-                loop {
-                    if $len + $span.width < $width {
-                        $len += $span.width;
-                        @next.push: $span;
-                        last;
-                    }
-                    elsif $len + $span.width == $width {
-                        @next.push: $span;
-                        @wrapped.push: @next;
-                        @next := [];
-                        $len = 0;
-                        last;
-                    }
-                    else {
-                        my $remaining-space = $width - $len;
-                        my $first = $span.text.substr(0,
-                                    self!count-fitting-in-width($span.text, $remaining-space));
-                        my $second = $span.text.substr($first.chars);
-                        @next.push: span($span.color, $first);
-                        @wrapped.push: @next;
-                        @next := [];
-                        $len = 0;
-                        $span = span($span.color, $second);
-                    }
-                }
-            }
-            @wrapped.push: @next if @next;
-            @wrapped
+            self!word-wrap: @line, $width
         }
         else {
             [@line,]
         }
+    }
+
+    method !line-wrap(@line, $width) {
+        my @wrapped;
+        my @next;
+        my $len = 0;
+        for @line -> $span is copy {
+            loop {
+                if $len + $span.width < $width {
+                    $len += $span.width;
+                    @next.push: $span;
+                    last;
+                }
+                elsif $len + $span.width == $width {
+                    @next.push: $span;
+                    @wrapped.push: @next;
+                    @next := [];
+                    $len = 0;
+                    last;
+                }
+                else {
+                    my $remaining-space = $width - $len;
+                    my $first = $span.text.substr(0,
+                                self!count-fitting-in-width($span.text, $remaining-space));
+                    my $second = $span.text.substr($first.chars);
+                    @next.push: span($span.color, $first);
+                    @wrapped.push: @next;
+                    @next := [];
+                    $len = 0;
+                    $span = span($span.color, $second);
+                }
+            }
+        }
+        @wrapped.push: @next if @next;
+        @wrapped
     }
 
     method !display-pos-to-line-pos(@line, $x, $y) {
@@ -193,13 +196,84 @@ class Terminal::Widgets::RichText
     }
 
     method !height-of-line(@line) {
-        self!wrap-line(@line).elems
+        self!wrap(@line).elems
     }
 
     method !chars-in-line(@line) {
-        log "chars-in-line";
-        log @line.raku;
         @line.map(*.text.chars).sum
+    }
+
+    method !spans-to-text(@spans --> Str) {
+        [~] @spans.map(*.text)
+    }
+
+    method !split-spans-at-positions(@spans, @positions is copy) {
+        @positions .= sort;
+        my @result;
+        my @next;
+        my $len = 0;
+        for @spans -> $span is copy {
+            if @positions {
+                loop {
+                    my $chars = $span.text.chars;
+                    if $len + $chars < @positions[0] {
+                        $len += $chars;
+                        @next.push: $span;
+                        last;
+                    }
+                    elsif $len + $chars == @positions[0] {
+                        $len += $chars;
+                        @next.push: $span;
+                        @result.push: @next;
+                        @next := [];
+                        @positions.shift;
+                        last;
+                    }
+                    else {
+                        my $remaining-chars = @positions[0] - $len;
+                        $len += $remaining-chars;
+                        my $first = $span.text.substr(0, $remaining-chars);
+                        my $second = $span.text.substr($remaining-chars);
+                        @next.push: span($span.color, $first);
+                        @result.push: @next;
+                        @next := [];
+                        @positions.shift;
+                        $span = span($span.color, $second);
+                    }
+                }
+            }
+            else {
+                @next.push: $span;
+            }
+        }
+        @result.push: @next if @next;
+        @result
+    }
+
+    method !word-wrap(@line, $width) {
+        my $text = self!spans-to-text(@line);
+        my @positions;
+        my @candidates = $text ~~ m:g/ << /;
+        @candidates .= map: *.from;
+        my $pos = 0;
+        my $rest-width = $width;
+
+        while $pos < $text.chars {
+            my $fitting = $pos + self!count-fitting-in-width($text.substr($pos), $width);
+            my $cut;
+            $cut = @candidates.shift while @candidates && @candidates[0] <= $fitting;
+            if $cut {
+                @positions.push: $cut;
+                $pos = $cut;
+            }
+            else {
+                # No clean cut fits into the line.
+                @positions.push: $fitting;
+                $pos = $fitting;
+            }
+        }
+
+        self!split-spans-at-positions: @line, @positions;
     }
 
     method !width-up-to-pos(@line, $pos is copy) {
@@ -228,13 +302,10 @@ class Terminal::Widgets::RichText
         my $x = 0;
         for @line -> $span is copy {
             my $chars = $span.text.chars;
-            log "span: $x, $pos, $chars";
             if $x <= $pos < $x + $chars {
-                log "hit";
                 if $pos - $x > 0 {
                     @new-line.push: span($span.color, $span.text.substr(0, $pos - $x));
                 }
-                log "$x: " ~ $span.text.substr($pos - $x, 1);
                 @new-line.push: span-tree(
                     self.current-color(%( |self.current-color-states, :cursor)),
                     span($span.color, $span.text.substr($pos - $x, 1))).lines.eager[0][0];
@@ -243,7 +314,6 @@ class Terminal::Widgets::RichText
                 }
             }
             else {
-                log "other";
                 $x += $chars;
                 @new-line.push: $span;
             }
@@ -259,7 +329,6 @@ class Terminal::Widgets::RichText
                 if $!show-cursor {
                     @line = self!add-cursor: @line, $!cursor-pos;
                 }
-                log @line.raku;
                 @line
             }
             else {
@@ -272,13 +341,12 @@ class Terminal::Widgets::RichText
         my $line-display-line = @!l-dl[$line-index];
 
         my $start-offset = $start - $line-display-line;
-        my @result = self!wrap-line(line($line-index++))[$start-offset..*];
+        my @result = self!wrap(line($line-index++))[$start-offset..*];
 
         while @result.elems < $wanted && $line-index < @!lines.elems {
-            @result.append(self!wrap-line(line($line-index++)));
+            @result.append(self!wrap(line($line-index++)));
         }
 
-        log @result.raku;
         @result
     }
 
@@ -324,7 +392,6 @@ class Terminal::Widgets::RichText
         $!cursor-pos = $no;
         if !$!wrap {
             my ($upto, $cursor) = self!width-up-to-pos(@!lines[$!selected-line], $!cursor-pos);
-            log "ensure $!cursor-pos $upto $cursor";
             self.ensure-x-span-visible($upto, $upto);
         }
         self.full-refresh;
