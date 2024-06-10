@@ -7,6 +7,8 @@ use Terminal::Widgets::SpanStyle;
 use Terminal::Widgets::SpanBuffer;
 use Terminal::Widgets::Focusable;
 
+enum WrapStyle <NoWrap LineWrap WordWrap>;
+
 class Terminal::Widgets::RichText
  does Terminal::Widgets::SpanBuffer
  does Terminal::Widgets::Focusable {
@@ -15,26 +17,33 @@ class Terminal::Widgets::RichText
     has @!l-dl;
     #| For each diplay line, which line is there?
     has @!dl-l;
-    has $.wrap = False;
     has $!widest;
     has $!first-display-line = 0;
-    has &.process-click;
-    has $.selected-line = 0;
-    has $.selected-line-style is built = 'bold white on_blue';
+
+    has $.wrap = NoWrap;
+    has Bool $.highlight-line = False;
     has Bool $.show-cursor = False;
-    has $.cursor-pos = 0;
+    has $.cursor-x = 0;
+    has $.cursor-y = 0;
+
+    has &.process-click;
 
     submethod TWEAK() {
         self.init-focusable;
     }
 
-    method set-wrap($wrap) {
+    method set-wrap(WrapStyle $wrap) {
         $!wrap = $wrap;
         self.my-refresh;
     }
 
-    method set-show-cursor($show-cursor) {
+    method set-show-cursor(Bool $show-cursor) {
         $!show-cursor = $show-cursor;
+        self.full-refresh;
+    }
+
+    method set-highlight-line(Bool $highlight) {
+        $!highlight-line = $highlight;
         self.full-refresh;
     }
 
@@ -45,7 +54,7 @@ class Terminal::Widgets::RichText
             $first-line = @!dl-l[$!first-display-line];
             $sub-line = $!first-display-line - @!l-dl[$first-line];
         }
-        if !$!wrap {
+        if !$!wrap ~~ NoWrap {
             self.set-x-max($!widest) if $!widest > $.x-max;
         }
         else {
@@ -99,12 +108,16 @@ class Terminal::Widgets::RichText
     }
 
     method !wrap(@line) {
-        if $!wrap {
-            my $width = self.content-width;
-            self!word-wrap: @line, $width
-        }
-        else {
-            [@line,]
+        given $!wrap {
+            when NoWrap { 
+                [@line,]
+            }
+            when LineWrap {
+                self!line-wrap: @line, self.content-width
+            }
+            when WordWrap {
+                self!word-wrap: @line, self.content-width
+            }
         }
     }
 
@@ -324,10 +337,10 @@ class Terminal::Widgets::RichText
     #| Grab a chunk of laid-out span lines to feed to SpanBuffer.draw-frame
     method span-line-chunk(UInt:D $start, UInt:D $wanted) {
         sub line($i) {
-            if $i == $!selected-line {
+            if $i == $!cursor-y {
                 my @line = span-tree(self.current-color(%( |self.current-color-states, :prompt )), @!lines[$i]).lines.eager[0];
                 if $!show-cursor {
-                    @line = self!add-cursor: @line, $!cursor-pos;
+                    @line = self!add-cursor: @line, $!cursor-x;
                 }
                 @line
             }
@@ -363,10 +376,10 @@ class Terminal::Widgets::RichText
 
         my $keyname = $event.keyname;
         with %keymap{$keyname} {
-            when 'select-next-line' { self.select-line($!selected-line + 1) }
-            when 'select-prev-line' { self.select-line($!selected-line - 1) }
-            when 'select-next-char' { self.select-char($!cursor-pos + 1) }
-            when 'select-prev-char' { self.select-char($!cursor-pos - 1) }
+            when 'select-next-line' { self.select-line($!cursor-y + 1) }
+            when 'select-prev-line' { self.select-line($!cursor-y - 1) }
+            when 'select-next-char' { self.select-char($!cursor-x + 1) }
+            when 'select-prev-char' { self.select-char($!cursor-x - 1) }
             when 'next-input'  { self.focus-next-input }
             when 'prev-input'  { self.focus-prev-input }
         }
@@ -375,23 +388,23 @@ class Terminal::Widgets::RichText
     method select-line($no is copy) {
         $no = max($no, 0);
         $no = min($no, @!lines.end);
-        $!selected-line = $no;
-        self.ensure-y-span-visible(@!l-dl[$!selected-line], @!l-dl[$!selected-line] + self!height-of-line(@!lines[$no]) - 1);
+        $!cursor-y = $no;
+        self.ensure-y-span-visible(@!l-dl[$!cursor-y], @!l-dl[$!cursor-y] + self!height-of-line(@!lines[$no]) - 1);
         self.full-refresh;
     }
 
     method select-char($no is copy) {
         $no = max($no, 0);
-        my $chars = self!chars-in-line(@!lines[$!selected-line]);
-        if $!cursor-pos >= $chars {
-            $no = $!cursor-pos;
+        my $chars = self!chars-in-line(@!lines[$!cursor-y]);
+        if $!cursor-x >= $chars {
+            $no = $!cursor-x;
         }
         else {
             $no = min($no, $chars - 1);
         }
-        $!cursor-pos = $no;
-        if !$!wrap {
-            my ($upto, $cursor) = self!width-up-to-pos(@!lines[$!selected-line], $!cursor-pos);
+        $!cursor-x = $no;
+        if $!wrap ~~ NoWrap {
+            my ($upto, $cursor) = self!width-up-to-pos(@!lines[$!cursor-y], $!cursor-x);
             self.ensure-x-span-visible($upto, $upto);
         }
         self.full-refresh;
@@ -404,8 +417,8 @@ class Terminal::Widgets::RichText
         my ($x, $y) = $event.relative-to(self);
         my $clicked-display-line = $!first-display-line + $y;
         my $line-index = @!dl-l[min($clicked-display-line, @!dl-l.end)];
-        if $!selected-line != $line-index {
-            $!selected-line = $line-index;
+        if $!cursor-y != $line-index {
+            $!cursor-y = $line-index;
             self.full-refresh;
         }
         my $rel-y = $y - @!l-dl[$line-index];

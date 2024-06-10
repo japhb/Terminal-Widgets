@@ -2,31 +2,42 @@
 
 use Terminal::Widgets::Simple;
 use Terminal::Widgets::Events;
+use Terminal::Widgets::RichText;
 
 #| A top level UI container based on Terminal::Widgets::Simple::TopLevel
 class FormUI is TopLevel {
-    has Form:D $.form .= new;
     has        $!text = "😂😂😂😂😂😂😂😂 Some not so short demo text. This text is deliberately long, so one can test line wrapping without having to type in so much text first. So here is some more to really hit home and be sure that we definitely have enough text to fill a line even on very wide screen displays and very small fonts. We'll see if someone speaks up and says that this text is not long enough on their setup to test line wrapping. Here are some more duowidth chars: 😂😂😂😂😂😂😂😂😂😂😂😂 \n0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
 
     method initial-layout($builder, $width, $height) {
         my %style;
 
         with $builder {
-            .checkbox(    :$.form, :%style, label => 'Wrap',
-                                   process-input => -> $cb {
-                                       %.by-id<text>.set-wrap($cb.state);
+            .radio-button(label => 'No Wrap', group => 'wrap-style', id => 'no-wrap', :state(True),
+                                   process-input => -> $rb {
+                                       self!set-wrap($rb.selected-member.id);
                                    }),
-            .checkbox(    :$.form, :%style, label => 'Show cursor',
+            .radio-button(label => 'Line Wrap', group => 'wrap-style', id => 'line-wrap',
+                                   process-input => -> $rb {
+                                       self!set-wrap($rb.selected-member.id);
+                                   }),
+            .radio-button(label => 'Word Wrap', group => 'wrap-style', id => 'word-wrap',
+                                   process-input => -> $rb {
+                                       self!set-wrap($rb.selected-member.id);
+                                   }),
+            .checkbox(    label => 'Highlight Selected Line',
+                                   process-input => -> $cb {
+                                       %.by-id<text>.set-highlight-line($cb.state);
+                                   }),
+            .checkbox(    label => 'Show Cursor',
                                    process-input => -> $cb {
                                        %.by-id<text>.set-show-cursor($cb.state);
                                    }),
-            .text-input(  :$.form, :%style,
-                                   process-input => -> $text {
+            .text-input(  process-input => -> $text {
                                        $!text ~= "\n" ~ $text;
                                        %.by-id<text>.set-text($!text);
                                    }),
             .node(
-                .button(  :$.form, :%style, label => 'Quit',
+                .button(  label => 'Quit',
                                    process-input  => { $.terminal.quit }),
             ),
             .divider(line-style => 'light1', style => %(set-h => 1)),
@@ -55,6 +66,15 @@ class FormUI is TopLevel {
                 .spacer(style => %(set-w => 1, set-h => 1)),
             ),
         }
+    }
+
+    method !set-wrap($style) {
+        my %styles = (
+            no-wrap => NoWrap,
+            line-wrap => LineWrap,
+            word-wrap => WordWrap,
+        );
+        %.by-id<text>.set-wrap(%styles{$style});
     }
 
     multi method handle-event(Terminal::Widgets::Events::LayoutBuilt:D, BubbleUp) {
