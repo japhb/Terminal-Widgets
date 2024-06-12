@@ -142,7 +142,7 @@ class Terminal::Widgets::RichText
                 else {
                     my $remaining-space = $width - $len;
                     my $first = $span.text.substr(0,
-                                self!count-fitting-in-width($span.text, $remaining-space));
+                                self!chars-fitting-in-width($span.text, $remaining-space));
                     my $second = $span.text.substr($first.chars);
                     @next.push: span($span.color, $first);
                     @wrapped.push: @next;
@@ -157,50 +157,12 @@ class Terminal::Widgets::RichText
     }
 
     method !display-pos-to-line-pos(@line, $x, $y) {
-        my $width = self.content-width;
-        my $lx = 0;
-        my $rx = 0;
-        my $ry = 0;
-        for @line -> $span is copy {
-            loop {
-                if $ry < $y {
-                    if $rx + $span.width < $width {
-                        $rx += $span.width;
-                        last;
-                    }
-                    elsif $rx + $span.width == $width {
-                        $lx += $rx + $span.width;
-                        $rx = 0;
-                        $ry++;
-                        last;
-                    }
-                    else {
-                        my $remaining-space = $width - $rx;
-                        my $fitting = self!count-fitting-in-width($span.text, $remaining-space);
-                        $span = span($span.color, $span.text.substr($fitting));
-                        $lx += $rx + $fitting;
-                        $rx = 0;
-                        $ry++;
-                    }
-                }
-                else {
-                    if $rx + $span.width < $x {
-                        $rx += $span.width;
-                        last;
-                    }
-                    elsif $rx + $span.width == $x {
-                        return ($lx + $rx + $span.width, 0);
-                    }
-                    else {
-                        my $remaining-space = $x - $rx;
-                        return ($lx + $rx + self!count-fitting-in-width($span.text, $remaining-space), 0);
-                    }
-                }
-            }
-        }
+        my @sub-lines = self!wrap(@line);
+        my $pos = [+] @sub-lines[^$y].map({ self!chars-in-line($_) });
+        $pos + self!chars-fitting-in-width(self!spans-to-text(@sub-lines[$y]), $x)
     }
 
-    method !count-fitting-in-width($text, $width --> Int) {
+    method !chars-fitting-in-width($text, $width --> Int) {
         my $count = $width;
         while duospace-width($text.substr(0, $count)) > $width {
             $count--;
@@ -272,7 +234,7 @@ class Terminal::Widgets::RichText
         my $rest-width = $width;
 
         while $pos < $text.chars {
-            my $fitting = $pos + self!count-fitting-in-width($text.substr($pos), $width);
+            my $fitting = $pos + self!chars-fitting-in-width($text.substr($pos), $width);
             my $cut;
             $cut = @candidates.shift while @candidates && @candidates[0] <= $fitting;
             if $cut {
@@ -359,7 +321,6 @@ class Terminal::Widgets::RichText
         while @result.elems < $wanted && $line-index < @!lines.elems {
             @result.append(self!wrap(line($line-index++)));
         }
-
         @result
     }
 
