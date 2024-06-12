@@ -405,12 +405,11 @@ class Terminal::Widgets::RichText
         my ($x, $y) = $event.relative-to(self);
         my $clicked-display-line = $!first-display-line + $y;
         my $line-index = @!dl-l[min($clicked-display-line, @!dl-l.end)];
-        if $!cursor-y != $line-index {
-            $!cursor-y = $line-index;
-            self.full-refresh;
-        }
+        $!cursor-y = $line-index;
         my $rel-y = $y - @!l-dl[$line-index];
-        ($x, $y) = self!display-pos-to-line-pos(@!lines[$line-index], self.x-scroll + $x, $rel-y);
-        &!process-click($line-index, $x, $y) with &!process-click;
+        $x = self!display-pos-to-line-pos(@!lines[$line-index], self.x-scroll + $x, $rel-y);
+        $!cursor-x = min(self!chars-in-line(@!lines[$line-index]) - 1, $x);
+        self.full-refresh;
+        &!process-click($line-index, $x, 0) with &!process-click;
     }
 }
