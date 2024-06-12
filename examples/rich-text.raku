@@ -14,15 +14,30 @@ class FormUI is TopLevel {
         with $builder {
             .radio-button(label => 'No Wrap', group => 'wrap-style', id => 'no-wrap', :state(True),
                                    process-input => -> $rb {
-                                       self!set-wrap($rb.selected-member.id);
+                                       with $rb.selected-member {
+                                           self!set-wrap(.id);
+                                       }
+                                       else {
+                                           $rb.set-state(True);
+                                       }
                                    }),
             .radio-button(label => 'Line Wrap', group => 'wrap-style', id => 'line-wrap',
                                    process-input => -> $rb {
-                                       self!set-wrap($rb.selected-member.id);
+                                       with $rb.selected-member {
+                                           self!set-wrap(.id);
+                                       }
+                                       else {
+                                           $rb.set-state(True);
+                                       }
                                    }),
             .radio-button(label => 'Word Wrap', group => 'wrap-style', id => 'word-wrap',
                                    process-input => -> $rb {
-                                       self!set-wrap($rb.selected-member.id);
+                                       with $rb.selected-member {
+                                           self!set-wrap(.id);
+                                       }
+                                       else {
+                                           $rb.set-state(True);
+                                       }
                                    }),
             .checkbox(    label => 'Highlight Selected Line',
                                    process-input => -> $cb {
@@ -44,7 +59,6 @@ class FormUI is TopLevel {
             .node(
                 .rich-text(id => 'text', style => %(max-w => 50),
                                    process-click => -> $line, $x, $y {
-                                       "out".IO.spurt: "pricess-click hit\n", :append;
                                        my $click-log = %.by-id<click-log>;
                                        $click-log.add-entry: "Click on line $line:$x,$y\n";
                                        $click-log.refresh-for-scroll;
