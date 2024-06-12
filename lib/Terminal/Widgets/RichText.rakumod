@@ -310,7 +310,7 @@ class Terminal::Widgets::RichText
     }
 
     method !add-cursor(@line, $pos is copy) {
-        $pos = min $pos, self!chars-in-line(@line);
+        $pos = min $pos, self!chars-in-line(@line) - 1;
         my @new-line;
         my $x = 0;
         for @line -> $span is copy {
