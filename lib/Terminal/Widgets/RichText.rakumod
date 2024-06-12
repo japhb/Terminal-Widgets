@@ -378,8 +378,8 @@ class Terminal::Widgets::RichText
         with %keymap{$keyname} {
             when 'select-next-line' { self.select-line($!cursor-y + 1) }
             when 'select-prev-line' { self.select-line($!cursor-y - 1) }
-            when 'select-next-char' { self.select-char($!cursor-x + 1) }
-            when 'select-prev-char' { self.select-char($!cursor-x - 1) }
+            when 'select-next-char' { self.next-char }
+            when 'select-prev-char' { self.prev-char }
             when 'next-input'  { self.focus-next-input }
             when 'prev-input'  { self.focus-prev-input }
         }
@@ -393,15 +393,42 @@ class Terminal::Widgets::RichText
         self.full-refresh;
     }
 
-    method select-char($no is copy) {
-        $no = max($no, 0);
-        my $chars = self!chars-in-line(@!lines[$!cursor-y]);
-        if $!cursor-x >= $chars {
-            $no = $!cursor-x;
+    method prev-char() {
+        my $pos;
+        if $!cursor-x == 0 {
+            if $!cursor-y > 0 {
+                $!cursor-y--;
+                $pos = self!chars-in-line(@!lines[$!cursor-y]) - 1;
+            }
         }
         else {
-            $no = min($no, $chars - 1);
+            my $max = self!chars-in-line(@!lines[$!cursor-y]) - 1;
+            if $!cursor-x > $max {
+                $pos = $max;
+            }
+            $pos = $!cursor-x - 1;
         }
+        self.select-char($pos);
+    }
+
+    method next-char() {
+        my $pos;
+        my $max = self!chars-in-line(@!lines[$!cursor-y]) - 1;
+        if $!cursor-x >= $max {
+            if $!cursor-y < @!lines - 1 {
+                $!cursor-y++;
+                $pos = 0;
+            }
+        }
+        else {
+            $pos = $!cursor-x + 1;
+        }
+        self.select-char($pos);
+    }
+
+    method select-char($no is copy) {
+        $no = max($no, 0);
+        $no = min($no, self!chars-in-line(@!lines[$!cursor-y]) - 1);
         $!cursor-x = $no;
         if $!wrap ~~ NoWrap {
             my ($upto, $cursor) = self!width-up-to-pos(@!lines[$!cursor-y], $!cursor-x);
