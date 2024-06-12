@@ -70,22 +70,6 @@ class Terminal::Widgets::RichText
         self.refresh-for-scroll;
     }
 
-    method !calc-indexes($from = 0) {
-        my $dpos = @!l-dl[$from] // 0;
-        loop (my $pos = $from; $pos < @!lines.elems; $pos++) {
-            my $l = @!lines[$pos];
-            @!l-dl[$pos] = $dpos;
-            my $line-height = self!height-of-line($l);
-            @!dl-l[$dpos++] = $pos for ^$line-height;
-        }
-        @!l-dl.splice: @!lines.elems;
-        @!dl-l.splice: $dpos;
-    }
-
-    method !calc-widest() {
-        $!widest = @!lines.map(*.map(*.width).sum).max;
-    }
-
     #| Add content for a single entry (in styled spans or a plain string) to the log
     method set-text(SpanContent $content) {
         my $as-tree = $content ~~ Terminal::Widgets::SpanStyle::SpanTree
@@ -107,202 +91,39 @@ class Terminal::Widgets::RichText
         self.my-refresh($from);
     }
 
-    method !wrap(@line) {
-        given $!wrap {
-            when NoWrap { 
-                [@line,]
-            }
-            when LineWrap {
-                self!line-wrap: @line, self.content-width
-            }
-            when WordWrap {
-                self!word-wrap: @line, self.content-width
-            }
-        }
-    }
-
-    method !line-wrap(@line, $width) {
-        my @wrapped;
-        my @next;
-        my $len = 0;
-        for @line -> $span is copy {
-            loop {
-                if $len + $span.width < $width {
-                    $len += $span.width;
-                    @next.push: $span;
-                    last;
-                }
-                elsif $len + $span.width == $width {
-                    @next.push: $span;
-                    @wrapped.push: @next;
-                    @next := [];
-                    $len = 0;
-                    last;
-                }
-                else {
-                    my $remaining-space = $width - $len;
-                    my $first = $span.text.substr(0,
-                                self!chars-fitting-in-width($span.text, $remaining-space));
-                    my $second = $span.text.substr($first.chars);
-                    @next.push: span($span.color, $first);
-                    @wrapped.push: @next;
-                    @next := [];
-                    $len = 0;
-                    $span = span($span.color, $second);
-                }
-            }
-        }
-        @wrapped.push: @next if @next;
-        @wrapped
-    }
-
-    method !display-pos-to-line-pos(@line, $x, $y) {
-        my @sub-lines = self!wrap(@line);
-        my $pos = [+] @sub-lines[^$y].map({ self!chars-in-line($_) });
-        $pos + self!chars-fitting-in-width(self!spans-to-text(@sub-lines[$y]), $x)
-    }
-
-    method !chars-fitting-in-width($text, $width --> Int) {
-        my $count = $width;
-        while duospace-width($text.substr(0, $count)) > $width {
-            $count--;
-        }
-        $count
-    }
-
-    method !height-of-line(@line) {
-        self!wrap(@line).elems
-    }
-
-    method !chars-in-line(@line) {
-        @line.map(*.text.chars).sum
-    }
-
-    method !spans-to-text(@spans --> Str) {
-        [~] @spans.map(*.text)
-    }
-
-    method !split-spans-at-positions(@spans, @positions is copy) {
-        @positions .= sort;
-        my @result;
-        my @next;
-        my $len = 0;
-        for @spans -> $span is copy {
-            if @positions {
-                loop {
-                    my $chars = $span.text.chars;
-                    if $len + $chars < @positions[0] {
-                        $len += $chars;
-                        @next.push: $span;
-                        last;
-                    }
-                    elsif $len + $chars == @positions[0] {
-                        $len += $chars;
-                        @next.push: $span;
-                        @result.push: @next;
-                        @next := [];
-                        @positions.shift;
-                        last;
-                    }
-                    else {
-                        my $remaining-chars = @positions[0] - $len;
-                        $len += $remaining-chars;
-                        my $first = $span.text.substr(0, $remaining-chars);
-                        my $second = $span.text.substr($remaining-chars);
-                        @next.push: span($span.color, $first);
-                        @result.push: @next;
-                        @next := [];
-                        @positions.shift;
-                        $span = span($span.color, $second);
-                    }
-                }
-            }
-            else {
-                @next.push: $span;
-            }
-        }
-        @result.push: @next if @next;
-        @result
-    }
-
-    method !word-wrap(@line, $width) {
-        my $text = self!spans-to-text(@line);
-        my @positions;
-        my @candidates = $text ~~ m:g/ << /;
-        @candidates .= map: *.from;
-        my $pos = 0;
-        my $rest-width = $width;
-
-        while $pos < $text.chars {
-            my $fitting = $pos + self!chars-fitting-in-width($text.substr($pos), $width);
-            my $cut;
-            $cut = @candidates.shift while @candidates && @candidates[0] <= $fitting;
-            if $cut {
-                @positions.push: $cut;
-                $pos = $cut;
-            }
-            else {
-                # No clean cut fits into the line.
-                @positions.push: $fitting;
-                $pos = $fitting;
-            }
-        }
-
-        self!split-spans-at-positions: @line, @positions;
-    }
-
-    method !width-up-to-pos(@line, $pos is copy) {
-        $pos = min $pos, self!chars-in-line(@line) - 1;
-        my $width = 0;
-        my $x = 0;
-        for @line -> $span is copy {
-            my $chars = $span.text.chars;
-            if $pos <= $x + $chars {
-                return ($width + span($span.color, $span.text.substr(0, $pos - $x)).width, span($span.color, $span.text.substr($pos - $x, 1)).width);
-            }
-            else {
-                $x += $chars;
-                $width += $span.width;
-            }
-        }
-    }
-    
-    sub log($t) {
-        "o".IO.spurt: $t ~ "\n", :append;
-    }
-
-    method !add-cursor(@line, $pos is copy) {
-        $pos = min $pos, self!chars-in-line(@line) - 1;
-        my @new-line;
-        my $x = 0;
-        for @line -> $span is copy {
-            my $chars = $span.text.chars;
-            if $x <= $pos < $x + $chars {
-                if $pos - $x > 0 {
-                    @new-line.push: span($span.color, $span.text.substr(0, $pos - $x));
-                }
-                @new-line.push: span-tree(
-                    self.current-color(%( |self.current-color-states, :cursor)),
-                    span($span.color, $span.text.substr($pos - $x, 1))).lines.eager[0][0];
-                if $pos - $x + 1 < $chars {
-                    @new-line.push: span($span.color, $span.text.substr($pos - $x + 1));
-                }
-            }
-            else {
-                $x += $chars;
-                @new-line.push: $span;
-            }
-        }
-        @new-line
-    }
 
     #| Grab a chunk of laid-out span lines to feed to SpanBuffer.draw-frame
     method span-line-chunk(UInt:D $start, UInt:D $wanted) {
+        sub add-cursor(@line, $pos is copy) {
+            $pos = min $pos, self!chars-in-line(@line) - 1;
+            my @new-line;
+            my $x = 0;
+            for @line -> $span is copy {
+                my $chars = $span.text.chars;
+                if $x <= $pos < $x + $chars {
+                    if $pos - $x > 0 {
+                        @new-line.push: span($span.color, $span.text.substr(0, $pos - $x));
+                    }
+                    @new-line.push: span-tree(
+                        self.current-color(%( |self.current-color-states, :cursor)),
+                        span($span.color, $span.text.substr($pos - $x, 1))).lines.eager[0][0];
+                    if $pos - $x + 1 < $chars {
+                        @new-line.push: span($span.color, $span.text.substr($pos - $x + 1));
+                    }
+                }
+                else {
+                    $x += $chars;
+                    @new-line.push: $span;
+                }
+            }
+            @new-line
+        }
+
         sub line($i) {
             if $i == $!cursor-y {
                 my @line = span-tree(self.current-color(%( |self.current-color-states, :prompt )), @!lines[$i]).lines.eager[0];
                 if $!show-cursor {
-                    @line = self!add-cursor: @line, $!cursor-x;
+                    @line = add-cursor @line, $!cursor-x;
                 }
                 @line
             }
@@ -411,5 +232,185 @@ class Terminal::Widgets::RichText
         $!cursor-x = min(self!chars-in-line(@!lines[$line-index]) - 1, $x);
         self.full-refresh;
         &!process-click($line-index, $x, 0) with &!process-click;
+    }
+
+    method !calc-indexes($from = 0) {
+        my $dpos = @!l-dl[$from] // 0;
+        loop (my $pos = $from; $pos < @!lines.elems; $pos++) {
+            my $l = @!lines[$pos];
+            @!l-dl[$pos] = $dpos;
+            my $line-height = self!height-of-line($l);
+            @!dl-l[$dpos++] = $pos for ^$line-height;
+        }
+        @!l-dl.splice: @!lines.elems;
+        @!dl-l.splice: $dpos;
+    }
+
+    method !calc-widest() {
+        $!widest = @!lines.map(*.map(*.width).sum).max;
+    }
+
+    method !wrap(@line) {
+        given $!wrap {
+            when NoWrap { 
+                [@line,]
+            }
+            when LineWrap {
+                self!line-wrap: @line, self.content-width
+            }
+            when WordWrap {
+                self!word-wrap: @line, self.content-width
+            }
+        }
+    }
+
+    method !line-wrap(@line, $width) {
+        my @wrapped;
+        my @next;
+        my $len = 0;
+        for @line -> $span is copy {
+            loop {
+                if $len + $span.width < $width {
+                    $len += $span.width;
+                    @next.push: $span;
+                    last;
+                }
+                elsif $len + $span.width == $width {
+                    @next.push: $span;
+                    @wrapped.push: @next;
+                    @next := [];
+                    $len = 0;
+                    last;
+                }
+                else {
+                    my $remaining-space = $width - $len;
+                    my $first = $span.text.substr(0,
+                                self!chars-fitting-in-width($span.text, $remaining-space));
+                    my $second = $span.text.substr($first.chars);
+                    @next.push: span($span.color, $first);
+                    @wrapped.push: @next;
+                    @next := [];
+                    $len = 0;
+                    $span = span($span.color, $second);
+                }
+            }
+        }
+        @wrapped.push: @next if @next;
+        @wrapped
+    }
+
+    method !word-wrap(@line, $width) {
+        my $text = self!spans-to-text(@line);
+        my @positions;
+        my @candidates = $text ~~ m:g/ << /;
+        @candidates .= map: *.from;
+        my $pos = 0;
+        my $rest-width = $width;
+
+        while $pos < $text.chars {
+            my $fitting = $pos + self!chars-fitting-in-width($text.substr($pos), $width);
+            my $cut;
+            $cut = @candidates.shift while @candidates && @candidates[0] <= $fitting;
+            if $cut {
+                @positions.push: $cut;
+                $pos = $cut;
+            }
+            else {
+                # No clean cut fits into the line.
+                @positions.push: $fitting;
+                $pos = $fitting;
+            }
+        }
+
+        self!split-spans-at-positions: @line, @positions;
+    }
+
+    method !display-pos-to-line-pos(@line, $x, $y) {
+        my @sub-lines = self!wrap(@line);
+        my $pos = [+] @sub-lines[^$y].map({ self!chars-in-line($_) });
+        $pos + self!chars-fitting-in-width(self!spans-to-text(@sub-lines[$y]), $x)
+    }
+
+    method !height-of-line(@line) {
+        self!wrap(@line).elems
+    }
+
+    method !chars-in-line(@line) {
+        @line.map(*.text.chars).sum
+    }
+
+    method !chars-fitting-in-width($text, $width --> Int) {
+        my $count = $width;
+        while duospace-width($text.substr(0, $count)) > $width {
+            $count--;
+        }
+        $count
+    }
+
+    method !spans-to-text(@spans --> Str) {
+        [~] @spans.map(*.text)
+    }
+
+    method !split-spans-at-positions(@spans, @positions is copy) {
+        @positions .= sort;
+        my @result;
+        my @next;
+        my $len = 0;
+        for @spans -> $span is copy {
+            if @positions {
+                loop {
+                    my $chars = $span.text.chars;
+                    if $len + $chars < @positions[0] {
+                        $len += $chars;
+                        @next.push: $span;
+                        last;
+                    }
+                    elsif $len + $chars == @positions[0] {
+                        $len += $chars;
+                        @next.push: $span;
+                        @result.push: @next;
+                        @next := [];
+                        @positions.shift;
+                        last;
+                    }
+                    else {
+                        my $remaining-chars = @positions[0] - $len;
+                        $len += $remaining-chars;
+                        my $first = $span.text.substr(0, $remaining-chars);
+                        my $second = $span.text.substr($remaining-chars);
+                        @next.push: span($span.color, $first);
+                        @result.push: @next;
+                        @next := [];
+                        @positions.shift;
+                        $span = span($span.color, $second);
+                    }
+                }
+            }
+            else {
+                @next.push: $span;
+            }
+        }
+        @result.push: @next if @next;
+        @result
+    }
+
+    method !width-up-to-pos(@line, $pos is copy) {
+        $pos = min $pos, self!chars-in-line(@line) - 1;
+        my $width = 0;
+        my $x = 0;
+        for @line -> $span is copy {
+            my $chars = $span.text.chars;
+            if $pos <= $x + $chars {
+                return ($width + span($span.color, $span.text.substr(0, $pos - $x)).width, span($span.color, $span.text.substr($pos - $x, 1)).width);
+            }
+            else {
+                $x += $chars;
+                $width += $span.width;
+            }
+        }
+    }
+    
+    sub log($t) {
+        "o".IO.spurt: $t ~ "\n", :append;
     }
 }
