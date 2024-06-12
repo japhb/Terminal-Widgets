@@ -34,7 +34,7 @@ class Terminal::Widgets::RichText
 
     method set-wrap(WrapStyle $wrap) {
         $!wrap = $wrap;
-        self.my-refresh;
+        self!my-refresh;
     }
 
     method set-show-cursor(Bool $show-cursor) {
@@ -47,29 +47,6 @@ class Terminal::Widgets::RichText
         self.full-refresh;
     }
 
-    method my-refresh($from = 0) {
-        my $first-line = 0;
-        my $sub-line = 0;
-        if @!dl-l {
-            $first-line = @!dl-l[$!first-display-line];
-            $sub-line = $!first-display-line - @!l-dl[$first-line];
-        }
-        if $!wrap ~~ NoWrap {
-            self.set-x-max($!widest) if $!widest > $.x-max;
-        }
-        else {
-            self.set-x-max(self.content-width);
-            self.set-x-scroll(0);
-        }
-        self!calc-indexes($from);
-        self.set-y-max(@!dl-l.end);
-        my $new-first-line-start = @!l-dl[$first-line];
-        my $new-first-line-height = self!height-of-line(@!lines[$first-line]);
-        self.set-y-scroll($new-first-line-start + min($sub-line, $new-first-line-height));
-        self.full-refresh;
-        self.refresh-for-scroll;
-    }
-
     #| Add content for a single entry (in styled spans or a plain string) to the log
     method set-text(SpanContent $content) {
         my $as-tree = $content ~~ Terminal::Widgets::SpanStyle::SpanTree
@@ -77,7 +54,7 @@ class Terminal::Widgets::RichText
                         !! span-tree('', $content);
         @!lines = $as-tree.lines.eager;
         self!calc-widest;
-        self.my-refresh;
+        self!my-refresh;
     }
 
     method splice-lines($from, $count, $replacement) {
@@ -88,7 +65,7 @@ class Terminal::Widgets::RichText
         @!lines.splice: $from, $count, @repl-lines;
 
         self!calc-widest;
-        self.my-refresh($from);
+        self!my-refresh($from);
     }
 
 
@@ -232,6 +209,29 @@ class Terminal::Widgets::RichText
         $!cursor-x = min(self!chars-in-line(@!lines[$line-index]) - 1, $x);
         self.full-refresh;
         &!process-click($line-index, $x, 0) with &!process-click;
+    }
+
+    method !my-refresh($from = 0) {
+        my $first-line = 0;
+        my $sub-line = 0;
+        if @!dl-l {
+            $first-line = @!dl-l[$!first-display-line];
+            $sub-line = $!first-display-line - @!l-dl[$first-line];
+        }
+        if $!wrap ~~ NoWrap {
+            self.set-x-max($!widest) if $!widest > $.x-max;
+        }
+        else {
+            self.set-x-max(self.content-width);
+            self.set-x-scroll(0);
+        }
+        self!calc-indexes($from);
+        self.set-y-max(@!dl-l.end);
+        my $new-first-line-start = @!l-dl[$first-line];
+        my $new-first-line-height = self!height-of-line(@!lines[$first-line]);
+        self.set-y-scroll($new-first-line-start + min($sub-line, $new-first-line-height));
+        self.full-refresh;
+        self.refresh-for-scroll;
     }
 
     method !calc-indexes($from = 0) {
