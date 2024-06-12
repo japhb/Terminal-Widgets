@@ -47,7 +47,7 @@ class Terminal::Widgets::RichText
         self.full-refresh;
     }
 
-    #| Add content for a single entry (in styled spans or a plain string) to the log
+    #| Replace the contents of this RichText widget.
     method set-text(SpanContent $content) {
         my $as-tree = $content ~~ Terminal::Widgets::SpanStyle::SpanTree
                         ?? $content
