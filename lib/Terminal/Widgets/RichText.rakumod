@@ -54,7 +54,7 @@ class Terminal::Widgets::RichText
             $first-line = @!dl-l[$!first-display-line];
             $sub-line = $!first-display-line - @!l-dl[$first-line];
         }
-        if !$!wrap ~~ NoWrap {
+        if $!wrap ~~ NoWrap {
             self.set-x-max($!widest) if $!widest > $.x-max;
         }
         else {
