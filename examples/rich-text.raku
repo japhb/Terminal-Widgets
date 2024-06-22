@@ -3,6 +3,7 @@
 use Terminal::Widgets::Simple;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::RichText;
+use Terminal::Widgets::SpanWrappingAndHighlighting;
 
 #| A top level UI container based on Terminal::Widgets::Simple::TopLevel
 class FormUI is TopLevel {
