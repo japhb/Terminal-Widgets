@@ -3,6 +3,7 @@
 use Terminal::Widgets::Layout;
 use Terminal::Widgets::PlainText;
 use Terminal::Widgets::RichText;
+use Terminal::Widgets::TreeView;
 use Terminal::Widgets::ScrollBar;
 use Terminal::Widgets::Input::Menu;
 use Terminal::Widgets::Input::Button;
@@ -22,6 +23,7 @@ class Terminal::Widgets::StandardWidgetBuilder {
             (Terminal::Widgets::Layout::Widget)       => Terminal::Widgets::Widget,
             (Terminal::Widgets::Layout::PlainText)    => Terminal::Widgets::PlainText,
             (Terminal::Widgets::Layout::RichText)     => Terminal::Widgets::RichText,
+            (Terminal::Widgets::Layout::TreeView)     => Terminal::Widgets::TreeView,
             (Terminal::Widgets::Layout::HScrollBar)   => Terminal::Widgets::HScrollBar,
             (Terminal::Widgets::Layout::VScrollBar)   => Terminal::Widgets::VScrollBar,
             (Terminal::Widgets::Layout::Menu)         => Terminal::Widgets::Input::Menu,

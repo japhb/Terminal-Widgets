@@ -40,6 +40,7 @@
     "Terminal::Widgets::PlainText": "lib/Terminal/Widgets/PlainText.rakumod",
     "Terminal::Widgets::Progress::Tracker": "lib/Terminal/Widgets/Progress/Tracker.rakumod",
     "Terminal::Widgets::RichText": "lib/Terminal/Widgets/RichText.rakumod",
+    "Terminal::Widgets::TreeView": "lib/Terminal/Widgets/TreeView.rakumod",
     "Terminal::Widgets::ScrollBar": "lib/Terminal/Widgets/ScrollBar.rakumod",
     "Terminal::Widgets::Scrollable": "lib/Terminal/Widgets/Scrollable.rakumod",
     "Terminal::Widgets::Simple": "lib/Terminal/Widgets/Simple.rakumod",
