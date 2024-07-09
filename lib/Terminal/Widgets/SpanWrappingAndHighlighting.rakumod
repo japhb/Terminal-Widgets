@@ -151,22 +151,22 @@ role Terminal::Widgets::SpanWrappingAndHighlighting
             }
             $pos = $!cursor-x - 1;
         }
-        self.select-char($pos);
+        self!select-char($pos);
     }
 
     method !next-char() {
-        my $pos;
+        my $new-x = $!cursor-x;
         my $max = self!chars-in-line(@!lines[$!cursor-y]) - 1;
-        if $!cursor-x >= $max {
+        if $new-x >= $max {
             if $!cursor-y < @!lines - 1 {
                 $!cursor-y++;
-                $pos = 0;
+                $new-x = 0;
             }
         }
         else {
-            $pos = $!cursor-x + 1;
+            $new-x++;
         }
-        self.select-char($pos);
+        self!select-char($new-x);
     }
 
     method !select-char($no is copy) {
