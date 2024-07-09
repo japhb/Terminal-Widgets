@@ -6,6 +6,7 @@ use Terminal::Widgets::Events;
 use Terminal::Widgets::SpanStyle;
 use Terminal::Widgets::SpanBuffer;
 use Terminal::Widgets::Focusable;
+use Terminal::Widgets::SpanWrappingAndHighlighting;
 
 role Terminal::Widgets::TreeViewNode {
     #| A single line of text for this node.
@@ -32,6 +33,7 @@ role Terminal::Widgets::RichTreeViewNode
     #| This nodes children. If empty, it's a leaf node.
     has Terminal::Widgets::RichTreeViewNode @.children;
 }
+
 
 class Terminal::Widgets::TreeView
  does Terminal::Widgets::SpanWrappingAndHighlighting
@@ -71,7 +73,7 @@ class Terminal::Widgets::TreeView
 
     #| Alternatively to &.get-children, one can just pass a complete
     #| RichTreeViewNode list.
-    has RichTreeViewNode @.tree;
+    has Terminal::Widgets::RichTreeViewNode @.trees;
 
     #| DisplayNode trees. Contains a list of all visible nodes. Not necessarily
     #| on the screen, but not hidden in a collapsed parent.
@@ -82,20 +84,20 @@ class Terminal::Widgets::TreeView
 
     has &.process-click;
 
-    submethod TWEAK(:$wrap, :$tree = Any, $get-children = Any) {
+    submethod TWEAK(:$wrap, :$trees = Any, :$get-children = Any) {
         # The following is a workaround of https://github.com/rakudo/rakudo/issues/5599
         $!wrap = NoWrap;
         $!wrap = $wrap if $wrap;
 
         self.init-focusable;
 
-        die '@tree XOR &get-children is required' unless $tree.defined ^^ $get-children.defined;
+        die '@tree and &get-children can not be set both' if $trees.defined && $get-children.defined;
 
-        if $tree.defined {
-            @!tree = @$tree;
-            &!get-children = sub ($id) {
-                get-children-of-tree(@!tree, $id)        
-            }
+        if !$get-children.defined && !$trees.defined {
+            self.set-trees: ();
+        }
+        if $trees.defined {
+            self.set-trees: @$trees;
         }
 
         self!refresh-dn;
@@ -113,7 +115,7 @@ class Terminal::Widgets::TreeView
             @ids = @$id;
         }
         @l.kv.map: -> $i, $node {
-            Terminal::Widgets::WrappedRichNode.new:
+            WrappedRichNode.new:
                 id => (|@ids, $i),
                 orig => $node,
                 leaf => $node.children.elems == 0,
@@ -122,24 +124,49 @@ class Terminal::Widgets::TreeView
         }
     }
 
-    method !nodes-to-dns($splice-at, @nodes) {
-        @nodes.map: -> $node {
-            self!splice-lines($splice-at, 0, $node.text);
+    method set-trees(@!trees) {
+        &!get-children = sub ($id) {
+            get-children-of-tree(@!trees, $id);
+        }
+
+        self!refresh-dn;
+    }
+
+    method set-get-children(&!get-children) {
+        @!trees = ();
+
+        self!refresh-dn;
+    }
+
+    method !nodes-to-dns(@nodes) {
+        log "nodes to dns";
+        my @lines;
+        my @dns = @nodes.map: -> $node {
+            @lines.push: $node.text;
             my @children;
-            if my $prop = self!prop-for-id($node.id) && $prop.expanded {
-                @children = self!nodes-to-dns($first-line+1, $node.children);
+            if (my $prop = self!prop-for-id($node.id)) && $prop.expanded {
+                my (@children, @child-lines) = self!nodes-to-dns($node.children);
+                @lines.append: @child-lines;
             }
             DisplayNode.new(
                 :$node,
                 :@children,
             );
-        }
+        };
+        @dns, @lines;
     }
 
     method !refresh-dn() {
-        @!dn-trees = ();
-        self!set-text('');
-        @!dn-trees = self!nodes-to-dns(0, &!get-children(Nil));
+        my @res = self!nodes-to-dns(&!get-children(Nil));
+        my @dn-trees := @res[0];
+        my @lines := @res[1];
+        # Ensure @lines is one line per entry.
+        log @lines.raku;
+        @lines .= map(*.lines.join);
+        log @lines.raku;
+        log @lines.join("\n").raku;
+        self!set-text(@lines.join("\n"));
+        @!dn-trees = @dn-trees;
     }
 
     method !prop-for-id($id) {
