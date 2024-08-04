@@ -11,13 +11,21 @@ use Terminal::Widgets::SpanWrappingAndHighlighting;
 role Terminal::Widgets::TreeViewNode {
     #| A single line of text for this node.
     has Str $.text;
+
+    #| Some identifier. Can be any object.
+    #| Optional in RichTreeViewNodes, mandatory in ShallowTreeViewNodes.
+    #| Providing an ID for each node will allow saving and restoring
+    #| the state of each node more reliably in the case of a changing tree
+    #| structure.
+    has $.id;
+
+    method id-for-props() {
+        $!id
+    }
 }
 
 role Terminal::Widgets::ShallowTreeViewNode
   does Terminal::Widgets::TreeViewNode {
-    #| Some identifier. Can be any object.
-    has $.id;
-
     #| Optional. If set to True, the node will hide the "expand" marker
     #| of the node, even if it wasn't opened yet.
     has Bool $.leaf = False;
@@ -25,11 +33,6 @@ role Terminal::Widgets::ShallowTreeViewNode
 
 role Terminal::Widgets::RichTreeViewNode
   does Terminal::Widgets::TreeViewNode {
-    #| Optional. Providing an ID for each node will allow saving and restoring
-    #| the state of each node more reliably in the case of a changing tree
-    #| structure.
-    has $.id;
-
     #| This nodes children. If empty, it's a leaf node.
     has Terminal::Widgets::RichTreeViewNode @.children;
 }
@@ -40,28 +43,27 @@ class Terminal::Widgets::TreeView
  does Terminal::Widgets::Focusable {
     my class NodeProperties {
         has $.id;
-        has Bool $.expanded;
+        has Bool $.expanded is rw;
     }
 
     my class DisplayNode {
         has Terminal::Widgets::TreeViewNode $.node;
-        has DisplayNode @.children;
+        has DisplayNode @.children is rw;
 
-        method line-count() {
-            1 + [+] @!children.map: *.line-count
+        method child-line-count() {
+            [+] @!children.map: { 1 + $_.child-line-count }
         }
     }
 
     my class WrappedRichNode
       does Terminal::Widgets::ShallowTreeViewNode {
         has Terminal::Widgets::RichTreeViewNode $.orig;
-    }
 
-    sub line-to-node($pos is rw, $line, @nodes) {
-        for @nodes -> $n {
-            return $n if $pos == $line;
-            $pos++;
-            return $_ with line-to-node($pos, $line, $n.children);
+        method id-for-props() {
+            $!orig.id // $!id
+        }
+        method id-for-children() {
+            $!id
         }
     }
 
@@ -108,9 +110,9 @@ class Terminal::Widgets::TreeView
         # leading to the node.
         my @l := @tree;
         my @ids;
-        if ! $id === Nil {
+        if !($id === Nil) {
             for @$id -> $index {
-                @l := @l[$index];
+                @l := @l[$index].children;
             }
             @ids = @$id;
         }
@@ -139,40 +141,77 @@ class Terminal::Widgets::TreeView
     }
 
     method !nodes-to-dns(@nodes) {
-        log "nodes to dns";
         my @lines;
         my @dns = @nodes.map: -> $node {
             @lines.push: $node.text;
             my @children;
-            if (my $prop = self!prop-for-id($node.id)) && $prop.expanded {
-                my (@children, @child-lines) = self!nodes-to-dns($node.children);
+            if self!prop-for-node($node).expanded {
+                my @res = self!nodes-to-dns(&!get-children($node.id));
+                @children := @res[0];
+                my @child-lines := @res[1];
                 @lines.append: @child-lines;
             }
             DisplayNode.new(
                 :$node,
                 :@children,
-            );
-        };
-        @dns, @lines;
+            )
+        }
+        @dns, @lines
     }
 
     method !refresh-dn() {
-        my @res = self!nodes-to-dns(&!get-children(Nil));
-        my @dn-trees := @res[0];
-        my @lines := @res[1];
+        my (@dn-trees, @lines) := self!nodes-to-dns(&!get-children(Nil));
         # Ensure @lines is one line per entry.
-        log @lines.raku;
         @lines .= map(*.lines.join);
-        log @lines.raku;
-        log @lines.join("\n").raku;
         self!set-text(@lines.join("\n"));
         @!dn-trees = @dn-trees;
     }
 
-    method !prop-for-id($id) {
+    method !prop-for-node($node) {
         for @!node-props -> $prop {
-            return $prop if $prop.id eqv $id;
+            return $prop if $prop.id eqv $node.id-for-props;
         }
+        my $prop = NodeProperties.new(
+                id => $node.id-for-props,
+            );
+        @!node-props.push: $prop;
+        $prop
+    }
+
+    method !line-to-dn($line-no) {
+        sub line-to-dn-rec($pos is rw, $line, @dns) {
+            for @dns -> $dn {
+                return $dn if $pos == $line;
+                $pos++;
+                return $_ with line-to-dn-rec($pos, $line, $dn.children);
+            }
+        }
+
+        my $cur-line = 0;
+        line-to-dn-rec($cur-line, $line-no, @!dn-trees)
+    }
+
+    method !expand-node() {
+        my $line = $!cursor-y;
+        my $dn = self!line-to-dn($line);
+        my $prop = self!prop-for-node($dn.node);
+        if !$prop.expanded {
+            self!prop-for-node($dn.node).expanded = True;
+            my @children = &!get-children($dn.node.id);
+            if @children {
+                my (@dn-trees, @lines) := self!nodes-to-dns(@children);
+                $dn.children = @dn-trees;
+                self!splice-lines($line+1, 0, @lines.join("\n"));
+            }
+        }
+    }
+
+    method !collapse-node() {
+        my $line = $!cursor-y;
+        my $dn = self!line-to-dn($line);
+        self!prop-for-node($dn.node).expanded = False;
+        self!splice-lines($line+1, $dn.child-line-count, ());
+        $dn.children = ();
     }
 
     multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D
@@ -180,8 +219,8 @@ class Terminal::Widgets::TreeView
         my constant %keymap =
             CursorDown  => 'select-next-line',
             CursorUp    => 'select-prev-line',
-            CursorLeft  => 'select-prev-char',
-            CursorRight => 'select-next-char',
+            CursorRight => 'expand-node',
+            CursorLeft  => 'collapse-node',
             Ctrl-I      => 'next-input',    # Tab
             ShiftTab    => 'prev-input',    # Shift-Tab is weird and special
             ;
@@ -190,10 +229,10 @@ class Terminal::Widgets::TreeView
         with %keymap{$keyname} {
             when 'select-next-line' { self!select-line($!cursor-y + 1) }
             when 'select-prev-line' { self!select-line($!cursor-y - 1) }
-            when 'select-next-char' { self!next-char }
-            when 'select-prev-char' { self!prev-char }
-            when 'next-input'  { self.focus-next-input }
-            when 'prev-input'  { self.focus-prev-input }
+            when 'expand-node'      { self!expand-node }
+            when 'collapse-node'    { self!collapse-node }
+            when 'next-input'       { self.focus-next-input }
+            when 'prev-input'       { self.focus-prev-input }
         }
     }
 

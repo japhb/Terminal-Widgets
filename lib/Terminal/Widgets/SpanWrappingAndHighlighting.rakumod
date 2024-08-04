@@ -203,8 +203,12 @@ role Terminal::Widgets::SpanWrappingAndHighlighting
         self.refresh-for-scroll;
     }
 
-    method !calc-indexes($from = 0) {
-        my $dpos = @!l-dl[$from] // 0;
+    method !calc-indexes($from is copy = 0) {
+        # Need to do it from the last existing display line as the display line
+        # of the next line is unknown (depends on the number of display lines
+        # of the previous line, which we don't know.)
+        $from-- if $from > @!l-dl.end && $from > 0;
+        my $dpos = $from > 0 ?? @!l-dl[$from] !! 0;
         loop (my $pos = $from; $pos < @!lines.elems; $pos++) {
             my $l = @!lines[$pos];
             @!l-dl[$pos] = $dpos;
