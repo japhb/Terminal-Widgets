@@ -22,19 +22,23 @@ role Terminal::Widgets::TreeViewNode {
     method id-for-props() {
         $!id
     }
+
+    method leaf(--> Bool) { ... }
 }
 
 role Terminal::Widgets::ShallowTreeViewNode
   does Terminal::Widgets::TreeViewNode {
     #| Optional. If set to True, the node will hide the "expand" marker
     #| of the node, even if it wasn't opened yet.
-    has Bool $.leaf = False;
+    has Bool $!leaf is built = False;
+    method leaf(--> Bool) { $!leaf }
 }
 
 role Terminal::Widgets::RichTreeViewNode
   does Terminal::Widgets::TreeViewNode {
     #| This nodes children. If empty, it's a leaf node.
     has Terminal::Widgets::RichTreeViewNode @.children;
+    method leaf(--> Bool) { @!children.elems == 0 }
 }
 
 
@@ -49,6 +53,7 @@ class Terminal::Widgets::TreeView
     my class DisplayNode {
         has Terminal::Widgets::TreeViewNode $.node;
         has DisplayNode @.children is rw;
+        has Int $.depth;
 
         method child-line-count() {
             [+] @!children.map: { 1 + $_.child-line-count }
@@ -84,9 +89,11 @@ class Terminal::Widgets::TreeView
     #| Node 
     has NodeProperties @.node-props;
 
+    has &.get-node-prefix;
+
     has &.process-click;
 
-    submethod TWEAK(:$wrap, :$trees = Any, :$get-children = Any) {
+    submethod TWEAK(:$wrap, :$trees = Any, :$get-children = Any, :$get-node-prefix = Any) {
         # The following is a workaround of https://github.com/rakudo/rakudo/issues/5599
         $!wrap = NoWrap;
         $!wrap = $wrap if $wrap;
@@ -98,8 +105,31 @@ class Terminal::Widgets::TreeView
         if !$get-children.defined && !$trees.defined {
             self.set-trees: ();
         }
-        if $trees.defined {
+        elsif $trees.defined {
             self.set-trees: @$trees;
+        }
+        elsif $get-children.defined {
+            &!get-children = &$get-children;
+        }
+
+
+        if $get-node-prefix.defined {
+            &!get-node-prefix = &$get-node-prefix;
+        }
+        else {
+            &!get-node-prefix = sub (Int $level, Bool $expanded, Bool $leaf, Bool $last) {
+                $level == 0
+                  ?? ''
+                  !! (
+                    ' ' x ($level - 1)
+                    ~ ($last ?? '└' !! '├')
+                  )
+                ~ ($leaf
+                    ?? ' '
+                    !! ($expanded ?? '⮟' !! '⮞')
+                  )
+                ~ ' '
+            }
         }
 
         self!refresh-dn;
@@ -140,13 +170,14 @@ class Terminal::Widgets::TreeView
         self!refresh-dn;
     }
 
-    method !nodes-to-dns(@nodes) {
+    method !nodes-to-dns(@nodes, $depth) {
         my @lines;
-        my @dns = @nodes.map: -> $node {
-            @lines.push: $node.text;
+        my @dns = @nodes.kv.map: -> $index, $node {
+            my $expanded = self!prop-for-node($node).expanded;
+            @lines.push: &!get-node-prefix($depth, $expanded, $node.leaf, $index == @nodes.end) ~ $node.text;
             my @children;
-            if self!prop-for-node($node).expanded {
-                my @res = self!nodes-to-dns(&!get-children($node.id));
+            if $expanded {
+                my @res = self!nodes-to-dns(&!get-children($node.id), $depth + 1);
                 @children := @res[0];
                 my @child-lines := @res[1];
                 @lines.append: @child-lines;
@@ -154,13 +185,14 @@ class Terminal::Widgets::TreeView
             DisplayNode.new(
                 :$node,
                 :@children,
+                :$depth,
             )
         }
         @dns, @lines
     }
 
     method !refresh-dn() {
-        my (@dn-trees, @lines) := self!nodes-to-dns(&!get-children(Nil));
+        my (@dn-trees, @lines) := self!nodes-to-dns(&!get-children(Nil), 0);
         # Ensure @lines is one line per entry.
         @lines .= map(*.lines.join);
         self!set-text(@lines.join("\n"));
@@ -199,7 +231,7 @@ class Terminal::Widgets::TreeView
             self!prop-for-node($dn.node).expanded = True;
             my @children = &!get-children($dn.node.id);
             if @children {
-                my (@dn-trees, @lines) := self!nodes-to-dns(@children);
+                my (@dn-trees, @lines) := self!nodes-to-dns(@children, $dn.depth + 1);
                 $dn.children = @dn-trees;
                 self!splice-lines($line+1, 0, @lines.join("\n"));
             }
