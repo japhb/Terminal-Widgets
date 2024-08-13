@@ -7,18 +7,20 @@ use Terminal::Widgets::SpanWrappingAndHighlighting;
 
 #| A top level UI container based on Terminal::Widgets::Simple::TopLevel
 class FormUI is TopLevel {
-    has @!trees =
-        Terminal::Widgets::RichTreeViewNode.new(text => "One", children => (
-            Terminal::Widgets::RichTreeViewNode.new(text => "One One"),
-            Terminal::Widgets::RichTreeViewNode.new(text => "One Two", children => (
-                Terminal::Widgets::RichTreeViewNode.new(text => "One Two One"),
-                Terminal::Widgets::RichTreeViewNode.new(text => "One Two Two"),
-                Terminal::Widgets::RichTreeViewNode.new(text => "One Two Three"),
-            ))
-        )),
-        Terminal::Widgets::RichTreeViewNode.new(text => "Two", children => (
-            Terminal::Widgets::RichTreeViewNode.new(text => "Two One"),
-        )),
+    has $!root-node =
+        Terminal::Widgets::RichTreeViewNode.new(text => "Root", children => (
+            Terminal::Widgets::RichTreeViewNode.new(text => "One", children => (
+                Terminal::Widgets::RichTreeViewNode.new(text => "One One"),
+                Terminal::Widgets::RichTreeViewNode.new(text => "One Two", children => (
+                    Terminal::Widgets::RichTreeViewNode.new(text => "One Two One"),
+                    Terminal::Widgets::RichTreeViewNode.new(text => "One Two Two"),
+                    Terminal::Widgets::RichTreeViewNode.new(text => "One Two Three"),
+                ))
+            )),
+            Terminal::Widgets::RichTreeViewNode.new(text => "Two", children => (
+                Terminal::Widgets::RichTreeViewNode.new(text => "Two One"),
+            )),
+        ))
         ;
 
     method initial-layout($builder, $width, $height) {
@@ -101,7 +103,7 @@ class FormUI is TopLevel {
     }
 
     multi method handle-event(Terminal::Widgets::Events::LayoutBuilt:D, BubbleUp) {
-        %.by-id<tree>.set-trees(@!trees);
+        %.by-id<tree>.set-root-node($!root-node);
     }
 }
 
