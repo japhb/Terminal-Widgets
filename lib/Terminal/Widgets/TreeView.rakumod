@@ -80,7 +80,7 @@ class Terminal::Widgets::TreeView
 
     #| Alternatively to &.get-children, one can just pass a complete
     #| RichTreeViewNode list.
-    has Terminal::Widgets::RichTreeViewNode @.trees;
+    has Terminal::Widgets::RichTreeViewNode $.root-node;
 
     #| DisplayNode trees. Contains a list of all visible nodes. Not necessarily
     #| on the screen, but not hidden in a collapsed parent.
@@ -93,20 +93,20 @@ class Terminal::Widgets::TreeView
 
     has &.process-click;
 
-    submethod TWEAK(:$wrap, :$trees = Any, :$get-children = Any, :$get-node-prefix = Any) {
+    submethod TWEAK(:$wrap, :$root-node = Any, :$get-children = Any, :$get-node-prefix = Any) {
         # The following is a workaround of https://github.com/rakudo/rakudo/issues/5599
         $!wrap = NoWrap;
         $!wrap = $wrap if $wrap;
 
         self.init-focusable;
 
-        die '@tree and &get-children can not be set both' if $trees.defined && $get-children.defined;
+        die '$root-node and &get-children can not be set both' if $root-node.defined && $get-children.defined;
 
-        if !$get-children.defined && !$trees.defined {
-            self.set-trees: ();
+        if !$get-children.defined && !$root-node.defined {
+            self.set-root-node: Terminal::Widgets::RichTreeViewNode.new;
         }
-        elsif $trees.defined {
-            self.set-trees: @$trees;
+        elsif $root-node.defined {
+            self.set-root-node: $root-node;
         }
         elsif $get-children.defined {
             &!get-children = &$get-children;
@@ -135,18 +135,18 @@ class Terminal::Widgets::TreeView
         self!refresh-dn;
     }
 
-    sub get-children-of-tree(@tree, $id) {
+    sub get-children-of-tree($root-node, $id) {
         # In a wrapped tree, we'll populate the ID with a list of indexes
         # leading to the node.
-        my @l := @tree;
+        my $n = $root-node;
         my @ids;
         if !($id === Nil) {
             for @$id -> $index {
-                @l := @l[$index].children;
+                $n = $n.children[$index];
             }
             @ids = @$id;
         }
-        @l.kv.map: -> $i, $node {
+        $n.children.kv.map: -> $i, $node {
             WrappedRichNode.new:
                 id => (|@ids, $i),
                 orig => $node,
@@ -156,17 +156,15 @@ class Terminal::Widgets::TreeView
         }
     }
 
-    method set-trees(@!trees) {
+    method set-root-node($!root-node) {
         &!get-children = sub ($id) {
-            get-children-of-tree(@!trees, $id);
+            get-children-of-tree($!root-node, $id);
         }
-
         self!refresh-dn;
     }
 
     method set-get-children(&!get-children) {
-        @!trees = ();
-
+        $!root-node = Terminal::Widgets::RichTreeViewNode.new;
         self!refresh-dn;
     }
 
