@@ -84,7 +84,7 @@ class Terminal::Widgets::TreeView
 
     #| DisplayNode trees. Contains a list of all visible nodes. Not necessarily
     #| on the screen, but not hidden in a collapsed parent.
-    has @!dn-trees;
+    has $!dn-root;
 
     #| Node 
     has NodeProperties @.node-props;
@@ -190,11 +190,14 @@ class Terminal::Widgets::TreeView
     }
 
     method !refresh-dn() {
-        my (@dn-trees, @lines) := self!nodes-to-dns(&!get-children(Nil), 0);
+        my (@dns, @lines) := self!nodes-to-dns(&!get-children(Nil), 0);
         # Ensure @lines is one line per entry.
         @lines .= map(*.lines.join);
         self!set-text(@lines.join("\n"));
-        @!dn-trees = @dn-trees;
+        $!dn-root = DisplayNode.new(
+            :children(@dns),
+            :depth(0),
+        );
     }
 
     method !prop-for-node($node) {
@@ -209,16 +212,17 @@ class Terminal::Widgets::TreeView
     }
 
     method !line-to-dn($line-no) {
-        sub line-to-dn-rec($pos is rw, $line, @dns) {
-            for @dns -> $dn {
-                return $dn if $pos == $line;
+        sub line-to-dn-rec($pos is rw, $line, $dn) {
+            return $dn if $pos == $line;
+            for $dn.children -> $child {
                 $pos++;
-                return $_ with line-to-dn-rec($pos, $line, $dn.children);
+                return $_ with line-to-dn-rec($pos, $line, $child);
             }
         }
 
-        my $cur-line = 0;
-        line-to-dn-rec($cur-line, $line-no, @!dn-trees)
+        # First child of the root is at pos 0, so the root is at pos -1. 
+        my $cur-line = -1;
+        line-to-dn-rec($cur-line, $line-no, $!dn-root)
     }
 
     method !expand-node() {
@@ -229,8 +233,8 @@ class Terminal::Widgets::TreeView
             self!prop-for-node($dn.node).expanded = True;
             my @children = &!get-children($dn.node.id);
             if @children {
-                my (@dn-trees, @lines) := self!nodes-to-dns(@children, $dn.depth + 1);
-                $dn.children = @dn-trees;
+                my (@dns, @lines) := self!nodes-to-dns(@children, $dn.depth + 1);
+                $dn.children = @dns;
                 self!splice-lines($line+1, 0, @lines.join("\n"));
             }
         }
