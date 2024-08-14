@@ -52,8 +52,13 @@ class Terminal::Widgets::TreeView
 
     my class DisplayNode {
         has Terminal::Widgets::TreeViewNode $.node;
-        has DisplayNode @.children is rw;
+        has DisplayNode @.children;
         has Int $.depth;
+        has DisplayNode $.parent is rw;
+
+        submethod TWEAK() {
+            $_.parent = self for @!children;
+        }
 
         method child-line-count() {
             [+] @!children.map: { 1 + $_.child-line-count }
@@ -135,6 +140,11 @@ class Terminal::Widgets::TreeView
         self!refresh-dn;
     }
 
+    method dn-get-text($dn) {
+        my $expanded = self!prop-for-node($dn.node).expanded;
+        &!get-node-prefix($dn.depth, $expanded, $dn.node.leaf, $dn === $dn.parent.children.end) ~ $dn.node.text;
+    }
+
     sub get-children-of-tree($root-node, $id) {
         # In a wrapped tree, we'll populate the ID with a list of indexes
         # leading to the node.
@@ -168,14 +178,14 @@ class Terminal::Widgets::TreeView
         self!refresh-dn;
     }
 
-    method !nodes-to-dns(@nodes, $depth) {
+    method !nodes-to-dns(@nodes, $parent, $depth) {
         my @lines;
         my @dns = @nodes.kv.map: -> $index, $node {
             my $expanded = self!prop-for-node($node).expanded;
             @lines.push: &!get-node-prefix($depth, $expanded, $node.leaf, $index == @nodes.end) ~ $node.text;
             my @children;
             if $expanded {
-                my @res = self!nodes-to-dns(&!get-children($node.id), $depth + 1);
+                my @res = self!nodes-to-dns(&!get-children($node.id), Nil, $depth + 1);
                 @children := @res[0];
                 my @child-lines := @res[1];
                 @lines.append: @child-lines;
@@ -184,13 +194,14 @@ class Terminal::Widgets::TreeView
                 :$node,
                 :@children,
                 :$depth,
+                :$parent,
             )
         }
         @dns, @lines
     }
 
     method !refresh-dn() {
-        my (@dns, @lines) := self!nodes-to-dns(&!get-children(Nil), 0);
+        my (@dns, @lines) := self!nodes-to-dns(&!get-children(Nil), Nil, 0);
         # Ensure @lines is one line per entry.
         @lines .= map(*.lines.join);
         self!set-text(@lines.join("\n"));
@@ -233,7 +244,7 @@ class Terminal::Widgets::TreeView
             self!prop-for-node($dn.node).expanded = True;
             my @children = &!get-children($dn.node.id);
             if @children {
-                my (@dns, @lines) := self!nodes-to-dns(@children, $dn.depth + 1);
+                my (@dns, @lines) := self!nodes-to-dns(@children, $dn, $dn.depth + 1);
                 $dn.children = @dns;
                 self!splice-lines($line+1, 0, @lines.join("\n"));
             }
