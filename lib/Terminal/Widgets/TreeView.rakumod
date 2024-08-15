@@ -60,8 +60,12 @@ class Terminal::Widgets::TreeView
             $_.parent = self for @!children;
         }
 
-        method child-line-count() {
-            [+] @!children.map: { 1 + $_.child-line-count }
+        method set-children(@!children) {
+            $_.parent = self for @!children;
+        }
+
+        method line-count() {
+            1 + [+] @!children.map: { $_.line-count }
         }
     }
 
@@ -139,9 +143,15 @@ class Terminal::Widgets::TreeView
         self!refresh-dn;
     }
 
-    method dn-get-text($dn) {
-        my $expanded = self!prop-for-node($dn.node).expanded;
-        &!get-node-prefix($dn.depth, $expanded, $dn.node.leaf, $dn === $dn.parent.children.end) ~ $dn.node.text;
+    method !dn-get-text($dn) {
+        sub dn-get-line($dn) {
+            my $expanded = self!prop-for-node($dn.node).expanded;
+            &!get-node-prefix($dn.depth, $expanded, $dn.node.leaf, $dn === $dn.parent.children.first: :end) ~ $dn.node.text;
+        }
+
+        my @lines = dn-get-line $dn;
+        @lines.push(self!dn-get-text($_)) for $dn.children;
+        @lines
     }
 
     sub get-children-of-tree($root-node, $id) {
@@ -177,37 +187,33 @@ class Terminal::Widgets::TreeView
         self!refresh-dn;
     }
 
-    method !nodes-to-dns(@nodes, $parent, $depth) {
-        my @lines;
-        my @dns = @nodes.kv.map: -> $index, $node {
-            my $expanded = self!prop-for-node($node).expanded;
-            @lines.push: &!get-node-prefix($depth, $expanded, $node.leaf, $index == @nodes.end) ~ $node.text;
-            my @children;
-            if $expanded {
-                my @res = self!nodes-to-dns(&!get-children($node.id), Nil, $depth + 1);
-                @children := @res[0];
-                my @child-lines := @res[1];
-                @lines.append: @child-lines;
-            }
+    method !nodes-to-dns(@nodes, $depth) {
+        @nodes.kv.map: -> $index, $node {
+            my @children = self!prop-for-node($node).expanded
+                ?? self!nodes-to-dns(&!get-children($node.id), $depth + 1)
+                !! ();
             DisplayNode.new(
                 :$node,
                 :@children,
                 :$depth,
-                :$parent,
             )
         }
-        @dns, @lines
     }
 
     method !refresh-dn() {
-        my (@dns, @lines) := self!nodes-to-dns(&!get-children(Nil), Nil, 0);
-        # Ensure @lines is one line per entry.
-        @lines .= map(*.lines.join);
-        self!set-text(@lines.join("\n"));
+        my @dns = self!nodes-to-dns(&!get-children(Nil), 0);
         $!dn-root = DisplayNode.new(
             :children(@dns),
             :depth(0),
         );
+
+        my @lines = @dns.map: {
+            log $_.raku;
+            self!dn-get-text: $_
+        }
+        # Ensure @lines is one line per entry.
+        @lines .= map(*.lines.join);
+        self!set-text(@lines.join("\n"));
     }
 
     method !prop-for-node($node) {
@@ -243,9 +249,13 @@ class Terminal::Widgets::TreeView
             self!prop-for-node($dn.node).expanded = True;
             my @children = &!get-children($dn.node.id);
             if @children {
-                my (@dns, @lines) := self!nodes-to-dns(@children, $dn, $dn.depth + 1);
-                $dn.children = @dns;
-                self!splice-lines($line+1, 0, @lines.join("\n"));
+                my @dns = self!nodes-to-dns(@children, $dn.depth + 1);
+                $dn.set-children: @dns;
+
+                my @lines = self!dn-get-text: $dn;
+                # Ensure @lines is one line per entry.
+                @lines .= map(*.lines.join);
+                self!splice-lines($line, 1, @lines.join("\n"));
             }
         }
     }
@@ -254,8 +264,10 @@ class Terminal::Widgets::TreeView
         my $line = $!cursor-y;
         my $dn = self!line-to-dn($line);
         self!prop-for-node($dn.node).expanded = False;
-        self!splice-lines($line+1, $dn.child-line-count, ());
-        $dn.children = ();
+        my $old-line-count = $dn.line-count;
+        $dn.set-children: ();
+        my @lines = self!dn-get-text: $dn;
+        self!splice-lines($line, $old-line-count, @lines);
     }
 
     multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D
