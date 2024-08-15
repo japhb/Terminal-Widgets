@@ -123,16 +123,15 @@ class Terminal::Widgets::TreeView
         }
         else {
             &!get-node-prefix = sub (Int $level, Bool $expanded, Bool $leaf, Bool $last) {
-                $level == 0
-                  ?? ''
-                  !! (
-                    ' ' x ($level - 1)
-                    ~ ($last ?? '└' !! '├')
-                  )
+                ($level == 0
+                    ?? ''
+                    !! ' ' x ($level - 1)
+                        ~ ($last ?? '└' !! '├')
+                )
                 ~ ($leaf
                     ?? ' '
                     !! ($expanded ?? '⮟' !! '⮞')
-                  )
+                )
                 ~ ' '
             }
         }
