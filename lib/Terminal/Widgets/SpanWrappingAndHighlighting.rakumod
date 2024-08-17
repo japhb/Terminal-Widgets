@@ -305,8 +305,11 @@ role Terminal::Widgets::SpanWrappingAndHighlighting
 
     method !display-pos-to-line-pos(@line, $x, $y) {
         my @sub-lines = self!wrap(@line);
-        my $pos = [+] @sub-lines[^$y].map({ self!chars-in-line($_) });
-        $pos + self!chars-fitting-in-width(self!spans-to-text(@sub-lines[$y]), $x)
+        # We allow y > line height. This eases using this for e.g. click handling,
+        # where a user could click below the last line.
+        my $sane-y = min $y, @sub-lines.end;
+        my $pos = [+] @sub-lines[^$sane-y].map({ self!chars-in-line($_) });
+        $pos + self!chars-fitting-in-width(self!spans-to-text(@sub-lines[$sane-y]), $x)
     }
 
     method !height-of-line(@line) {
