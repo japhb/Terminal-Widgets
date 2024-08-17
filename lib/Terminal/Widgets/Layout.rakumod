@@ -424,6 +424,12 @@ class VScrollBar is Leaf {
     }
 }
 
+#| A rich text viewer widget
+class RichText is Leaf { }
+
+#| A  tree viewer widget
+class TreeView is Leaf { }
+
 #| A multi-line auto-scrolling log viewer
 class LogViewer is Leaf { }
 
@@ -544,6 +550,8 @@ class Builder {
     method divider(|c)       { self.build-leaf(Divider,      |c) }
     method hscroll(|c)       { self.build-leaf(HScrollBar,   |c) }
     method vscroll(|c)       { self.build-leaf(VScrollBar,   |c) }
+    method rich-text(|c)     { self.build-leaf(RichText,     |c) }
+    method tree-view(|c)     { self.build-leaf(TreeView,     |c) }
     method log-viewer(|c)    { self.build-leaf(LogViewer,    |c) }
     method plain-text(|c)    { self.build-leaf(PlainText,    |c) }
     method smoke-chart(|c)   { self.build-leaf(SmokeChart,   |c) }
