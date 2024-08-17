@@ -69,9 +69,9 @@ class FormUI is TopLevel {
             .divider(line-style => 'light1', style => %(set-h => 1)),
             .node(
                 .tree-view(id => 'tree', style => %(max-w => 50),
-                                   process-click => -> $node {
+                                   process-click => -> $id, $x, $y {
                                        my $click-log = %.by-id<click-log>;
-                                       $click-log.add-entry: "Click on node {$node.id}\n";
+                                       $click-log.add-entry: "Click on node $id $x:$y \n";
                                        $click-log.refresh-for-scroll;
                                    }),
                 .vscroll(scroll-target => 'tree'),

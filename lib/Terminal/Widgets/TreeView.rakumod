@@ -50,6 +50,18 @@ class Terminal::Widgets::TreeView
         has Bool $.expanded is rw;
     }
 
+    my class WrappedRichNode
+      does Terminal::Widgets::ShallowTreeViewNode {
+        has Terminal::Widgets::RichTreeViewNode $.orig;
+
+        method id-for-props() {
+            $!orig.id // $!id
+        }
+        method id-for-children() {
+            $!id
+        }
+    }
+
     my class DisplayNode {
         has Terminal::Widgets::TreeViewNode $.node;
         has DisplayNode @.children;
@@ -58,6 +70,15 @@ class Terminal::Widgets::TreeView
 
         submethod TWEAK() {
             $_.parent = self for @!children;
+        }
+
+        method orig-node() {
+            if $!node ~~ WrappedRichNode {
+                $!node.orig
+            }
+            else {
+                $!node
+            }
         }
 
         method set-children(@!children) {
@@ -77,18 +98,6 @@ class Terminal::Widgets::TreeView
                     return $_ with $child.find-by-id($id);
                 }
             }
-        }
-    }
-
-    my class WrappedRichNode
-      does Terminal::Widgets::ShallowTreeViewNode {
-        has Terminal::Widgets::RichTreeViewNode $.orig;
-
-        method id-for-props() {
-            $!orig.id // $!id
-        }
-        method id-for-children() {
-            $!id
         }
     }
 
@@ -187,13 +196,13 @@ class Terminal::Widgets::TreeView
         self!refresh-dn;
     }
 
-    method !dn-get-text($dn) {
-        sub dn-get-line($dn) {
-            my $expanded = self!prop-for-id($dn.node.id-for-props).expanded;
-            &!get-node-prefix($dn.depth, $expanded, $dn.node.leaf, $dn === $dn.parent.children.first: :end) ~ $dn.node.text;
-        }
+    method !dn-get-prefix($dn) {
+        my $expanded = self!prop-for-id($dn.node.id-for-props).expanded;
+        &!get-node-prefix($dn.depth, $expanded, $dn.node.leaf, $dn === $dn.parent.children.first: :end)
+    }
 
-        my @lines = dn-get-line $dn;
+    method !dn-get-text($dn) {
+        my @lines = self!dn-get-prefix($dn) ~ $dn.node.text;
         @lines.push(self!dn-get-text($_)) for $dn.children;
         @lines
     }
@@ -329,6 +338,15 @@ class Terminal::Widgets::TreeView
         self!splice-lines($line, $old-line-count, @lines);
     }
 
+    method !toggle-expand-dn($dn) {
+        if self!prop-for-id($dn.node.id-for-props).expanded {
+            self!collapse-dn: $dn;
+        }
+        else {
+            self!expand-dn: $dn;
+        }
+    }
+
     multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D
                               $event where *.key.defined, AtTarget) {
         my constant %keymap =
@@ -359,11 +377,18 @@ class Terminal::Widgets::TreeView
         my $clicked-display-line = $!first-display-line + $y;
         my $line-index = @!dl-l[min($clicked-display-line, @!dl-l.end)];
         $!cursor-y = $line-index;
+        my $dn = self!line-to-dn: $line-index;
         my $rel-y = $y - @!l-dl[$line-index];
         $x = self!display-pos-to-line-pos(@!lines[$line-index], self.x-scroll + $x, $rel-y);
         $!cursor-x = min(self!chars-in-line(@!lines[$line-index]) - 1, $x);
         self.full-refresh;
-        &!process-click($line-index, $x, 0) with &!process-click;
+        my $prefix-len = duospace-width(self!dn-get-prefix($dn));
+        if $!cursor-x < $prefix-len {
+            self!toggle-expand-dn($dn);
+        }
+        else {
+            &!process-click($dn.orig-node, $!cursor-x - $prefix-len, 0) with &!process-click;
+        }
     }
 
     sub log($t) {
