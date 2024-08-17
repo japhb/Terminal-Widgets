@@ -67,6 +67,17 @@ class Terminal::Widgets::TreeView
         method line-count() {
             1 + [+] @!children.map: { $_.line-count }
         }
+
+        method find-by-id($id) {
+            if $!node.id-for-props eqv $id {
+                self
+            }
+            else {
+                for @!children -> $child {
+                    return $_ with $child.find-by-id($id);
+                }
+            }
+        }
     }
 
     my class WrappedRichNode
@@ -143,17 +154,6 @@ class Terminal::Widgets::TreeView
         self!refresh-dn;
     }
 
-    method !dn-get-text($dn) {
-        sub dn-get-line($dn) {
-            my $expanded = self!prop-for-node($dn.node).expanded;
-            &!get-node-prefix($dn.depth, $expanded, $dn.node.leaf, $dn === $dn.parent.children.first: :end) ~ $dn.node.text;
-        }
-
-        my @lines = dn-get-line $dn;
-        @lines.push(self!dn-get-text($_)) for $dn.children;
-        @lines
-    }
-
     sub get-children-of-tree($root-node, $id) {
         # In a wrapped tree, we'll populate the ID with a list of indexes
         # leading to the node.
@@ -187,9 +187,20 @@ class Terminal::Widgets::TreeView
         self!refresh-dn;
     }
 
+    method !dn-get-text($dn) {
+        sub dn-get-line($dn) {
+            my $expanded = self!prop-for-id($dn.node.id-for-props).expanded;
+            &!get-node-prefix($dn.depth, $expanded, $dn.node.leaf, $dn === $dn.parent.children.first: :end) ~ $dn.node.text;
+        }
+
+        my @lines = dn-get-line $dn;
+        @lines.push(self!dn-get-text($_)) for $dn.children;
+        @lines
+    }
+
     method !nodes-to-dns(@nodes, $depth) {
         @nodes.kv.map: -> $index, $node {
-            my @children = self!prop-for-node($node).expanded
+            my @children = self!prop-for-id($node.id-for-props).expanded
                 ?? self!nodes-to-dns(&!get-children($node.id), $depth + 1)
                 !! ();
             DisplayNode.new(
@@ -216,12 +227,12 @@ class Terminal::Widgets::TreeView
         self!set-text(@lines.join("\n"));
     }
 
-    method !prop-for-node($node) {
+    method !prop-for-id($id) {
         for @!node-props -> $prop {
-            return $prop if $prop.id eqv $node.id-for-props;
+            return $prop if $prop.id eqv $id;
         }
         my $prop = NodeProperties.new(
-                id => $node.id-for-props,
+                :$id,
             );
         @!node-props.push: $prop;
         $prop
@@ -241,12 +252,43 @@ class Terminal::Widgets::TreeView
         line-to-dn-rec($cur-line, $line-no, $!dn-root)
     }
 
-    method !expand-node() {
+    method !dn-to-line($needle) {
+        sub dn-to-line-rec($pos is rw, $needle, $dn) {
+            return $pos if $needle === $dn;
+            for $dn.children -> $child {
+                $pos++;
+                return $_ with dn-to-line-rec($pos, $needle, $child);
+            }
+        }
+
+        # First child of the root is at pos 0, so the root is at pos -1. 
+        my $cur-line = -1;
+        dn-to-line-rec($cur-line, $needle, $!dn-root)
+    }
+
+    method !dn-for-id($id) {
+        $!dn-root.find-by-id: $id
+    }
+    
+    method expand-node($id) {
+        with self!dn-for-id($id) -> $dn {
+            self!expand-dn: $dn;
+        }
+        else {
+            self!prop-for-id($id).expanded = True;
+        }
+    }
+
+    method !expand-current-node() {
         my $line = $!cursor-y;
         my $dn = self!line-to-dn($line);
-        my $prop = self!prop-for-node($dn.node);
+        self!expand-dn: $dn;
+    }
+
+    method !expand-dn($dn) {
+        my $prop = self!prop-for-id($dn.node.id-for-props);
         if !$prop.expanded {
-            self!prop-for-node($dn.node).expanded = True;
+            $prop.expanded = True;
             my @children = &!get-children($dn.node.id);
             if @children {
                 my @dns = self!nodes-to-dns(@children, $dn.depth + 1);
@@ -255,17 +297,34 @@ class Terminal::Widgets::TreeView
                 my @lines = self!dn-get-text: $dn;
                 # Ensure @lines is one line per entry.
                 @lines .= map(*.lines.join);
+
+                my $line = self!dn-to-line: $dn;
+
                 self!splice-lines($line, 1, @lines.join("\n"));
             }
         }
     }
 
-    method !collapse-node() {
+    method collapse-node($id) {
+        with self!dn-for-id($id) -> $dn {
+            self!collapse-dn: $dn;
+        }
+        else {
+            self!prop-for-id($id).expanded = False;
+        }
+    }
+
+    method !collapse-current-node() {
         my $line = $!cursor-y;
         my $dn = self!line-to-dn($line);
-        self!prop-for-node($dn.node).expanded = False;
+        self!collapse-dn: $dn;
+    }
+
+    method !collapse-dn($dn) {
+        self!prop-for-id($dn.node.id-for-props).expanded = False;
         my $old-line-count = $dn.line-count;
         $dn.set-children: ();
+        my $line = self!dn-to-line: $dn;
         my @lines = self!dn-get-text: $dn;
         self!splice-lines($line, $old-line-count, @lines);
     }
@@ -285,8 +344,8 @@ class Terminal::Widgets::TreeView
         with %keymap{$keyname} {
             when 'select-next-line' { self!select-line($!cursor-y + 1) }
             when 'select-prev-line' { self!select-line($!cursor-y - 1) }
-            when 'expand-node'      { self!expand-node }
-            when 'collapse-node'    { self!collapse-node }
+            when 'expand-node'      { self!expand-current-node }
+            when 'collapse-node'    { self!collapse-current-node }
             when 'next-input'       { self.focus-next-input }
             when 'prev-input'       { self.focus-prev-input }
         }
