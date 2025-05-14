@@ -14,9 +14,9 @@ class Terminal::Widgets::App {
 
     #| Create a new Terminal container for a given named tty, add the new
     #| container to internal data structures, and return it.
-    multi method add-terminal(IO::Path:D   :$tty!,
-                              IO::Handle:D :$input  = $tty.open(:r),
-                              IO::Handle:D :$output = $tty.open(:a),
+    multi method add-terminal(Str:D   $moniker,
+                              IO::Handle:D :$input,
+                              IO::Handle:D :$output,
                               Terminal::Widgets::I18N::Locale :$locale,
                               :%ui-prefs, *%caps) {
         die 'Terminal input and output are not both connected to a valid tty'
@@ -32,20 +32,39 @@ class Terminal::Widgets::App {
 
         my $caps = Terminal::Capabilities.new(|%caps);
 
-        %!terminal{$tty.path}
+        %!terminal{$moniker}
         = Terminal::Widgets::Terminal.new(:$input, :$output, :$caps, :app(self),
                                           |(:%ui-prefs if %ui-prefs),
                                           |(:$locale if $locale));
     }
 
-    #| add-terminal by IO::Path tty object
+    #| add-terminal by IO::Path tty object on POSIX
     multi method add-terminal(IO::Path:D $tty, *%config) {
-        self.add-terminal(:$tty, |%config);
+        self.add-terminal:
+            $tty.path,
+            :input($tty.open(:r)),
+            :output($tty.open(:a)),
+            |%config
     }
 
-    #| add-terminal by Str tty-name, defaulting to '/dev/tty' (controlling terminal)
-    multi method add-terminal(Str:D $tty-name = '/dev/tty', *%config) {
+    #| add-terminal by Str tty-name on POSIX, defaulting to '/dev/tty'
+    #| (the controlling terminal)
+    multi method add-terminal(Str:D $tty-name, *%config) {
         self.add-terminal($tty-name.IO, |%config);
+    }
+
+    #| add-terminal for the current controlling terminal
+    multi method add-terminal(*%config) {
+        if $*DISTRO.is-win {
+            self.add-terminal:
+                "controlling",
+                :input($*IN),
+                :output($*OUT),
+                |%config
+        }
+        else {
+            self.add-terminal('/dev/tty'.IO, |%config)
+        }
     }
 
     #| Create a new top-level widget of a given class, add it to the known
