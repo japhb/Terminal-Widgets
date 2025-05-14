@@ -14,7 +14,7 @@ class Terminal::Widgets::App {
 
     #| Create a new Terminal container for a given named tty, add the new
     #| container to internal data structures, and return it.
-    multi method add-terminal(Str:D   $moniker,
+    multi method add-terminal(Str:D $moniker,
                               IO::Handle:D :$input,
                               IO::Handle:D :$output,
                               Terminal::Widgets::I18N::Locale :$locale,
@@ -47,20 +47,17 @@ class Terminal::Widgets::App {
             |%config
     }
 
-    #| add-terminal by Str tty-name on POSIX, defaulting to '/dev/tty'
-    #| (the controlling terminal)
+    #| add-terminal by Str tty-name
     multi method add-terminal(Str:D $tty-name, *%config) {
         self.add-terminal($tty-name.IO, |%config);
     }
 
-    #| add-terminal for the current controlling terminal
+    #| add-terminal for the current controlling terminal;
+    #| on POSIX, this defaults to the special device '/dev/tty'
     multi method add-terminal(*%config) {
         if $*DISTRO.is-win {
-            self.add-terminal:
-                "controlling",
-                :input($*IN),
-                :output($*OUT),
-                |%config
+            self.add-terminal('controlling',
+                              :input($*IN), :output($*OUT), |%config)
         }
         else {
             self.add-terminal('/dev/tty'.IO, |%config)
