@@ -7,7 +7,7 @@
   ],
   "depends": [
     "Terminal::Capabilities:auth<zef:japhb>:ver<0.0.3+>",
-    "Terminal::LineEditor:auth<zef:japhb>:ver<0.0.16+>",
+    "Terminal::LineEditor:auth<zef:japhb>:ver<0.0.20+>",
     "Terminal::Print:auth<zef:terminal-printers>:ver<0.976+>",
     "Text::MiscUtils:auth<zef:japhb>:ver<0.0.9+>"
   ],
