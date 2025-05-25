@@ -45,6 +45,9 @@ role Terminal::Widgets::SpanWrappingAndHighlighting
                         ?? $content
                         !! span-tree('', $content);
         @!lines = $as-tree.lines.eager;
+        # If we have no lines at all, add at least an empty line.
+        # This alleviates other code to deal with empty @!lines.
+        @!lines.push: () unless @!lines;
         self!calc-widest;
         self!my-refresh;
     }
@@ -55,6 +58,9 @@ role Terminal::Widgets::SpanWrappingAndHighlighting
                         !! span-tree('', $replacement);
         my @repl-lines = $as-tree.lines.eager;
         @!lines.splice: $from, $count, @repl-lines;
+        # If we have no lines at all, add at least an empty line.
+        # This alleviates other code to deal with empty @!lines.
+        @!lines.push: () unless @!lines;
 
         self!calc-widest;
         self!my-refresh($from);
@@ -90,11 +96,19 @@ role Terminal::Widgets::SpanWrappingAndHighlighting
 
         sub line($i) {
             if $i == $!cursor-y {
-                my @line = span-tree(self.current-color(%( |self.current-color-states, :prompt )), @!lines[$i]).lines.eager[0];
-                if $!show-cursor {
-                    @line = add-cursor @line, $!cursor-x;
+                # There will only ever be one line, as we already pass in a singular line.
+                my @lines = span-tree(self.current-color(%( |self.current-color-states, :prompt )), @!lines[$i]).lines.eager;
+                if @lines {
+                    my @spans = @lines[0]<>;
+                    if $!show-cursor {
+                        @spans = add-cursor @spans, $!cursor-x;
+                    }
+                    @spans
                 }
-                @line
+                else {
+                    # If we have no lines at all, return an empty list.
+                    @lines
+                }
             }
             else {
                 @!lines[$i]
