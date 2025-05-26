@@ -7,10 +7,12 @@ use Text::MiscUtils::Layout;
 use Terminal::Widgets::Utils::Color;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Input;
+use Terminal::Widgets::Widget;
 
 
 #| Single-line text entry field with history tracking and mappable keys
 class Terminal::Widgets::Input::Text
+ is Terminal::Widgets::Widget
  does Terminal::Widgets::Input
  does Terminal::LineEditor::HistoryTracking
  does Terminal::LineEditor::KeyMappable {
@@ -73,6 +75,13 @@ class Terminal::Widgets::Input::Text
         else {
             self.show-disabled(:$print);
         }
+    }
+
+    # Convert animation drawing to full-refresh
+    method draw-frame() {
+        self.full-refresh;
+        # XXXX: Do we need to callsame here?
+        # callsame;
     }
 
     #| Display input disabled state
@@ -167,6 +176,16 @@ class Terminal::Widgets::Input::Text
     #| Dispatch a key event when enabled for editing
     multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D
                               $event where *.key.defined, AtTarget) {
+        my constant %handling-keymap =
+            Ctrl-I       => 'next-input',    # Tab
+            ShiftTab     => 'prev-input',    # Shift-Tab is weird and special
+        ;
+
+        with %handling-keymap{$event.keyname} {
+            when 'next-input' { self.focus-next-input }
+            when 'prev-input' { self.focus-prev-input }
+        }
+
         # Ignore keyboard input if disabled
         return unless $.enabled;
 
