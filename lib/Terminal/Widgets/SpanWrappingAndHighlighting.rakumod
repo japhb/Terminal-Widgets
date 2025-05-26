@@ -278,16 +278,21 @@ role Terminal::Widgets::SpanWrappingAndHighlighting
 
         while $pos < $text.chars {
             my $fitting = $pos + self!chars-fitting-in-width($text.substr($pos), $width);
-            my $cut;
-            $cut = @candidates.shift while @candidates && @candidates[0] <= $fitting;
-            if $cut {
-                @positions.push: $cut;
-                $pos = $cut;
+            if $text.chars - $pos <= $fitting {
+                $pos = $text.chars;
             }
             else {
-                # No clean cut fits into the line.
-                @positions.push: $fitting;
-                $pos = $fitting;
+                my $cut;
+                $cut = @candidates.shift while @candidates && @candidates[0] <= $fitting;
+                if $cut {
+                    @positions.push: $cut;
+                    $pos = $cut;
+                }
+                else {
+                    # No clean cut fits into the line.
+                    @positions.push: $fitting;
+                    $pos = $fitting;
+                }
             }
         }
 
