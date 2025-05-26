@@ -357,6 +357,10 @@ role Terminal::Widgets::SpanWrappingAndHighlighting
                         @next := [];
                         @positions.shift;
                         $span = span($span.color, $second);
+                        unless @positions {
+                            @next.push: $span;
+                            last;
+                        }
                     }
                 }
             }
