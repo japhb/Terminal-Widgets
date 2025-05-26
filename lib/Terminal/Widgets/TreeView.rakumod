@@ -203,7 +203,7 @@ class Terminal::Widgets::TreeView
 
     method !dn-get-text($dn) {
         my @lines = self!dn-get-prefix($dn) ~ $dn.node.text;
-        @lines.push(self!dn-get-text($_)) for $dn.children;
+        @lines.append(self!dn-get-text($_)) for $dn.children;
         @lines
     }
 
