@@ -404,27 +404,57 @@ class Terminal::Widgets::Widget
     }
 
     #| Render spans on a single line, optimizing for monospace spans
+    #
     #  NOTE: This is a core rendering routine in the span-centric drawing
     #        model and must optimize for performance.  Thus draw-line-spans
     #        assumes that the surrounding drawing code has validated its
     #        arguments BEFORE passing them in, rather than validating them
     #        anew on every single call.
+    #
+    #        It also optimizes drawing under the assumption that no characters
+    #        to be drawn are 0-width. While 0-width is common for *codepoints*,
+    #        it should not be true of *graphemes* that you intend to display.
+    #        In particular, it will probably do the wrong thing with 0-width
+    #        control characters embedded in the string, such as BiDi overrides.
+    #
     method draw-line-spans(UInt:D $line-x is copy, UInt:D $line-y,
                            UInt:D $w, @line, UInt:D :$x-scroll = 0,
                            :$locale = self.terminal.locale) {
+
+        # This algorithm uses a lot of parameters and working variables;
+        # here's a quick reference:
+        #
+        # @line             Array of Spans to be drawn on this line
+        # $_ (topic)        Current Span object within the @line array
+        #
+        # $line-x,$line-y   Current drawing coordinates on the backing grid
+        # $w                Width in cells of visible drawable area
+        # $x-scroll         Count of cells the drawing area is scrolled horizontally
+        # $span-x           Count of Span cells processed *so far* during this call
+        # $next             Cells expected processed *after* current Span is complete
+        #
+        # $char             Current character within current Span's text
+        # $locale           Locale in which to calculate character widths
+        # $width            Width of current character
+        # $c-next           Next $line-x after drawing the current character
+        # $cell             Colored cell to be drawn in grid for current character
+
         my $span-x = 0;
         for @line {
             my $next = $span-x + .width;
             if .width == .text.chars {
+                # Span is monospace (assuming no 0-width characters in .text)
+
                 if $next <= $x-scroll + $w && $x-scroll <= $span-x {
-                    # Span fully visible and monospace; render entire span.
-                    # This is the fastest span path.
+                    # Span fully visible and monospace; render entire span and
+                    # move line-x the full width. This is the FASTEST span path.
                     $.grid.set-span($line-x, $line-y, .text, .color);
                     $line-x += .width;
                 }
                 elsif $x-scroll < $next {
-                    # Span partially visible and monospace; render
-                    # visible substring.  This is the medium speed path.
+                    # Span partially visible and monospace; render visible
+                    # substring and move line-x accordingly.  This is the
+                    # MEDIUM speed path.
                     my $start   = 0 max $x-scroll - $span-x;
                     my $max-len = 0 max $w - (0 max $span-x - $x-scroll);
                     my $text    = substr(.text, $start, $max-len);
@@ -432,10 +462,12 @@ class Terminal::Widgets::Widget
                     $.grid.set-span($line-x, $line-y, $text, .color);
                     $line-x += $text.chars;
                 }
+                # else monospace span is not visible, so don't draw this span
             }
             elsif $x-scroll < $next {
-                # Span duospaced and cut off by x-scroll or width; need to
-                # render cell-by-cell.  This is a potentially slow path!
+                # Span is duospaced and possibly visible, but may be cut off by
+                # x-scroll or width; need to render cell-by-cell.  This is a
+                # potentially SLOW path!
 
                 # XXXX: Run this for loop with grid lock held and update
                 #       cells manually to avoid repeated call overhead?
@@ -461,6 +493,7 @@ class Terminal::Widgets::Widget
                     $line-x  = $c-next;
                 }
             }
+            # else span has been scrolled past, so don't draw this span
 
             last if ($span-x = $next) >= $w;
         }
