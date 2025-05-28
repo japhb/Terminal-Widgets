@@ -3,10 +3,12 @@
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Input;
 use Terminal::Widgets::Input::Labeled;
+use Terminal::Widgets::Widget;
 
 
 #| Base for labeled input widgets that can only be clicked/pressed/selected
 role Terminal::Widgets::Input::SimpleClickable
+is Terminal::Widgets::Widget
 does Terminal::Widgets::Input
 does Terminal::Widgets::Input::Labeled {
     # REQUIRED METHODS
