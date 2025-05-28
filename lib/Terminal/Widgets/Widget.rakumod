@@ -445,7 +445,7 @@ class Terminal::Widgets::Widget
             if .width == .text.chars {
                 # Span is monospace (assuming no 0-width characters in .text)
 
-                if $next <= $x-scroll + $w && $x-scroll <= $span-x {
+                if $x-scroll <= $span-x && $next <= $x-scroll + $w  {
                     # Span fully visible and monospace; render entire span and
                     # move line-x the full width. This is the FASTEST span path.
                     $.grid.set-span($line-x, $line-y, .text, .color);
@@ -478,24 +478,33 @@ class Terminal::Widgets::Widget
                 for .text.comb -> $char {
                     my $width  = $locale.width($char);
                     my $c-next = $line-x + $width;
+
+                    # Wide char cut off (split) by drawing area width, done
                     last if $c-next > $w;
 
                     if $x-scroll <= $span-x {
-                        # Update optionally-colored first cell;
-                        # empty second cell if character was wide.
+                        # Character fully visible; update optionally-colored
+                        # first cell, empty second cell if character was wide,
+                        # and move line-x forward by full character width.
+
                         my $cell = .color ?? $.grid.cell($char, .color) !! $char;
                         $.grid.change-cell($line-x,     $line-y, $cell);
                         $.grid.change-cell($line-x + 1, $line-y, '')
                             if $width > 1;
+                        $line-x = $c-next;
+                    }
+                    elsif $x-scroll == $span-x + 1 && $width == 2 {
+                        # Wide char split by x-scroll, skip forward 1 cell
+                        $line-x++;
                     }
 
                     $span-x += $width;
-                    $line-x  = $c-next;
                 }
             }
             # else span has been scrolled past, so don't draw this span
 
-            last if ($span-x = $next) >= $w;
+            # Span complete, update span-x and check if any drawing width left
+            last if ($span-x = $next) - $x-scroll >= $w;
         }
     }
 
