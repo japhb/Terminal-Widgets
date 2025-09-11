@@ -1,6 +1,7 @@
 # ABSTRACT: Singleton terminal app object
 
 use Terminal::Capabilities;
+use Terminal::Capabilities::Autodetect;
 
 use Terminal::Widgets::I18N::Locale;
 use Terminal::Widgets::TopLevel;
@@ -17,20 +18,33 @@ class Terminal::Widgets::App {
     multi method add-terminal(Str:D $moniker,
                               IO::Handle:D :$input,
                               IO::Handle:D :$output,
+                              Terminal::Capabilities :$caps is copy,
                               Terminal::Widgets::I18N::Locale :$locale,
                               :%ui-prefs, *%caps) {
         die 'Terminal input and output are not both connected to a valid tty'
             unless $input.t && $output.t;
 
-        %caps<symbol-set> //= symbol-set(%caps<symbols> || %*ENV<TW_SYMBOLS> || 'Full');
-
         # This contortion avoids an error trying to assign to a type object
-        without %caps<vt100-boxes> {
-            %caps<vt100-boxes>:delete;
-            %caps<vt100-boxes> = ?+$_ with %*ENV<TW_VT100_BOXES>;
+        for < symbol-set vt100-boxes > {
+            %caps{$_}:delete if %caps{$_}:exists and not %caps{$_}.defined;
         }
 
-        my $caps = Terminal::Capabilities.new(|%caps);
+        # Caller and environment variable overrides
+        my $override-symbols = %caps<symbols> || %*ENV<TW_SYMBOLS>;
+        %caps<vt100-boxes> //= ?+$_ with %*ENV<TW_VT100_BOXES>;
+        %caps<symbol-set>  //= symbol-set($override-symbols)
+                                       if $override-symbols;
+
+        if $caps {
+            # Already have a Terminal::Capabilities object,
+            # but may need to tweak with overrides
+            $caps .= clone(|%caps) if %caps;
+        }
+        else {
+            # Don't have a T::C object yet, build a new one
+            %caps<symbol-set> //= symbol-set('Full');
+            $caps = Terminal::Capabilities.new(|%caps);
+        }
 
         %!terminal{$moniker}
         = Terminal::Widgets::Terminal.new(:$input, :$output, :$caps, :app(self),
@@ -55,12 +69,15 @@ class Terminal::Widgets::App {
     #| add-terminal for the current controlling terminal;
     #| on POSIX, this defaults to the special device '/dev/tty'
     multi method add-terminal(*%config) {
+        # Env var capabilities autodetection should work for the controlling terminal
+        my ($caps, $type, $version) = terminal-env-detect;
+
         if $*DISTRO.is-win {
-            self.add-terminal('controlling',
+            self.add-terminal('controlling', :$caps,
                               :input($*IN), :output($*OUT), |%config)
         }
         else {
-            self.add-terminal('/dev/tty'.IO, |%config)
+            self.add-terminal('/dev/tty'.IO, :$caps, |%config)
         }
     }
 
