@@ -1,6 +1,11 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Packaging]
+  - Bump dependencies for Terminal::Capabilities to 0.0.11+ and
+    Terminal::LineEditor to 0.0.23+ to pick up numerous bug fixes
+    and functional improvements
+
 
 0.1.5  2024-04-01T00:35:56-07:00
   [Bug Fixes]
