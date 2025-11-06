@@ -1,10 +1,58 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Bug Fixes]
+  - Fix duospaced text printing bug due to reused variable (Patrick Böker)++
+  - Fix draw-line-spans bugs found by (Patrick Böker)++
+
+  [Cleanups]
+  - Reduce overuse of double quotes to make security sweeps less noisy
+    + Single quote things that don't require any double-quotishness
+    + Convert interpolations to concatenations
+    + Replace "\n" with $?NL
+
+  [Docs]
+  - Greatly expand and clarify comments in Widget.draw-line-spans, one of the
+    most complex algorithms in T-W
+
+  [Examples]
+  - Add a debugger-mockup example inspired by issue #11
+
+  [Functionality]
+  - Add ToggleButton widget: looks like Button, acts like Checkbox
+  - Create new TextContent/ContentRenderer model based on RenderSpans
+  - Realign I18N::Locale and Translation around new content model
+  - Ask locale for (possibly translated) plain-text when Str desired
+  - Add Widget.content-rect to get XYWH rect of content area
+  - Support capabilities autodetection on controlling terminal
+
   [Packaging]
-  - Bump dependencies for Terminal::Capabilities to 0.0.11+ and
-    Terminal::LineEditor to 0.0.23+ to pick up numerous bug fixes
-    and functional improvements
+  - Bump deps to pick up numerous bug fixes and functional improvements:
+    + Terminal::Capabilities to 0.0.12+
+    + Terminal::LineEditor to 0.0.23+
+    + Terminal::Print to 0.977+
+
+  [Portability]
+  - Unlock Windows support! (Patrick Böker)++
+  - Work around change in object hash semantics in Rakudo 2025.03-27
+    with a fix that works both before and after
+
+  [Refactoring]
+  - Refactor refresh handling for Checkbox/RadioButton/Boolean
+    + Move identical full-refresh methods up to base class
+    + Drop unneeded refresh-value methods
+    + Refactor draw-frame method in Boolean
+  - Factor group management out of RadioButton into GroupedBoolean
+  - Refactor lots of basic input pieces into SimpleClickable
+  - Factor draw-line-spans out of SpanBuffer.draw-frame into the Widget core
+  - Refactor SpanBuffer.draw-frame in terms of Widget.content-rect
+  - Rebase PlainText on top of SpanBuffer
+
+  [Security]
+  - Sanitize text in a few insecure places found during double-quote sweep
+
+  [Testing]
+  - Fix order of use tests to match dependency order of modules
 
 
 0.1.5  2024-04-01T00:35:56-07:00
