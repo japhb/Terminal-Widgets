@@ -19,7 +19,7 @@ Terminal::Widgets is in a *very* early state, pretty much the minimum for which 
 
 It is **CERTAIN** that many things will be changing in the near future, although finally a few things seem like they aren't terrible and might stick around for a while.
 
-**This is not version `0.1.x` because I'm modest, it's because it really is that early!**
+**This is not version `0.2.x` because I'm modest, it's because it really is that early!**
 
 Not completely scared off yet? Come visit `#mugs` on `libera.chat` IRC and feel free to ask questions or offer ideas.
 
@@ -31,7 +31,7 @@ Geoffrey Broadwell <gjb@sonic.net>
 COPYRIGHT AND LICENSE
 =====================
 
-Copyright 2019, 2022-2024 Geoffrey Broadwell
+Copyright 2019, 2022-2025 Geoffrey Broadwell
 
 This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
 
