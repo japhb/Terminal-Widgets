@@ -15,11 +15,11 @@ class FormUI is TopLevel {
         with $builder {
             .radio-button(label => 'No Wrap',   group => 'wrap-style', id => 'no-wrap',
                                    state => True,
-                                   process-input => { self!set-wrap(.id) }),
+                                   process-input => { self!set-wrap(.id) if .state }),
             .radio-button(label => 'Line Wrap', group => 'wrap-style', id => 'line-wrap',
-                                   process-input => { self!set-wrap(.id) }),
+                                   process-input => { self!set-wrap(.id) if .state }),
             .radio-button(label => 'Word Wrap', group => 'wrap-style', id => 'word-wrap',
-                                   process-input => { self!set-wrap(.id) }),
+                                   process-input => { self!set-wrap(.id) if .state }),
             .checkbox(    label => 'Highlight Selected Line',
                                    process-input => -> $cb {
                                        %.by-id<text>.set-highlight-line($cb.state);
