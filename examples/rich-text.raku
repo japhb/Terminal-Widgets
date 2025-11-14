@@ -6,7 +6,7 @@ use Terminal::Widgets::RichText;
 use Terminal::Widgets::SpanWrappingAndHighlighting;
 
 #| A top level UI container based on Terminal::Widgets::Simple::TopLevel
-class FormUI is TopLevel {
+class RichTextDemo is TopLevel {
     has        $!text = "😂😂😂😂😂😂😂😂 Some not so short demo text. This text is deliberately long, so one can test line wrapping without having to type in so much text first. So here is some more to really hit home and be sure that we definitely have enough text to fill a line even on very wide screen displays and very small fonts. We'll see if someone speaks up and says that this text is not long enough on their setup to test line wrapping. Here are some more duowidth chars: 😂😂😂😂😂😂😂😂😂😂😂😂 \n0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
 
     method initial-layout($builder, $width, $height) {
@@ -69,5 +69,5 @@ class FormUI is TopLevel {
 
 sub MAIN() {
     # Boot a Terminal::Widgets::App and jump right to the form screen
-    App.new.boot-to-screen('form', FormUI, title => 'RichText Example');
+    App.new.boot-to-screen('form', RichTextDemo, title => 'RichText Example');
 }

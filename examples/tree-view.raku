@@ -6,7 +6,7 @@ use Terminal::Widgets::TreeView;
 use Terminal::Widgets::SpanWrappingAndHighlighting;
 
 #| A top level UI container based on Terminal::Widgets::Simple::TopLevel
-class FormUI is TopLevel {
+class TreeViewDemo is TopLevel {
     has $!root-node = tv-node('Root',
                               tv-node('One',
                                       tv-node('One One'),
@@ -77,5 +77,5 @@ class FormUI is TopLevel {
 
 sub MAIN() {
     # Boot a Terminal::Widgets::App and jump right to the form screen
-    App.new.boot-to-screen('form', FormUI, title => 'TreeView Example');
+    App.new.boot-to-screen('form', TreeViewDemo, title => 'TreeView Example');
 }
