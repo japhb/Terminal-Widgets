@@ -47,7 +47,7 @@ class TreeViewDemo is TopLevel {
             .divider(line-style => 'light1', style => %(set-h => 1)),
             .node(
                 .with-scrollbars(
-                    .tree-view(id => 'tree', style => %(set-w => 50),
+                    .tree-view(id => 'tree', style => %(set-w => 15),
                                process-click => -> $id, $x, $y {
                                       my $click-log = %.by-id<click-log>;
                                       $click-log.add-entry: "Click on node $id $x:$y \n";
