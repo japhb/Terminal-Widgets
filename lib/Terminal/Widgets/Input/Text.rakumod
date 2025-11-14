@@ -12,7 +12,7 @@ use Terminal::Widgets::Widget;
 
 #| Single-line text entry field with history tracking and mappable keys
 class Terminal::Widgets::Input::Text
- is Terminal::Widgets::Widget
+   is Terminal::Widgets::Widget
  does Terminal::Widgets::Input
  does Terminal::LineEditor::HistoryTracking
  does Terminal::LineEditor::KeyMappable {
