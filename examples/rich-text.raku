@@ -58,28 +58,18 @@ class FormUI is TopLevel {
             ),
             .divider(line-style => 'light1', style => %(set-h => 1)),
             .node(
-                .rich-text(id => 'text', style => %(max-w => 50),
-                                   process-click => -> $line, $x, $y {
-                                       my $click-log = %.by-id<click-log>;
-                                       $click-log.add-entry: "Click on line $line:$x,$y\n";
-                                       $click-log.refresh-for-scroll;
-                                   }),
-                .vscroll(scroll-target => 'text'),
+                .with-scrollbars(
+                    .rich-text(id => 'text', style => %(set-w => 50),
+                               process-click => -> $line, $x, $y {
+                                      my $click-log = %.by-id<click-log>;
+                                      $click-log.add-entry: "Click on line $line:$x,$y\n";
+                                      $click-log.refresh-for-scroll;
+                                  }),
+                ),
                 .spacer(),
             ),
-            .node(
-                .hscroll(scroll-target => 'text'),
-                .spacer(style => %(set-w => 1, set-h => 1)),
-            ),
             .divider(line-style => 'light1', style => %(set-h => 1)),
-            .node(
-                .log-viewer(id => 'click-log'),
-                .vscroll(scroll-target => 'click-log'),
-            ),
-            .node(
-                .hscroll(scroll-target => 'click-log'),
-                .spacer(style => %(set-w => 1, set-h => 1)),
-            ),
+            .with-scrollbars(.log-viewer(id => 'click-log')),
         }
     }
 

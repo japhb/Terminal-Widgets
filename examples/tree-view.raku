@@ -68,28 +68,18 @@ class FormUI is TopLevel {
             ),
             .divider(line-style => 'light1', style => %(set-h => 1)),
             .node(
-                .tree-view(id => 'tree', style => %(max-w => 50),
-                                   process-click => -> $id, $x, $y {
-                                       my $click-log = %.by-id<click-log>;
-                                       $click-log.add-entry: "Click on node $id $x:$y \n";
-                                       $click-log.refresh-for-scroll;
-                                   }),
-                .vscroll(scroll-target => 'tree'),
+                .with-scrollbars(
+                    .tree-view(id => 'tree', style => %(set-w => 50),
+                               process-click => -> $id, $x, $y {
+                                      my $click-log = %.by-id<click-log>;
+                                      $click-log.add-entry: "Click on node $id $x:$y \n";
+                                      $click-log.refresh-for-scroll;
+                                  }),
+                ),
                 .spacer(),
             ),
-            .node(
-                .hscroll(scroll-target => 'tree'),
-                .spacer(style => %(set-w => 1, set-h => 1)),
-            ),
             .divider(line-style => 'light1', style => %(set-h => 1)),
-            .node(
-                .log-viewer(id => 'click-log'),
-                .vscroll(scroll-target => 'click-log'),
-            ),
-            .node(
-                .hscroll(scroll-target => 'click-log'),
-                .spacer(style => %(set-w => 1, set-h => 1)),
-            ),
+            .with-scrollbars(.log-viewer(id => 'click-log')),
         }
     }
 

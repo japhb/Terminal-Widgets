@@ -33,13 +33,8 @@ class FormUI is TopLevel {
                                    process-input  => { $.terminal.quit }),
             ),
             .divider(line-style => 'light1', style => %(set-h => 1)),
-            .node(
-                .log-viewer(id => 'lv', :%style),
-                .vscroll(scroll-target => 'lv'),
-            ),
-            .node(
-                .hscroll(scroll-target => 'lv'),
-                .spacer(style => %(set-w => 1, set-h => 1)),
+            .with-scrollbars(
+                .log-viewer(id => 'lv', :%style)
             ),
         }
     }

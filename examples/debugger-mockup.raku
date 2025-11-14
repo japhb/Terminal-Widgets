@@ -32,14 +32,7 @@ class DebuggerMockup is TopLevel {
                                   style => %( set-h => 1, ),
                                   # XXXX: Translations for PlainText widgets
                                   text => 'Source'),
-                      .node(
-                          .log-viewer(id => 'source'),
-                          .vscroll(scroll-target => 'source'),
-                      ),
-                      .node(
-                          .hscroll(scroll-target => 'source'),
-                          .spacer(style => %(set-w => 1, set-h => 1)),
-                      ),
+                      .with-scrollbars(.log-viewer(id => 'source')),
                 ),
 
                 .divider(line-style => 'light1', style => %( set-w => 1, )),
@@ -50,14 +43,7 @@ class DebuggerMockup is TopLevel {
                                   style => %( set-h => 1, ),
                                   # XXXX: Translations for PlainText widgets
                                   text => 'Locals'),
-                      .node(
-                          .log-viewer(id => 'inspector'),
-                          .vscroll(scroll-target => 'inspector'),
-                      ),
-                      .node(
-                          .hscroll(scroll-target => 'inspector'),
-                          .spacer(style => %(set-w => 1, set-h => 1)),
-                      ),
+                      .with-scrollbars(.log-viewer(id => 'inspector')),
                 ),
             ),
 
