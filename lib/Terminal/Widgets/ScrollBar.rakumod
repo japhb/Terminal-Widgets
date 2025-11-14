@@ -88,10 +88,7 @@ class Terminal::Widgets::HScrollBar
         $.scroll-target.set-x-scroll($.scroll-target.x-max);
     }
 
-    method draw-frame() {
-        # Draw framing first
-        self.draw-framing;
-
+    method draw-content() {
         # Compute left and right column of handle on scrollbar,
         # safely accounting for several possible edge cases
         my $layout = self.layout.computed;
@@ -209,10 +206,7 @@ class Terminal::Widgets::VScrollBar
         $.scroll-target.set-y-scroll($.scroll-target.y-max);
     }
 
-    method draw-frame() {
-        # Draw framing first
-        self.draw-framing;
-
+    method draw-content() {
         # Compute top and bottom row of handle on scrollbar,
         # safely accounting for several possible edge cases
         my $layout = self.layout.computed;

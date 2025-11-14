@@ -17,10 +17,7 @@ does Terminal::Widgets::Scrollable {
     method span-line-chunk(UInt:D $start, UInt:D $wanted) { ... }
 
     #| Render visible buffer lines
-    method draw-frame() {
-        # Draw framing first
-        self.draw-framing;
-
+    method draw-content() {
         # Compute available content area; bail if empty
         my ($l, $t, $w, $h) = self.content-rect;
         return unless $w && $h;

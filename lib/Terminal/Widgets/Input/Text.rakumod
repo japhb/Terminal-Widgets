@@ -77,11 +77,9 @@ class Terminal::Widgets::Input::Text
         }
     }
 
-    # Convert animation drawing to full-refresh
-    method draw-frame() {
+    # Convert animation content drawing to full-refresh
+    method draw-content() {
         self.full-refresh;
-        # XXXX: Do we need to callsame here?
-        # callsame;
     }
 
     #| Display input disabled state

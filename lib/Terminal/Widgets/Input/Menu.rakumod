@@ -31,8 +31,8 @@ class Terminal::Widgets::Input::Menu
         'hotkeys:' ~ %!hotkey.elems,
     }
 
-    #| Draw framing and full input
-    method draw-frame() {
+    #| Draw content area
+    method draw-content() {
         my $layout     = self.layout.computed;
         my $terminal   = self.terminal;
         my $locale     = $terminal.locale;
@@ -42,8 +42,6 @@ class Terminal::Widgets::Input::Menu
         my $h          = $.h - $layout.height-correction;
         my $base-color = self.current-color;
         my $highlight  = $.colorset.highlight;
-
-        self.draw-framing;
 
         for ^$h {
             last if $!items.end < my $i = $.top-item + $_;

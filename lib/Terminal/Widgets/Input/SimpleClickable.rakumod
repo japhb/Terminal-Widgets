@@ -20,8 +20,8 @@ does Terminal::Widgets::Input::Labeled {
     method content-text($label) { ... }
 
 
-    #| Draw framing and full input
-    method draw-frame() {
+    #| Draw content area
+    method draw-content() {
         my $layout = self.layout.computed;
         my $x      = $layout.left-correction;
         my $y      = $layout.top-correction;
@@ -29,7 +29,6 @@ does Terminal::Widgets::Input::Labeled {
         # XXXX: Temporary hack
         my $label  = $.terminal.locale.plain-text($.label);
 
-        self.draw-framing;
         $.grid.set-span($x, $y, self.content-text($label), self.current-color);
     }
 
