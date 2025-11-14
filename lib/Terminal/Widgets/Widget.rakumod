@@ -203,7 +203,7 @@ class Terminal::Widgets::Widget
 
     #| Gain focus and ensure that proper child is focused
     method gain-focus(Bool:D :$redraw = True) {
-        # note 'default-focus is ' ~ self.default-focus.^name;
+        # note 'default-focus is ' ~ self.default-focus.gist-name;
         self.toplevel.focus-on(self.default-focus, :$redraw);
     }
 
