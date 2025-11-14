@@ -25,9 +25,15 @@ use Terminal::Widgets::Form;
 
 use Terminal::Widgets::PlainText;
 
+use Terminal::Widgets::Focusable;
+
 use Terminal::Widgets::Scrollable;
 use Terminal::Widgets::ScrollBar;
 use Terminal::Widgets::SpanBuffer;
+
+use Terminal::Widgets::SpanWrappingAndHighlighting;
+use Terminal::Widgets::RichText;
+use Terminal::Widgets::TreeView;
 
 use Terminal::Widgets::Input;
 use Terminal::Widgets::Input::Menu;
@@ -41,8 +47,6 @@ use Terminal::Widgets::Input::ToggleButton;
 use Terminal::Widgets::Input::Text;
 
 use Terminal::Widgets::Progress::Tracker;
-
-use Terminal::Widgets::RichText;
 
 use Terminal::Widgets::Viewer::Log;
 
