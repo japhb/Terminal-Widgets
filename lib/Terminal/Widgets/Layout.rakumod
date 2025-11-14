@@ -524,6 +524,10 @@ class Widget is Node {
 }
 
 
+#| A structural node to associate a scrollable child with matched scrollbars
+class WithScrollbars is Node { }
+
+
 #| Helper class for building style/layout trees
 class Builder {
     has $.context is required;
@@ -542,6 +546,26 @@ class Builder {
                                                 :$.context, :%style, |%extra);
         $node-type.new(:$.context, :@children, :$vertical, :%extra,
                        requested => Style.new(|$default, |%style))
+    }
+
+    #| Helper method for associating a scrollable child with matching scrollbars
+    method build-with-scrollbars($scrollable, :%style, *%extra) {
+        my $scroll-target = $scrollable.extra<id>
+            // die "Must specify a string id for a scrollable to add scrollbars";
+
+        with self {
+            .build-node(WithScrollbars, :vertical,
+                        style => %(:minimize-w, :minimize-h),
+                        .node(
+                            $scrollable,
+                            .vscroll(:$scroll-target),
+                        ),
+                        .node(
+                            .hscroll(:$scroll-target),
+                            .spacer(style => %(set-w => 1, set-h => 1)),
+                        )
+                       )
+        }
     }
 
     # Misc leaf nodes (no children ever)
@@ -567,6 +591,9 @@ class Builder {
     # Nodes with optional children
     method node(|c)          { self.build-node(Node,         |c) }
     method widget(|c)        { self.build-node(Widget,       |c) }
+
+    # Nodes with required children
+    method with-scrollbars(|c) { self.build-with-scrollbars( |c) }
 }
 
 
