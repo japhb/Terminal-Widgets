@@ -58,8 +58,8 @@ class Terminal::Widgets::Simple::App is Terminal::Widgets::App {
     method boot-to-screen(::?CLASS:D: |c) {
         self.bootup;
 
-        my $term = self.default-init(|c);
-        $term.start
+        my $terminal = self.default-init(|c);
+        $terminal.start
     }
 
 

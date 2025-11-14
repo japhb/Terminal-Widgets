@@ -72,7 +72,7 @@ role Terminal::Widgets::Scrollable {
     method ensure-y-span-visible(UInt:D $y1, UInt:D $y2) {
         # If widget can show entirety of Y span at once, ensure that happens;
         # otherwise, show as much as possible of the Y span, preferring to
-        # show the left edge at $y1.
+        # show the top edge at $y1.
         my $old-bottom = $!y-max min $!y-scroll + self.content-height - 1;
         my $new-bottom = $!y-max min $y2;
         my $new-y      = $y1 min $!y-scroll + (0 max $new-bottom - $old-bottom);
