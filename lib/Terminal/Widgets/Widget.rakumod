@@ -339,19 +339,45 @@ class Terminal::Widgets::Widget
     }
 
     #| Composite children with painter's algorithm (in Z order, back to front)
-    #| on top of framing (padding, border, margin), if any
+    #| with framing (padding, border, margin) and then content drawn at Z = 0
     method draw-frame() {
-        self.draw-framing;
+        # If children exist, do full painter's algorithm
+        if @.children {
+            # XXXX: Clip children to content area?
 
-        # XXXX: Cache the sorted order?
-        for @.children.sort({ .?z // 0 }) {
-            .composite;
+            # XXXX: Cache the sorted order?  Needs careful invalidation handling.
+            my %grouped = @.children.sort({ .?z // 0 }).classify({ (.?z // 0) > 0 });
 
-            # Assume children that don't understand the DirtyAreas protocol
-            # are always completely dirty (DirtyAreas compositing adds dirty
-            # areas as needed, but other children don't know to do so)
-            self.add-dirty-rect(.x, .y, .w, .h)
-                unless $_ ~~ Terminal::Widgets::DirtyAreas;
+            # Draw children behind framing/content
+            for @(%grouped{False} // Empty) {
+                .composite;
+
+                # Assume children that don't understand the DirtyAreas protocol
+                # are always completely dirty (DirtyAreas compositing adds dirty
+                # areas as needed, but other children don't know to do so)
+                self.add-dirty-rect(.x, .y, .w, .h)
+                    unless $_ ~~ Terminal::Widgets::DirtyAreas;
+            }
+
+            # Draw framing, then content
+            self.draw-framing;
+            self.draw-content;
+
+            # Draw children in front of framing/content
+            for @(%grouped{True} // Empty) {
+                .composite;
+
+                # Assume children that don't understand the DirtyAreas protocol
+                # are always completely dirty (DirtyAreas compositing adds dirty
+                # areas as needed, but other children don't know to do so)
+                self.add-dirty-rect(.x, .y, .w, .h)
+                    unless $_ ~~ Terminal::Widgets::DirtyAreas;
+            }
+        }
+        # If no children, just draw framing then content
+        else {
+            self.draw-framing;
+            self.draw-content;
         }
     }
 
@@ -401,6 +427,11 @@ class Terminal::Widgets::Widget
 
     #| Draw padding
     method draw-padding() {
+    }
+
+    #| Draw content in content area
+    method draw-content() {
+        # XXXX: Just a stub for now
     }
 
     #| Render spans on a single line, optimizing for monospace spans
