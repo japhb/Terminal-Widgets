@@ -25,33 +25,13 @@ class FormUI is TopLevel {
         my %style;
 
         with $builder {
-            .radio-button(label => 'No Wrap', group => 'wrap-style', id => 'no-wrap', :state(True),
-                                   process-input => -> $rb {
-                                       with $rb.selected-member {
-                                           self!set-wrap(.id);
-                                       }
-                                       else {
-                                           $rb.set-state(True);
-                                       }
-                                   }),
+            .radio-button(label => 'No Wrap',   group => 'wrap-style', id => 'no-wrap',
+                                   state => True,
+                                   process-input => { self!set-wrap(.id) }),
             .radio-button(label => 'Line Wrap', group => 'wrap-style', id => 'line-wrap',
-                                   process-input => -> $rb {
-                                       with $rb.selected-member {
-                                           self!set-wrap(.id);
-                                       }
-                                       else {
-                                           $rb.set-state(True);
-                                       }
-                                   }),
+                                   process-input => { self!set-wrap(.id) }),
             .radio-button(label => 'Word Wrap', group => 'wrap-style', id => 'word-wrap',
-                                   process-input => -> $rb {
-                                       with $rb.selected-member {
-                                           self!set-wrap(.id);
-                                       }
-                                       else {
-                                           $rb.set-state(True);
-                                       }
-                                   }),
+                                   process-input => { self!set-wrap(.id) }),
             .checkbox(    label => 'Highlight Selected Line',
                                    process-input => -> $cb {
                                        %.by-id<tree>.set-highlight-line($cb.state);
@@ -81,13 +61,13 @@ class FormUI is TopLevel {
         }
     }
 
-    method !set-wrap($style) {
-        my %styles = (
-            no-wrap => NoWrap,
+    method !set-wrap($wrap-style) {
+        my %wrap-styles = (
+            no-wrap   => NoWrap,
             line-wrap => LineWrap,
             word-wrap => WordWrap,
         );
-        %.by-id<tree>.set-wrap(%styles{$style});
+        %.by-id<tree>.set-wrap(%wrap-styles{$wrap-style});
     }
 
     multi method handle-event(Terminal::Widgets::Events::LayoutBuilt:D, BubbleUp) {
