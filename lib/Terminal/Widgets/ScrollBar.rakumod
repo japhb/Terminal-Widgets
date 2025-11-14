@@ -52,13 +52,6 @@ role Terminal::Widgets::Scrollbar {
             if $!scroll-target ~~ Str:D;
         $!scroll-target.scrollbars.set(self);
     }
-
-    #| Refresh scrollbar display completely
-    method full-refresh(Bool:D :$print = True) {
-        self.clear-frame;
-        self.draw-frame;
-        self.composite(:$print);
-    }
 }
 
 

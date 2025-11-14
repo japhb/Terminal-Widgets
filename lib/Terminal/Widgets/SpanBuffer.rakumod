@@ -16,13 +16,6 @@ does Terminal::Widgets::Scrollable {
     #| line should already be flattened into a simple list of spans.
     method span-line-chunk(UInt:D $start, UInt:D $wanted) { ... }
 
-    #| Refresh widget display completely
-    method full-refresh(Bool:D :$print = True) {
-        self.clear-frame;
-        self.draw-frame;
-        self.composite(:$print);
-    }
-
     #| Render visible buffer lines
     method draw-frame() {
         # Draw framing first

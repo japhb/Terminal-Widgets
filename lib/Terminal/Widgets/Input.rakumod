@@ -25,11 +25,6 @@ does Terminal::Widgets::Focusable {
     }
 
 
-    # Refresh methods
-
-    # REQUIRED: Refresh display of entire input
-    method full-refresh { ... }
-
     # OPTIONAL OPTIMIZATION: Refresh display for input value changes ONLY
     # XXXX: Variants for color changes versus metrics changes?
     method refresh-value(Bool:D :$print = True) {

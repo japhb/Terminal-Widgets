@@ -332,6 +332,13 @@ class Terminal::Widgets::Widget
          0 max $.h - $layout.height-correction)
     }
 
+    #| Fully refresh this widget and optionally force a print
+    method full-refresh(Bool:D :$print = True) {
+        self.clear-frame;
+        self.draw-frame;
+        self.composite(:$print);
+    }
+
     #| Clear the frame and set it all-dirty (so it requires composite)
     method clear-frame() {
         $.grid.clear;

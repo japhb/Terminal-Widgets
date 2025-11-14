@@ -31,13 +31,6 @@ class Terminal::Widgets::Input::Menu
         'hotkeys:' ~ %!hotkey.elems,
     }
 
-    #| Refresh the whole input
-    method full-refresh(Bool:D :$print = True) {
-        self.clear-frame;
-        self.draw-frame;
-        self.composite(:$print);
-    }
-
     #| Draw framing and full input
     method draw-frame() {
         my $layout     = self.layout.computed;
