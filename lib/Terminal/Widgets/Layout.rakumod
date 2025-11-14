@@ -427,7 +427,7 @@ class VScrollBar is Leaf {
 #| A rich text viewer widget
 class RichText is Leaf { }
 
-#| A  tree viewer widget
+#| A tree viewer widget
 class TreeView is Leaf { }
 
 #| A multi-line auto-scrolling log viewer
