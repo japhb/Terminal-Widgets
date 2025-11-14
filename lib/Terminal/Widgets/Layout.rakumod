@@ -555,7 +555,7 @@ class Builder {
 
         with self {
             .build-node(WithScrollbars, :vertical,
-                        style => %(:minimize-w, :minimize-h),
+                        style => %(:minimize-w),
                         .node(
                             $scrollable,
                             .vscroll(:$scroll-target),
