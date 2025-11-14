@@ -7,21 +7,19 @@ use Terminal::Widgets::SpanWrappingAndHighlighting;
 
 #| A top level UI container based on Terminal::Widgets::Simple::TopLevel
 class FormUI is TopLevel {
-    has $!root-node =
-        Terminal::Widgets::RichTreeViewNode.new(text => "Root", children => (
-            Terminal::Widgets::RichTreeViewNode.new(text => "One", children => (
-                Terminal::Widgets::RichTreeViewNode.new(text => "One One"),
-                Terminal::Widgets::RichTreeViewNode.new(text => "One Two", children => (
-                    Terminal::Widgets::RichTreeViewNode.new(text => "One Two One"),
-                    Terminal::Widgets::RichTreeViewNode.new(text => "One Two Two"),
-                    Terminal::Widgets::RichTreeViewNode.new(text => "One Two Three"),
-                ))
-            )),
-            Terminal::Widgets::RichTreeViewNode.new(text => "Two", children => (
-                Terminal::Widgets::RichTreeViewNode.new(text => "Two One"),
-            )),
-        ))
-        ;
+    has $!root-node = tv-node('Root',
+                              tv-node('One',
+                                      tv-node('One One'),
+                                      tv-node('One Two',
+                                              tv-node('One Two One'),
+                                              tv-node('One Two Two'),
+                                              tv-node('One Two Three'))),
+                              tv-node('Two',
+                                      tv-node('Two One')));
+
+    sub tv-node($text, *@children) {
+        Terminal::Widgets::RichTreeViewNode.new(:$text, :@children)
+    }
 
     method initial-layout($builder, $width, $height) {
         my %style;
