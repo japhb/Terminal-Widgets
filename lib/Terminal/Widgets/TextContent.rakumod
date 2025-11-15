@@ -41,8 +41,14 @@ class RenderSpan is export {
 }
 
 
+#| Any kind of semantic (non-rendered) textual content
+role SemanticText is export { }
+
 #| A semantic span within a SpanTree (a StringSpan or InterpolantSpan)
-role SemanticSpan { }
+role SemanticSpan does SemanticText { }
+
+#| General text content (semantic or rendered)
+subset TextContent is export where Str | RenderSpan | SemanticText;
 
 
 #| Merge together parent and child attribute hashes
@@ -119,7 +125,7 @@ class InterpolantSpan does SemanticSpan {
 
 
 #| An attribute-carrying tree of spans with SemanticSpan leaves
-class SpanTree {
+class SpanTree does SemanticText {
     my subset SpanTreeNode where SemanticSpan | SpanTree;
 
     has SpanTreeNode:D @.children;
@@ -143,7 +149,7 @@ class SpanTree {
 
 
 #| A parseable (and optionally interpolatable) string containing markup
-class MarkupString is export {
+class MarkupString does SemanticText is export {
     has Str:D  $.string is required;
     has Bool:D $.interpolatable = False;
 
