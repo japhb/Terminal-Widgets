@@ -394,8 +394,4 @@ role Terminal::Widgets::SpanWrappingAndHighlighting
             }
         }
     }
-    
-    sub log($t) {
-        "o".IO.spurt: $t ~ "\n", :append;
-    }
 }
