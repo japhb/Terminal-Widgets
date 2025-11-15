@@ -115,7 +115,7 @@ class Terminal::Widgets::TreeView
     #| on the screen, but not hidden in a collapsed parent.
     has $!dn-root;
 
-    #| Node 
+    #| Node
     has NodeProperties @.node-props;
 
     has &.get-node-prefix;
@@ -255,7 +255,7 @@ class Terminal::Widgets::TreeView
             }
         }
 
-        # First child of the root is at pos 0, so the root is at pos -1. 
+        # First child of the root is at pos 0, so the root is at pos -1.
         my $cur-line = -1;
         line-to-dn-rec($cur-line, $line-no, $!dn-root)
     }
@@ -269,7 +269,7 @@ class Terminal::Widgets::TreeView
             }
         }
 
-        # First child of the root is at pos 0, so the root is at pos -1. 
+        # First child of the root is at pos 0, so the root is at pos -1.
         my $cur-line = -1;
         dn-to-line-rec($cur-line, $needle, $!dn-root)
     }
@@ -277,7 +277,7 @@ class Terminal::Widgets::TreeView
     method !dn-for-id($id) {
         $!dn-root.find-by-id: $id
     }
-    
+
     method expand-node($id) {
         with self!dn-for-id($id) -> $dn {
             self!expand-dn: $dn;

@@ -60,11 +60,11 @@ does Terminal::Widgets::Focusable {
         self.set-hint($.terminal.locale.plain-text($hint))
     }
 
-    # Set error state, then refresh
-    # XXXX: error-target and human-friendly error display?
+    #| Set error state, then refresh
+    #  XXXX: error-target and human-friendly error display?
     method set-error($!error) { self.full-refresh }
 
-    # Handle taking focus
+    #| Make sure hint updated when taking focus
     multi method handle-event(Terminal::Widgets::Events::TakeFocus:D $event, AtTarget) {
         self.Terminal::Widgets::Widget::handle-event($event, AtTarget);
         self.set-hint($.hint) if $.hint.defined;
