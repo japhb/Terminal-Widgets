@@ -7,7 +7,7 @@ use Terminal::Widgets::TextContent;
 
 #| A translatable (and optionally interpolatable) string that knows its own
 #| translation context
-class TranslatableString is export {
+class TranslatableString does SemanticText is export {
     has Str:D  $.string  is required;
     has Str:D  $.context is required;
     has Bool:D $.interpolatable = False;
