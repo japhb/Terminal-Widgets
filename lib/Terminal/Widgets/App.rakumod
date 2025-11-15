@@ -86,9 +86,12 @@ class Terminal::Widgets::App {
     method add-top-level(Str:D $moniker,
                          Terminal::Widgets::TopLevel:U :$class,
                          Terminal::Widgets::Terminal:D :$terminal, |c) {
-        my $w = $terminal.w;
-        my $h = $terminal.h;
-        %!top-level{$moniker} = $class.new(:$terminal, :$w, :$h, :x(0), :y(0), |c);
+        my $w        = $terminal.w;
+        my $h        = $terminal.h;
+        my $colorset = $terminal.colorset;
+
+        %!top-level{$moniker} = $class.new(:$terminal, :$colorset,
+                                           :$w, :$h, :x(0), :y(0), |c);
     }
 
     # XXXX: Need to be able to dispose of toplevels as well

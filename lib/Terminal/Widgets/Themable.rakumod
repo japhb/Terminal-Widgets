@@ -27,16 +27,21 @@ role Terminal::Widgets::ThemableStates {
 #| Can be themed with a ColorSet
 role Terminal::Widgets::Themable
 does Terminal::Widgets::ThemableStates {
-    #| Colorset that applies to this Themable widget, defaulting to terminal's
-    has Terminal::Widgets::ColorSet:D $.colorset = self.terminal.colorset;
+    #| Colorset that applies to this Themable widget
+    has Terminal::Widgets::ColorSet $.colorset;
 
     #| Overrides for colorset settings if needed
     has %.color;
 
 
-    #| Install color overrides; intended to be called at TWEAK time
+    #| Install colorset and color overrides; intended to be called at TWEAK time
     method init-themable() {
-        $!colorset .= clone(|%!color) if %!color;
+        if %!color {
+            $!colorset = ($!colorset || self.terminal.colorset).clone(|%!color);
+        }
+        else {
+            $!colorset //= self.terminal.colorset;
+        }
     }
 
     #| Determine proper color based on state variables, taking care to handle
