@@ -173,6 +173,9 @@ class MarkupString does SemanticText is export {
 class ContentRenderer {
     has %.vars;
 
+
+    ### render: RENDER TO RenderSpans
+
     #| Convert MarkupString -> SpanTree and continue rendering
     multi method render(MarkupString:D $ms) {
         my $st = $ms.parse;
@@ -205,6 +208,9 @@ class ContentRenderer {
         RenderSpan.new(:$text)
     }
 
+
+    ### plain-text: RENDER AND CONVERT TO Str
+
     #| Trivial identity case for plain-text method
     multi method plain-text(Str:D $content --> Str:D) {
         $content
@@ -215,6 +221,9 @@ class ContentRenderer {
     multi method plain-text($content --> Str:D) {
         self.render($content).map(*.text).join
     }
+
+
+    ### width: RENDER AND SUM DUOSPACE WIDTH
 
     #| Total duospace width for a piece of content
     #  XXXX: Type of $content is not constrained
