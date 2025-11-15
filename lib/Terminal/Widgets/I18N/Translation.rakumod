@@ -34,7 +34,7 @@ class TranslatableString is export {
 
     #| Disallow direct .Str without translation
     method Str() {
-        Terminal::Widgets::TextContent::throw-cannot-stringify(self, 'translate-via', 'a parseable MarkupString');
+        throw-cannot-stringify(self, 'translate-via', 'a parseable MarkupString');
     }
 }
 

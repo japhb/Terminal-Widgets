@@ -20,7 +20,7 @@ class X::CannotStringify is Exception {
 
 
 #| Convenience helper to throw X::CannotStringify easily
-sub throw-cannot-stringify($type, $conversion-method, $conversion-result) {
+sub throw-cannot-stringify($type, $conversion-method, $conversion-result) is export {
     X::CannotStringify.new(:$type, :$conversion-method, :$conversion-result).throw
 }
 
