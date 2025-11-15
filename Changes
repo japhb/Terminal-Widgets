@@ -1,6 +1,34 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Bug Fixes]
+  - Remove a duplicated check in draw-line-spans due to merging reorded code
+
+  [Examples]
+  - Add rich-text and tree-view examples
+  - Make use of with-scrollbars to clean up several examples
+  - Use add-top-level to instantiate Form2UI in two-forms example
+
+  [Functionality]
+  - Add Focusable role (Patrick Böker)++
+  - Add focus tabbing support to more widget types (Patrick Böker)++
+  - Make focus tabbing wrap around at start and end (Patrick Böker)++
+  - Add SpanWrappingAndHighlighting role (Patrick Böker)++
+  - Add RichText and TreeView widgets (Patrick Böker)++
+  - Add Themable role and make Widget Themable
+  - Add with-scrollbars layout method to associate a Scrollable child
+    with matching scrollbars
+  - Continued work on new TextContent model and TranslatableStrings
+
+  [Refactoring]
+  - Push 'is Widget' from roles to consuming classes, to allow multiple
+    inheritance without forming diamond relationships (Patrick Böker)++
+  - Refactor Widget.draw-frame for more correct painting order and to
+    separate draw-content from draw-framing
+  - Move the common full-refresh method implementation down to Widget
+  - Cleanup/refactor gist-flags handling
+  - Refactor widget coloring around Themable role
+
 
 0.2.0  2025-11-06T15:15:38-08:00
   [Bug Fixes]
