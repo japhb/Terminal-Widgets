@@ -61,8 +61,9 @@ class FormUI is TopLevel {
     }
 
     method goto-page2() {
-        my $page2-ui = Form2UI.new(:$.x, :$.y, :$.w, :$.h, :$.terminal,
-                                   :@.items, prev-page => self);
+        my $page2-ui = $.terminal.app.add-top-level:
+                           'page2', class => Form2UI, title => 'Form Page 2',
+                           :$.terminal, :@.items, prev-page => self;
         $.terminal.set-toplevel($page2-ui);
     }
 }
