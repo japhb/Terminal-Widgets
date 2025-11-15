@@ -105,9 +105,21 @@ sub prefix:<¿>(Str:D $string) is export {
     TranslatableString.new(:$string, :$context)
 }
 
+#| Create a TranslatableString that allows variable interpolation from a simple
+#| Str and the $*TRANSLATION_CONTEXT
+sub prefix:<¿¡>(Str:D $string) is export {
+    my $context = $*TRANSLATION_CONTEXT // 'DEFAULT';
+    TranslatableString.new(:$string, :$context, :interpolatable)
+}
+
 #| Create a TranslatableString from a _specified_ context and string
 sub infix:<¢¿>(Str:D $context, Str:D $string) is export {
     TranslatableString.new(:$string, :$context)
+}
+
+#| Create an interpolatable TranslatableString from a _specified_ context and string
+sub infix:<¢¿¡>(Str:D $context, Str:D $string) is export {
+    TranslatableString.new(:$string, :$context, :interpolatable)
 }
 
 #| Set the current TRANSLATION_CONTEXT for a block
