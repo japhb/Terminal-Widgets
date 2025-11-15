@@ -199,7 +199,7 @@ class ContentRenderer {
     }
 
     #| Convert a single StringSpan -> a single RenderSpan
-    multi method render(StringSpan:D $ss) {
+    multi method render(StringSpan:D $ss --> RenderSpan:D) {
         $ss.render
     }
 
@@ -227,7 +227,7 @@ class ContentRenderer {
 
     #| Total duospace width for a piece of content
     #  XXXX: Type of $content is not constrained
-    method width($content) {
+    method width($content --> UInt:D) {
         self.render($content).map(*.width).sum
     }
 }
