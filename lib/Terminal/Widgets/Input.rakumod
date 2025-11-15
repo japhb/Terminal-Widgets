@@ -11,18 +11,9 @@ does Terminal::Widgets::Focusable {
     has        $.hint-target;
     has        $.hint;
     has        $.error;
-    has Bool:D $!active  = False;   # XXXX: Handle this for all inputs?
+    has Bool:D $!active = False;   # XXXX: Handle this for all inputs?
 
-    has Terminal::Widgets::Form       $.form;
-
-
-    # Input-specific gist flags
-    method gist-flags() {
-       |callsame,
-       ('ACTIVE'  if $!active),
-       ('ERROR'   if $!error),
-       ('hint-target:' ~ $!hint-target.gist if $!hint-target),
-    }
+    has Terminal::Widgets::Form $.form;
 
 
     # OPTIONAL OPTIMIZATION: Refresh display for input value changes ONLY
@@ -33,23 +24,26 @@ does Terminal::Widgets::Focusable {
     }
 
 
-    # Make sure unset colors are defaulted, and optionally add input to a form
+    #| Add input to a form if assigned
     submethod TWEAK() {
-        self.init-focusable;
         .add-input(self) with $!form;
+    }
+
+    # Add Input-specific gist flags
+    method gist-flags() {
+       |self.Terminal::Widgets::Focusable::gist-flags,
+       ('ACTIVE'  if $!active),
+       ('ERROR'   if $!error),
+       ('hint-target:' ~ $!hint-target.gist if $!hint-target),
     }
 
     #| Determine current active states affecting color choices
     method current-color-states() {
-        my $toplevel = self.toplevel;
-        my $terminal = $toplevel.terminal;
-        my $focused  = $toplevel.focused-widget === self;
-        my $blurred  = $focused && !($toplevel.is-current-toplevel &&
-                                     $terminal.terminal-focused);
+        my $terminal = self.toplevel.terminal;
         my $active   = $!active && $terminal.ui-prefs<input-activation-flash>;
 
-        my %states = :text, :input, :$focused, :$blurred, :$active,
-                     error => ?$.error, disabled => !$.enabled;
+        my %states   = |callsame,
+                       :text, :input, :$active, error => ?$.error;
     }
 
     #| Set the hint to a plain Str

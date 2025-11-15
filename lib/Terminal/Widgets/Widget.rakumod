@@ -6,6 +6,7 @@ use Terminal::Print::BoxDrawing;
 
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Layout;
+use Terminal::Widgets::Themable;
 
 
 #| Wrapper of Terminal::Print::FrameInfo
@@ -87,7 +88,8 @@ class Terminal::Widgets::Widget
  does Terminal::Print::Animated
  does Terminal::Print::BoxDrawing
  does Terminal::Widgets::Events::EventHandling
- does Terminal::Widgets::DirtyAreas {
+ does Terminal::Widgets::DirtyAreas
+ does Terminal::Widgets::Themable {
     #| Dynamic layout node associated with this widget
     has Terminal::Widgets::Layout::Dynamic $.layout;
 
@@ -97,6 +99,11 @@ class Terminal::Widgets::Widget
     has Int $.x-offset;  #= Cumulative X offset from screen root, + = right
     has Int $.y-offset;  #= Cumulative Y offset from screen root, + = down
     has Int $.z-offset;  #= Cumulative Z offset from screen root, + = nearer
+
+
+    submethod TWEAK() {
+        self.init-themable;
+    }
 
 
     # gist that improves readability and doesn't pull in widget backing grid
@@ -138,7 +145,8 @@ class Terminal::Widgets::Widget
         my $is-toplevel = self.toplevel === self;
 
         ('id:' ~ $.id.raku if $.id),
-        ((self.is-current-toplevel ?? 'CURRENT-TOPLEVEL' !! 'is-toplevel') if $is-toplevel)
+        ((self.is-current-toplevel ?? 'CURRENT-TOPLEVEL' !! 'is-toplevel') if $is-toplevel),
+        ('enabled' if $!enabled),
     }
 
     #| Wrap an existing T::P::Grid into a T::W::Widget with proper layout

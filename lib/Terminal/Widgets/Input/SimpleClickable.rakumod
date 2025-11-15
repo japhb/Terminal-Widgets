@@ -40,15 +40,15 @@ does Terminal::Widgets::Input::Labeled {
             Ctrl-M       => 'click',  # CR/Enter
             KeypadEnter  => 'click',
 
-            Ctrl-I       => 'next-input',    # Tab
-            ShiftTab     => 'prev-input',    # Shift-Tab is weird and special
+            Ctrl-I       => 'focus-next',    # Tab
+            ShiftTab     => 'focus-prev',    # Shift-Tab is weird and special
             ;
 
         with %keymap{$event.keyname} {
             # Allow navigation always, but only click/activate if enabled
             when 'click'      { self.click if $.enabled }
-            when 'next-input' { self.focus-next-input }
-            when 'prev-input' { self.focus-prev-input }
+            when 'focus-next' { self.focus-next }
+            when 'focus-prev' { self.focus-prev }
         }
     }
 

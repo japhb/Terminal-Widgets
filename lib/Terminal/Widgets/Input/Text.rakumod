@@ -175,13 +175,13 @@ class Terminal::Widgets::Input::Text
     multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D
                               $event where *.key.defined, AtTarget) {
         my constant %handling-keymap =
-            Ctrl-I       => 'next-input',    # Tab
-            ShiftTab     => 'prev-input',    # Shift-Tab is weird and special
+            Ctrl-I       => 'focus-next',    # Tab
+            ShiftTab     => 'focus-prev',    # Shift-Tab is weird and special
         ;
 
         with %handling-keymap{$event.keyname} {
-            when 'next-input' { self.focus-next-input }
-            when 'prev-input' { self.focus-prev-input }
+            when 'focus-next' { self.focus-next }
+            when 'focus-prev' { self.focus-prev }
         }
 
         # Ignore keyboard input if disabled

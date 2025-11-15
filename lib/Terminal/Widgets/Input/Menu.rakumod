@@ -115,8 +115,8 @@ class Terminal::Widgets::Input::Menu
             CursorUp     => 'prev-item',
             CursorDown   => 'next-item',
 
-            Ctrl-I       => 'next-input',    # Tab
-            ShiftTab     => 'prev-input',    # Shift-Tab is weird and special
+            Ctrl-I       => 'focus-next',    # Tab
+            ShiftTab     => 'focus-prev',    # Shift-Tab is weird and special
             ;
 
         my $keyname = $event.keyname;
@@ -125,8 +125,8 @@ class Terminal::Widgets::Input::Menu
             when 'select'     { self.select if $.enabled }
             when 'prev-item'  { self.prev-item }
             when 'next-item'  { self.next-item }
-            when 'next-input' { self.focus-next-input }
-            when 'prev-input' { self.focus-prev-input }
+            when 'focus-next' { self.focus-next }
+            when 'focus-next' { self.focus-prev }
         }
         orwith %!hotkey{$keyname} {
             self.select($_)

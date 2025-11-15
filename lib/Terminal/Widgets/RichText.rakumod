@@ -37,8 +37,8 @@ class Terminal::Widgets::RichText
             CursorUp    => 'select-prev-line',
             CursorLeft  => 'select-prev-char',
             CursorRight => 'select-next-char',
-            Ctrl-I      => 'next-input',    # Tab
-            ShiftTab    => 'prev-input',    # Shift-Tab is weird and special
+            Ctrl-I      => 'focus-next',    # Tab
+            ShiftTab    => 'focus-prev',    # Shift-Tab is weird and special
             ;
 
         my $keyname = $event.keyname;
@@ -47,8 +47,8 @@ class Terminal::Widgets::RichText
             when 'select-prev-line' { self!select-line($!cursor-y - 1) }
             when 'select-next-char' { self!next-char }
             when 'select-prev-char' { self!prev-char }
-            when 'next-input'  { self.focus-next-input }
-            when 'prev-input'  { self.focus-prev-input }
+            when 'focus-next'       { self.focus-next }
+            when 'focus-prev'       { self.focus-prev }
         }
     }
 
