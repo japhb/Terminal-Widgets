@@ -6,6 +6,7 @@ use Terminal::LineEditor::RawTerminalInput;
 
 use Terminal::Widgets::Events;
 use Terminal::Widgets::TopLevel;
+use Terminal::Widgets::TextContent;
 use Terminal::Widgets::I18N::Locale;
 use Terminal::Widgets::ColorTheme;
 use Terminal::Widgets::ColorThemes;
@@ -189,7 +190,7 @@ class Terminal::Widgets::Terminal
     }
 
     #| Set terminal emulator window title to general TextContent
-    multi method set-window-title($title) {
+    multi method set-window-title(TextContent:D $title) {
         self.set-window-title($.locale.plain-text($title));
     }
 

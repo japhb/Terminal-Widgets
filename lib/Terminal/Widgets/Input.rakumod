@@ -3,6 +3,7 @@
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Form;
 use Terminal::Widgets::Focusable;
+use Terminal::Widgets::TextContent;
 
 
 role Terminal::Widgets::Input
@@ -56,7 +57,7 @@ does Terminal::Widgets::Focusable {
     }
 
     #| Set the hint to general TextContent
-    multi method set-hint($hint) {
+    multi method set-hint(TextContent:D $hint) {
         self.set-hint($.terminal.locale.plain-text($hint))
     }
 
