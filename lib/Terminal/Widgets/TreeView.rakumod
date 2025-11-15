@@ -228,7 +228,6 @@ class Terminal::Widgets::TreeView
         );
 
         my @lines = @dns.map: {
-            log $_.raku;
             self!dn-get-text: $_
         }
         # Ensure @lines is one line per entry.
@@ -389,9 +388,5 @@ class Terminal::Widgets::TreeView
         else {
             &!process-click($dn.orig-node, $!cursor-x - $prefix-len, 0) with &!process-click;
         }
-    }
-
-    sub log($t) {
-        "o".IO.spurt: $t ~ "\n", :append;
     }
 }

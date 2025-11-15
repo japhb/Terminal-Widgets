@@ -66,8 +66,4 @@ class Terminal::Widgets::RichText
         self.full-refresh;
         &!process-click($line-index, $x, 0) with &!process-click;
     }
-
-    sub log($t) {
-        "o".IO.spurt: $t ~ "\n", :append;
-    }
 }
