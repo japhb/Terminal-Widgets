@@ -51,6 +51,7 @@
     "Terminal::Widgets::StandardWidgetBuilder": "lib/Terminal/Widgets/StandardWidgetBuilder.rakumod",
     "Terminal::Widgets::Terminal": "lib/Terminal/Widgets/Terminal.rakumod",
     "Terminal::Widgets::TextContent": "lib/Terminal/Widgets/TextContent.rakumod",
+    "Terminal::Widgets::Themable": "lib/Terminal/Widgets/Themable.rakumod",
     "Terminal::Widgets::TopLevel": "lib/Terminal/Widgets/TopLevel.rakumod",
     "Terminal::Widgets::TreeView": "lib/Terminal/Widgets/TreeView.rakumod",
     "Terminal::Widgets::Utils": "lib/Terminal/Widgets/Utils.rakumod",
