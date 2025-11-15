@@ -113,7 +113,7 @@ class Terminal::Widgets::Input::Text
         my $x       = $layout.left-correction;
         my $y       = $layout.top-correction;
 
-        my $states  = self.current-color-states;
+        my $states  = self.current-theme-states;
         my $color   = self.current-color($states);
         my $prompt  = self.current-color(%( |$states, :prompt ));
         my $cursor  = self.current-color(%( |$states, :cursor ));

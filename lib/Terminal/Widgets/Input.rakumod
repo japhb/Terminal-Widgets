@@ -38,7 +38,7 @@ does Terminal::Widgets::Focusable {
     }
 
     #| Determine current active states affecting color choices
-    method current-color-states() {
+    method current-theme-states() {
         my $terminal = self.toplevel.terminal;
         my $active   = $!active && $terminal.ui-prefs<input-activation-flash>;
 

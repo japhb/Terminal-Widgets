@@ -80,7 +80,7 @@ role Terminal::Widgets::SpanWrappingAndHighlighting
                         @new-line.push: span($span.color, $span.text.substr(0, $pos - $x));
                     }
                     @new-line.push: span-tree(
-                        self.current-color(%( |self.current-color-states, :cursor)),
+                        self.current-color(%( |self.current-theme-states, :cursor)),
                         span($span.color, $span.text.substr($pos - $x, 1))).lines.eager[0][0];
                     if $pos - $x + 1 < $chars {
                         @new-line.push: span($span.color, $span.text.substr($pos - $x + 1));
@@ -97,7 +97,7 @@ role Terminal::Widgets::SpanWrappingAndHighlighting
         sub line($i) {
             if $i == $!cursor-y {
                 # There will only ever be one line, as we already pass in a singular line.
-                my @lines = span-tree(self.current-color(%( |self.current-color-states, :prompt )), @!lines[$i]).lines.eager;
+                my @lines = span-tree(self.current-color(%( |self.current-theme-states, :prompt )), @!lines[$i]).lines.eager;
                 if @lines {
                     my @spans = @lines[0]<>;
                     if $!show-cursor {
