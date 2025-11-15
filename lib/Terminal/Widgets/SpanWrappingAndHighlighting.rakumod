@@ -9,7 +9,7 @@ use Terminal::Widgets::Focusable;
 enum WrapStyle <NoWrap LineWrap WordWrap>;
 
 role Terminal::Widgets::SpanWrappingAndHighlighting
- does Terminal::Widgets::SpanBuffer {
+does Terminal::Widgets::SpanBuffer {
     has @.lines;
     #| For each line, in which display line does it start?
     has @!l-dl;
@@ -225,7 +225,7 @@ role Terminal::Widgets::SpanWrappingAndHighlighting
 
     method !wrap(@line) {
         given $!wrap {
-            when NoWrap { 
+            when NoWrap {
                 [@line,]
             }
             when LineWrap {
