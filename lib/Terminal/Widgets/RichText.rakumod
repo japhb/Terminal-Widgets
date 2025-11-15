@@ -17,8 +17,6 @@ class Terminal::Widgets::RichText
         # The following is a workaround of https://github.com/rakudo/rakudo/issues/5599
         $!wrap = NoWrap;
         $!wrap = $wrap if $wrap;
-
-        self.init-focusable;
     }
 
     #| Replace the contents of this RichText widget.

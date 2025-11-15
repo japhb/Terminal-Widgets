@@ -127,8 +127,6 @@ class Terminal::Widgets::TreeView
         $!wrap = NoWrap;
         $!wrap = $wrap if $wrap;
 
-        self.init-focusable;
-
         die '$root-node and &get-children can not be set both' if $root-node.defined && $get-children.defined;
 
         if !$get-children.defined && !$root-node.defined {
