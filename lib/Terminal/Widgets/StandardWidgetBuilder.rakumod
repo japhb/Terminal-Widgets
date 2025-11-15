@@ -43,6 +43,12 @@ class Terminal::Widgets::StandardWidgetBuilder {
         my $default-build := self.default-build-nodes;
 
         do given $node.WHAT {
+            # XXXX: Temporary workaround while changing content model
+            when Terminal::Widgets::Layout::PlainText {
+                my %extra = %($node.extra);
+                %extra<c> = %extra<color>:delete if %extra<color>:exists;
+                Terminal::Widgets::PlainText.new(|$geometry, |%extra)
+            }
             when $default-build {
                 $default-build{$_}.new(|$geometry, |$node.extra)
             }
