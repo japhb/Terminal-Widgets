@@ -136,9 +136,17 @@ class Terminal::Widgets::Input::Menu
     #| Handle mouse events
     multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
                               $event where !*.mouse.pressed, AtTarget) {
-        # Always focus on click, but only allow selection if enabled
+        # Take focus even if clicked on framing instead of content area
         self.toplevel.focus-on(self);
-        self.select($.top-item + $event.relative-to(self)[1]) if $.enabled;
+
+        # Only allow selection if enabled and within content area
+        if $.enabled {
+            my ($x, $y, $w, $h) = $event.relative-to-content-area(self);
+            self.select($.top-item + $y) if 0 <= $x < $w && 0 <= $y < $h;
+        }
+
+        # Refresh even if outside content area because of focus state change
+        self.full-refresh;
     }
 
     #| Handle LayoutBuilt event by updating hint and scrolling

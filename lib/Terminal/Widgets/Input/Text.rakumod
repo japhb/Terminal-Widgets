@@ -231,8 +231,21 @@ class Terminal::Widgets::Input::Text
     #| Handle mouse events
     multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
                               $event where !*.mouse.pressed, AtTarget) {
+        # Take focus even if clicked on framing instead of content area
         self.toplevel.focus-on(self);
-        # XXXX: Move cursor if enabled?  What about scroll?
+
+        # Only allow other interaction if enabled and within content area
+        if $.enabled {
+            my ($x, $y, $w, $h) = $event.relative-to-content-area(self);
+
+            if 0 <= $x < $w && 0 <= $y < $h {
+                # XXXX: Move cursor if enabled?  What about scroll?
+                # XXXX: Support for selection/copy to clipboard?
+            }
+        }
+
+        # Refresh even if outside content area because of focus state change
+        self.full-refresh;
     }
 
     #| Abort entry in progress

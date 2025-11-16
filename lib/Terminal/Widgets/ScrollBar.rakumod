@@ -142,33 +142,44 @@ class Terminal::Widgets::HScrollBar
     #  XXXX: Handle drag events
     multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
                               $event where !*.mouse.pressed, AtTarget) {
-        # Determine relative click location and bounds
-        my $layout = $.layout.computed;
-        my $x      = 0 max $event.relative-to(self)[0] - $layout.left-correction;
-        my $end    = 0 max $.w - 1 - $layout.right-correction;
+        # Take focus even if clicked on framing instead of content area
+        self.toplevel.focus-on(self);
 
-        # Handle end arrows if any
-        if $.show-end-arrows {
-            if $x == 0 {
-                self.arrow-left-scroll;
+        # If enabled and within content area, process click
+        if $.enabled {
+            my ($x, $y, $w, $h) = $event.relative-to-content-area(self);
+
+            if 0 <= $x < $w && 0 <= $y < $h {
+                my $end = $w - 1;
+
+                # Handle end arrows if any
+                if $.show-end-arrows {
+                    if $x == 0 {
+                        self.arrow-left-scroll;
+                        $.scroll-target.refresh-for-scroll;
+                        return;
+                    }
+                    elsif $x == $end {
+                        self.arrow-right-scroll;
+                        $.scroll-target.refresh-for-scroll;
+                        return;
+                    }
+                    else {
+                        $end -= 2;
+                        $x--;
+                    }
+                }
+
+                # Handle bar events
+                my $scroll = floor($.scroll-target.x-max * $x / ($end max 1));
+                $.scroll-target.set-x-scroll($scroll);
                 $.scroll-target.refresh-for-scroll;
                 return;
-            }
-            elsif $x == $end {
-                self.arrow-right-scroll;
-                $.scroll-target.refresh-for-scroll;
-                return;
-            }
-            else {
-                $end -= 2;
-                $x--;
             }
         }
 
-        # Handle bar events
-        my $scroll = floor($.scroll-target.x-max * $x / ($end max 1));
-        $.scroll-target.set-x-scroll($scroll);
-        $.scroll-target.refresh-for-scroll;
+        # Refresh even if outside content area because of focus state change
+        self.full-refresh;
     }
 }
 
@@ -260,32 +271,43 @@ class Terminal::Widgets::VScrollBar
     #  XXXX: Handle drag events
     multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
                               $event where !*.mouse.pressed, AtTarget) {
-        # Determine relative click location and bounds
-        my $layout = $.layout.computed;
-        my $y      = 0 max $event.relative-to(self)[1] - $layout.top-correction;
-        my $end    = 0 max $.h - 1 - $layout.bottom-correction;
+        # Take focus even if clicked on framing instead of content area
+        self.toplevel.focus-on(self);
 
-        # Handle end arrows if any
-        if $.show-end-arrows {
-            if $y == 0 {
-                self.arrow-up-scroll;
+        # If enabled and within content area, process click
+        if $.enabled {
+            my ($x, $y, $w, $h) = $event.relative-to-content-area(self);
+
+            if 0 <= $x < $w && 0 <= $y < $h {
+                my $end = $h - 1;
+
+                # Handle end arrows if any
+                if $.show-end-arrows {
+                    if $y == 0 {
+                        self.arrow-up-scroll;
+                        $.scroll-target.refresh-for-scroll;
+                        return;
+                    }
+                    elsif $y == $end {
+                        self.arrow-down-scroll;
+                        $.scroll-target.refresh-for-scroll;
+                        return;
+                    }
+                    else {
+                        $end -= 2;
+                        $y--;
+                    }
+                }
+
+                # Handle bar events
+                my $scroll = floor($.scroll-target.y-max * $y / ($end max 1));
+                $.scroll-target.set-y-scroll($scroll);
                 $.scroll-target.refresh-for-scroll;
                 return;
-            }
-            elsif $y == $end {
-                self.arrow-down-scroll;
-                $.scroll-target.refresh-for-scroll;
-                return;
-            }
-            else {
-                $end -= 2;
-                $y--;
             }
         }
 
-        # Handle bar events
-        my $scroll = floor($.scroll-target.y-max * $y / ($end max 1));
-        $.scroll-target.set-y-scroll($scroll);
-        $.scroll-target.refresh-for-scroll;
+        # Refresh even if outside content area because of focus state change
+        self.full-refresh;
     }
 }

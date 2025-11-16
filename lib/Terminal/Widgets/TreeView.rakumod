@@ -368,23 +368,35 @@ class Terminal::Widgets::TreeView
 
     multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
                               $event where !*.mouse.pressed, AtTarget) {
+        # Take focus even if clicked on framing instead of content area
         self.toplevel.focus-on(self);
 
-        my ($x, $y) = $event.relative-to(self);
-        my $clicked-display-line = $!first-display-line + $y;
-        my $line-index = @!dl-l[min($clicked-display-line, @!dl-l.end)];
-        $!cursor-y = $line-index;
-        my $dn = self!line-to-dn: $line-index;
-        my $rel-y = $y - @!l-dl[$line-index];
-        $x = self!display-pos-to-line-pos(@!lines[$line-index], self.x-scroll + $x, $rel-y);
-        $!cursor-x = min(self!chars-in-line(@!lines[$line-index]) - 1, $x);
+        # If enabled and within content area, move cursor and process click
+        if $.enabled {
+            my ($x, $y, $w, $h) = $event.relative-to-content-area(self);
+
+            if 0 <= $x < $w && 0 <= $y < $h {
+                my $clicked-display-line = $!first-display-line + $y;
+                my $line-index = @!dl-l[$clicked-display-line min @!dl-l.end];
+                $!cursor-y = $line-index;
+                my $dn = self!line-to-dn: $line-index;
+                my $rel-y = $y - @!l-dl[$line-index];
+
+                $x = self!display-pos-to-line-pos(@!lines[$line-index],
+                                                  self.x-scroll + $x, $rel-y);
+                $!cursor-x = $x min self!chars-in-line(@!lines[$line-index]) - 1;
+
+                my $prefix-len = duospace-width(self!dn-get-prefix($dn));
+                if $!cursor-x < $prefix-len {
+                    self!toggle-expand-dn($dn);
+                }
+                else {
+                    $_($dn.orig-node, $!cursor-x - $prefix-len, 0) with &!process-click;
+                }
+            }
+        }
+
+        # Refresh even if outside content area because of focus state change
         self.full-refresh;
-        my $prefix-len = duospace-width(self!dn-get-prefix($dn));
-        if $!cursor-x < $prefix-len {
-            self!toggle-expand-dn($dn);
-        }
-        else {
-            &!process-click($dn.orig-node, $!cursor-x - $prefix-len, 0) with &!process-click;
-        }
     }
 }
