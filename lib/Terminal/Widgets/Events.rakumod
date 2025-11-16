@@ -68,7 +68,13 @@ class TakeFocus is TargetedEvent { }
 
 #| An event that occurs at a particular screen location
 class LocalizedEvent is Event {
-    method overlaps-widget($widget --> Bool:D) { ... }
+    # Calculations relative to widget as a whole
+    method overlaps-widget($widget --> Bool:D)       { ... }
+    method relative-to($widget)                      { ... }
+
+    # Calculations relative to widget's content area
+    method overlaps-content-area($widget --> Bool:D) { ... }
+    method relative-to-content-area($widget)         { ... }
 }
 
 
@@ -89,7 +95,25 @@ class MouseEvent is LocalizedEvent {
         my $rel-x = $.mouse.x - 1 - $widget.x-offset;
         my $rel-y = $.mouse.y - 1 - $widget.y-offset;
 
-        ($rel-x, $rel-y)
+        ($rel-x, $rel-y, $widget.w, $widget.h)
+    }
+
+    #| Determine whether this mouse event overlapped a particular widget
+    method overlaps-content-area($widget --> Bool:D) {
+        my $rect  = $widget.content-rect;
+        my $rel-x = $.mouse.x - 1 - $widget.x-offset - $rect[0];
+        my $rel-y = $.mouse.y - 1 - $widget.y-offset - $rect[1];
+
+        0 <= $rel-x < $rect[2] && 0 <= $rel-y < $rect[3]
+    }
+
+    #| Compute coordinates relative to a given widget's local origin
+    method relative-to-content-area($widget) {
+        my $rect  = $widget.content-rect;
+        my $rel-x = $.mouse.x - 1 - $widget.x-offset - $rect[0];
+        my $rel-y = $.mouse.y - 1 - $widget.y-offset - $rect[1];
+
+        ($rel-x, $rel-y, $rect[2], $rect[3])
     }
 }
 
