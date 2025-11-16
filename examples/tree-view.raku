@@ -11,7 +11,7 @@ class TreeViewDemo is TopLevel {
                               tv-node('One',
                                       tv-node('One One',
                                               tv-node('One One One'),
-                                              tv-node('One One Two'),
+                                              tv-node('One One Two - disestablishmentarianism'),
                                               tv-node('One One Three'),
                                               tv-node('One One Four'),
                                               tv-node('One One Five'),
