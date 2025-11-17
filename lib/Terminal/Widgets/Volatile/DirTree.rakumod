@@ -13,6 +13,13 @@ role Node {
         my $short-name = self.^name.subst('Terminal::Widgets::Volatile::', '');
         $short-name ~ ':' ~ $!path.path
     }
+
+    #| Find root node via parent chain, runtime is O(depth)
+    method root(::?CLASS:D:) {
+        my $root = self;
+        $root .= parent while $root.parent;
+        $root
+    }
 }
 
 class Dev does Node {
