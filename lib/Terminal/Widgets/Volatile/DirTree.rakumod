@@ -48,7 +48,11 @@ class Dir does Node {
         # XXXX: For now, just fake real caching and be lazy
         if $refresh || !$!cache-time {
             $!cache-time = now;
-            @!children   = $!path.dir.map: {
+
+            # Directory read may fail due to insufficient permissions
+            try my @entries = $!path.dir;
+
+            @!children = @entries.map: {
                 .d   ?? Dir.new(    parent => self, path => $_) !!
                 .l   ?? SymLink.new(parent => self, path => $_, target => .readlink) !!
                 .f   ?? File.new(   parent => self, path => $_) !!
