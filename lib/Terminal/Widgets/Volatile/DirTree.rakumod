@@ -10,6 +10,12 @@ constant VTree = Terminal::Widgets::Volatile::Tree;
 role PathContainer {
     has IO::Path:D() $.path is required;
 
+    #| Short name: just the basename
+    method short-name() { $!path.basename }
+
+    #| Long name: full resolved path
+    method long-name() { $!path.resolve }
+
     #| Simplified gist that does not traverse parents, and includes path
     method gist(::?CLASS:D:) {
         self.gist-name ~ ':' ~ $!path.path

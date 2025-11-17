@@ -7,7 +7,13 @@ unit module Terminal::Widgets::Volatile::Tree;
 role Node {
     has Node $.parent;
 
-    #| Shortened name for gists
+    #| REQUIRED: Short name for display, usually unique within siblings
+    method short-name() { ... }
+
+    #| REQUIRED: Long name for display, usually unique within entire tree
+    method long-name() { ... }
+
+    #| Shortened class name for gists
     method gist-name() {
         self.^name.subst('Terminal::Widgets::', '')
     }
