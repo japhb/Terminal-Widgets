@@ -54,14 +54,18 @@ class Dir does Parent {
             # Directory read may fail due to insufficient permissions
             try my @entries = $!path.dir;
 
-            @!children = @entries.map: {
-                .d   ?? Dir.new(    parent => self, path => $_) !!
-                .l   ?? SymLink.new(parent => self, path => $_, target => .readlink) !!
-                .f   ?? File.new(   parent => self, path => $_) !!
-                .dev ?? Dev.new(    parent => self, path => $_) !!
-                        Misc.new(   parent => self, path => $_) ;
-            };
+            @!children = @entries.map({ dir-tree-node($_, parent => self) });
         }
         @!children
+    }
+}
+
+sub dir-tree-node(IO::Path:D() $path, Node :$parent) is export {
+    with $path {
+        .d   ?? Dir.new(    :$parent, path => $_) !!
+        .l   ?? SymLink.new(:$parent, path => $_, target => .readlink) !!
+        .f   ?? File.new(   :$parent, path => $_) !!
+        .dev ?? Dev.new(    :$parent, path => $_) !!
+                Misc.new(   :$parent, path => $_) ;
     }
 }
