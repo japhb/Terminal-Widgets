@@ -59,6 +59,7 @@
     "Terminal::Widgets::Viewer::Log": "lib/Terminal/Widgets/Viewer/Log.rakumod",
     "Terminal::Widgets::Viz::SmokeChart": "lib/Terminal/Widgets/Viz/SmokeChart.rakumod",
     "Terminal::Widgets::Volatile::DirTree": "lib/Terminal/Widgets/Volatile/DirTree.rakumod",
+    "Terminal::Widgets::Volatile::Tree": "lib/Terminal/Widgets/Volatile/Tree.rakumod",
     "Terminal::Widgets::Widget": "lib/Terminal/Widgets/Widget.rakumod"
   },
   "resources": [
