@@ -4,7 +4,7 @@ unit module Terminal::Widgets::Volatile::DirTree;
 
 use Terminal::Widgets::Volatile::Tree;
 
-constant Tree = Terminal::Widgets::Volatile::Tree;
+constant VTree = Terminal::Widgets::Volatile::Tree;
 
 
 role PathContainer {
@@ -16,9 +16,9 @@ role PathContainer {
     }
 }
 
-role Node   does Tree::Node   does PathContainer { }
-role Leaf   does Tree::Leaf   does PathContainer { }
-role Parent does Tree::Parent does PathContainer { }
+role Node   does VTree::Node   does PathContainer { }
+role Leaf   does VTree::Leaf   does PathContainer { }
+role Parent does VTree::Parent does PathContainer { }
 
 class Misc does Node { }
 class File does Leaf { }
@@ -35,8 +35,8 @@ class SymLink does Node {
 }
 
 class Dir does Parent {
-    has Tree::Node:D @!children   is built;
-    has Instant:D    $.cache-time .= from-posix-nanos(0);
+    has VTree::Node:D @!children   is built;
+    has Instant:D     $.cache-time .= from-posix-nanos(0);
 
 
     #| Lazily find (and cache) children, forcing a refresh if requested
