@@ -6,6 +6,7 @@ use Terminal::Widgets::SpanStyle;
 use Terminal::Widgets::Viewer::Tree;
 
 
+#| Tree viewer class specialized for directory trees, with dircolors awareness
 class Terminal::Widgets::Viewer::DirTree
    is Terminal::Widgets::Viewer::Tree {
     has Color::DirColors:D $.dir-colors .= new-from-env;
