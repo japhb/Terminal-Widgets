@@ -2,6 +2,7 @@
 
 use Terminal::Widgets::Simple;
 use Terminal::Widgets::Events;
+use Terminal::Widgets::SpanStyle;
 use Terminal::Widgets::Volatile::DirTree;
 
 #| A top level UI container based on Terminal::Widgets::Simple::TopLevel
@@ -13,20 +14,50 @@ class DirTreeDemo is TopLevel {
             .button(label => 'Quit', process-input => { $.terminal.quit }),
             .divider(line-style => 'light1', style => %(set-h => 1)),
             .node(
-                .with-scrollbars(
-                    .dir-tree-viewer(id => 'dir-tree', style => %(set-w => 15)),
+                .with-scrollbars(style => %( :!minimize-w ),
+                    .dir-tree-viewer(id => 'dir-tree',
+                                     process-click => -> $node {
+                                         self.show-details($node)
+                                     }),
                 ),
-                .spacer(),
+                .divider(line-style => 'light1', style => %(set-w => 1)),
+                .with-scrollbars(style => %( :!minimize-w, share-w => 2 ),
+                    .log-viewer(id => 'details'),
+                ),
             ),
-            .divider(line-style => 'light1', style => %(set-h => 1)),
-            .with-scrollbars(.log-viewer(id => 'click-log')),
         }
     }
 
+    method show-details($node) {
+        my $data = $node.data;
+        my $path = $data.path;
+
+        my $details = %.by-id<details>;
+        $details.add-entry("\n") if $details.log;
+
+        my sub format-line(Str:D $label, Str:D() $value) {
+            span-tree('', span('bold yellow', $label),
+                          span('', ' ' x 10 - $label.chars),
+                          span('', $value))
+        }
+
+        $details.add-entry(format-line('Path',     $path));
+        $details.add-entry(format-line('Target',   $path.readlink)) if $path.l;
+        $details.add-entry(format-line('Mode',     $path.mode));
+        $details.add-entry(format-line('User',     $path.user));
+        $details.add-entry(format-line('Group',    $path.group));
+        $details.add-entry(format-line('Inode',    $path.inode));
+        $details.add-entry(format-line('Size',     $path.s));
+        $details.add-entry(format-line('Created',  $path.created.DateTime));
+        $details.add-entry(format-line('Changed',  $path.changed.DateTime));
+        $details.add-entry(format-line('Modified', $path.modified.DateTime));
+        $details.add-entry(format-line('Accessed', $path.accessed.DateTime));
+
+        $details.refresh-for-scroll;
+    }
+
     multi method handle-event(Terminal::Widgets::Events::LayoutBuilt:D, BubbleUp) {
-        %.by-id<dir-tree>.set-root(dir-tree-node('/'));
-        %.by-id<dir-tree>.display-root.set-expanded(True);
-        %.by-id<dir-tree>.display-root.children.first(*.data.short-name eq 'boot').set-expanded(True);
+        %.by-id<dir-tree>.set-root(dir-tree-node($*HOME || '/'));
     }
 }
 
