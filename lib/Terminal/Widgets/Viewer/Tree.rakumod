@@ -66,6 +66,7 @@ class Terminal::Widgets::Viewer::Tree
         $!display-root = DisplayParent.new(data => $!root, depth => 0);
     }
 
+    #| Provide a span line chunk for SpanBuffer display
     method span-line-chunk(UInt:D $start, UInt:D $wanted) {
         my @lines = self.node-lines($!display-root);
         my $count = @lines.elems;
@@ -79,13 +80,20 @@ class Terminal::Widgets::Viewer::Tree
 
     #| Displayable lines for a given node
     method node-lines($node) {
-        my $is-parent  = $node ~~ DisplayParent;
+        my $is-parent  = $node ~~ DisplayParent && $node.expanded;
         my $first-line = [ self.prefix-string($node),
                            self.node-content($node) ];
 
         $is-parent ?? ($first-line,
                        $node.children.map({ self.node-lines($_).Slip })).flat
                    !! ($first-line, )
+    }
+
+    #| Flat list of displayable nodes starting at a given node
+    method flattened-nodes($node) {
+        my $is-parent = $node ~~ DisplayParent && $node.expanded;
+        $is-parent ?? ($node, |$node.children.map({ self.flattened-nodes($_).Slip }))
+                   !! ($node, )
     }
 
     #| Prefix for first line of a given node
@@ -111,8 +119,7 @@ class Terminal::Widgets::Viewer::Tree
     }
 
     method line-to-display-node($line) {
-        # XXXX: TEMP HACK
-        $.display-root
+        self.flattened-nodes($.display-root)[$line]
     }
 
     multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
@@ -134,7 +141,9 @@ class Terminal::Widgets::Viewer::Tree
                     self.refresh-for-scroll;
                 }
 
-                $_($node) with &!process-click;
+                if $node {
+                    $_($node) with &!process-click;
+                }
             }
         }
 
