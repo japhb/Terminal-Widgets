@@ -60,10 +60,10 @@ class Dir does Parent {
     }
 }
 
-sub dir-tree-node(IO::Path:D() $path, Node :$parent) is export {
+sub dir-tree-node(IO::Path:D() $path, VTree::Node :$parent) is export {
     with $path {
-        .d   ?? Dir.new(    :$parent, path => $_) !!
         .l   ?? SymLink.new(:$parent, path => $_, target => .readlink) !!
+        .d   ?? Dir.new(    :$parent, path => $_) !!
         .f   ?? File.new(   :$parent, path => $_) !!
         .dev ?? Dev.new(    :$parent, path => $_) !!
                 Misc.new(   :$parent, path => $_) ;

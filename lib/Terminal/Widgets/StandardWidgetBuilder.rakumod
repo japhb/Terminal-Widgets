@@ -12,6 +12,8 @@ use Terminal::Widgets::Input::RadioButton;
 use Terminal::Widgets::Input::ToggleButton;
 use Terminal::Widgets::Input::Text;
 use Terminal::Widgets::Viewer::Log;
+use Terminal::Widgets::Viewer::Tree;
+use Terminal::Widgets::Viewer::DirTree;
 use Terminal::Widgets::Viz::SmokeChart;
 
 
@@ -33,6 +35,8 @@ class Terminal::Widgets::StandardWidgetBuilder {
             (Terminal::Widgets::Layout::ToggleButton) => Terminal::Widgets::Input::ToggleButton,
             (Terminal::Widgets::Layout::TextInput)    => Terminal::Widgets::Input::Text,
             (Terminal::Widgets::Layout::LogViewer)    => Terminal::Widgets::Viewer::Log,
+            (Terminal::Widgets::Layout::TreeViewer)   => Terminal::Widgets::Viewer::Tree,
+            (Terminal::Widgets::Layout::DirTreeViewer) => Terminal::Widgets::Viewer::DirTree,
             (Terminal::Widgets::Layout::SmokeChart)   => Terminal::Widgets::Viz::SmokeChart,
         ;
     }

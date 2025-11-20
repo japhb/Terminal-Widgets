@@ -51,7 +51,12 @@ use Terminal::Widgets::Input::Text;
 
 use Terminal::Widgets::Progress::Tracker;
 
+use Terminal::Widgets::Volatile::Tree;
+use Terminal::Widgets::Volatile::DirTree;
+
 use Terminal::Widgets::Viewer::Log;
+use Terminal::Widgets::Viewer::Tree;
+use Terminal::Widgets::Viewer::DirTree;
 
 use Terminal::Widgets::Viz::SmokeChart;
 

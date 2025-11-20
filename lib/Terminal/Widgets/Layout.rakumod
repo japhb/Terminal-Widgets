@@ -433,6 +433,12 @@ class TreeView is Leaf { }
 #| A multi-line auto-scrolling log viewer
 class LogViewer is Leaf { }
 
+#| A navigable tree viewer widget
+class TreeViewer is Leaf { }
+
+#| A navigable tree viewer widget, specialized for directory trees
+class DirTreeViewer is TreeViewer { }
+
 #| A simple smoke chart visualization
 class SmokeChart is Leaf { }
 
@@ -574,11 +580,15 @@ class Builder {
     method divider(|c)       { self.build-leaf(Divider,      |c) }
     method hscroll(|c)       { self.build-leaf(HScrollBar,   |c) }
     method vscroll(|c)       { self.build-leaf(VScrollBar,   |c) }
+    method plain-text(|c)    { self.build-leaf(PlainText,    |c) }
+    method smoke-chart(|c)   { self.build-leaf(SmokeChart,   |c) }
+
+    # Viewer leaf nodes (no children ever)
     method rich-text(|c)     { self.build-leaf(RichText,     |c) }
     method tree-view(|c)     { self.build-leaf(TreeView,     |c) }
     method log-viewer(|c)    { self.build-leaf(LogViewer,    |c) }
-    method plain-text(|c)    { self.build-leaf(PlainText,    |c) }
-    method smoke-chart(|c)   { self.build-leaf(SmokeChart,   |c) }
+    method tree-viewer(|c)   { self.build-leaf(TreeViewer,   |c) }
+    method dir-tree-viewer(|c) { self.build-leaf(DirTreeViewer, |c) }
 
     # Input leaf nodes (no children ever)
     method menu(|c)          { self.build-leaf(Menu,         |c) }
