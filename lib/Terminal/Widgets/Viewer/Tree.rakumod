@@ -1,7 +1,8 @@
 # ABSTRACT: A viewer/browser for a Volatile::Tree
 
-use Terminal::Widgets::Widget;
-use Terminal::Widgets::Scrollable;
+use Terminal::Widgets::Events;
+use Terminal::Widgets::SpanStyle;
+use Terminal::Widgets::SpanBuffer;
 use Terminal::Widgets::Focusable;
 use Terminal::Widgets::Volatile::Tree;
 
@@ -53,11 +54,11 @@ my class DisplayParent does DisplayNode {
 
 
 class Terminal::Widgets::Viewer::Tree
-   is Terminal::Widgets::Widget
- does Terminal::Widgets::Scrollable
+ does Terminal::Widgets::SpanBuffer
  does Terminal::Widgets::Focusable {
     has VTree::Node   $.root;
     has DisplayParent $.display-root is built(False);
+    has               &.process-click;
 
     # Keep root and display-root in sync
     method set-root(VTree::Node:D $!root) { self!remap-root }
@@ -65,16 +66,22 @@ class Terminal::Widgets::Viewer::Tree
         $!display-root = DisplayParent.new(data => $!root, depth => 0);
     }
 
-    method draw-content() {
+    method span-line-chunk(UInt:D $start, UInt:D $wanted) {
         my @lines = self.node-lines($!display-root);
-        .note for @lines;
+        my $count = @lines.elems;
+        my $end   = $start + $wanted - 1;
+
+        self.set-y-max($count);
+
+        $count > $end ?? @lines[$start .. $end]
+                      !! @lines[$start .. *]
     }
 
     #| Displayable lines for a given node
     method node-lines($node) {
         my $is-parent  = $node ~~ DisplayParent;
-        my $first-line = self.prefix-string($node)
-                       ~ self.node-content($node);
+        my $first-line = [ self.prefix-string($node),
+                           self.node-content($node) ];
 
         $is-parent ?? ($first-line,
                        $node.children.map({ self.node-lines($_).Slip })).flat
@@ -83,14 +90,14 @@ class Terminal::Widgets::Viewer::Tree
 
     #| Prefix for first line of a given node
     method prefix-string($node) {
-          '  ' x $node.depth
-        ~ ($node ~~ DisplayParent ?? self.arrows()[+$node.expanded] !! ' ')
-        ~ ' '
+        span('',   '  ' x $node.depth
+                 ~ ($node ~~ DisplayParent ?? self.arrows()[+$node.expanded] !! ' ')
+                 ~ ' ')
     }
 
     #| Displayed content for a given node itself, not including children
     method node-content($node) {
-        $node.data.short-name
+        span('', $node.data.short-name)
     }
 
     #| Arrow glyphs for given terminal capabilities
@@ -101,5 +108,37 @@ class Terminal::Widgets::Viewer::Tree
             Uni7  => « ⮞ ⮟ »;
 
         $caps.best-symbol-choice(%arrows)
+    }
+
+    method line-to-display-node($line) {
+        # XXXX: TEMP HACK
+        $.display-root
+    }
+
+    multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
+                              $event where !*.mouse.pressed, AtTarget) {
+        # Take focus even if clicked on framing instead of content area
+        self.toplevel.focus-on(self);
+
+        # If enabled and within content area, move cursor and process click
+        if $.enabled {
+            my ($x, $y, $w, $h) = $event.relative-to-content-area(self);
+
+            if 0 <= $x < $w && 0 <= $y < $h {
+                my $clicked-line = $.y-scroll + $y;
+                my $node = self.line-to-display-node($clicked-line);
+
+                if $node ~~ DisplayParent {
+                    $node.toggle-expanded;
+                    self.set-y-max($.display-root.branch-size);
+                    self.refresh-for-scroll;
+                }
+
+                $_($node) with &!process-click;
+            }
+        }
+
+        # Refresh even if outside content area because of focus state change
+        self.full-refresh;
     }
 }

@@ -2,6 +2,7 @@
 
 use Color::DirColors;
 
+use Terminal::Widgets::SpanStyle;
 use Terminal::Widgets::Viewer::Tree;
 
 
@@ -11,8 +12,7 @@ class Terminal::Widgets::Viewer::DirTree
 
     #| Displayed content for a given node itself, not including children
     method node-content($node) {
-        # XXXX: TEMP HACK
-        my $color = $.dir-colors.sgr-for($node.data.path);
-        $color ~ $node.data.short-name ~ "\e[0m"
+        my $color = $.dir-colors.color-for($node.data.path);
+        span($color, $node.data.short-name)
     }
 }
