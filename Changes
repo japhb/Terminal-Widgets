@@ -1,6 +1,10 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Packaging]
+  - Bump T::C and C::DC dependencies to get new SGR attr support, and thus
+    more complete support for GNU dircolors in Viewer::DirTree
+
 
 0.2.1  2025-11-15T13:19:52-08:00
   [Bug Fixes]
