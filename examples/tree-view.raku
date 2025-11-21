@@ -52,7 +52,7 @@ class TreeViewDemo is TopLevel {
             ),
             .divider(line-style => 'light1', style => %(set-h => 1)),
             .node(
-                .with-scrollbars(
+                .with-scrollbars(style => (:minimize-w),
                     .tree-view(id => 'tree', style => %(set-w => 15),
                                process-click => -> $id, $x, $y {
                                       my $click-log = %.by-id<click-log>;

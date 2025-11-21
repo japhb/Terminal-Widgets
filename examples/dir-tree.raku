@@ -14,14 +14,14 @@ class DirTreeDemo is TopLevel {
             .button(label => 'Quit', process-input => { $.terminal.quit }),
             .divider(line-style => 'light1', style => %(set-h => 1)),
             .node(
-                .with-scrollbars(style => %( :!minimize-w ),
+                .with-scrollbars(
                     .dir-tree-viewer(id => 'dir-tree',
                                      process-click => -> $node {
                                          self.show-details($node)
                                      }),
                 ),
                 .divider(line-style => 'light1', style => %(set-w => 1)),
-                .with-scrollbars(style => %( :!minimize-w, share-w => 2 ),
+                .with-scrollbars(style => %( share-w => 2 ),
                     .log-viewer(id => 'details'),
                 ),
             ),

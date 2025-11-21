@@ -560,8 +560,7 @@ class Builder {
             // die "Must specify a string id for a scrollable to add scrollbars";
 
         with self {
-            .build-node(WithScrollbars, :vertical,
-                        style => %(:minimize-w, |%style),
+            .build-node(WithScrollbars, :vertical, :%style,
                         .node(
                             $scrollable,
                             .vscroll(:$scroll-target),
