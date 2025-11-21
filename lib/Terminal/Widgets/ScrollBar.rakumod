@@ -101,17 +101,28 @@ class Terminal::Widgets::HScrollBar
         $right    += $layout.left-correction + $.show-end-arrows;
         $left     += $layout.left-correction + $.show-end-arrows;
 
+        # Fade bar if unneeded (everything visible, scroll = 0)
+        my $needed   = $scroll || $end < $max;
+        my $g-bar    = $needed ?? %!glyphs<bar>
+                               !! $.grid.cell(%!glyphs<bar>,    'faint');
+        my $g-handle = $needed ?? %!glyphs<handle>
+                               !! $.grid.cell(%!glyphs<handle>, 'faint');
+        my $g-left   = $needed ?? %!glyphs<left>
+                               !! $.grid.cell(%!glyphs<left>,   'faint');
+        my $g-right  = $needed ?? %!glyphs<right>
+                               !! $.grid.cell(%!glyphs<right>,  'faint');
+
         # Actually draw updated bar and handle
-        my $y      =           $layout.top-correction;
-        my $x1     =           $layout.left-correction  + $.show-end-arrows;
-        my $x2     = $.w - 1 - $layout.right-correction - $.show-end-arrows;
-        $.grid.change-cell($_, $y, %!glyphs<bar>)    for $x1   .. $x2;
-        $.grid.change-cell($_, $y, %!glyphs<handle>) for $left .. $right;
+        my $y  =           $layout.top-correction;
+        my $x1 =           $layout.left-correction  + $.show-end-arrows;
+        my $x2 = $.w - 1 - $layout.right-correction - $.show-end-arrows;
+        $.grid.change-cell($_, $y, $g-bar)    for $x1   .. $x2;
+        $.grid.change-cell($_, $y, $g-handle) for $left .. $right;
 
         # Draw optional end arrows
         if $.show-end-arrows {
-            $.grid.change-cell($x1 - 1, $y, %!glyphs<left>);
-            $.grid.change-cell($x2 + 1, $y, %!glyphs<right>);
+            $.grid.change-cell($x1 - 1, $y, $g-left);
+            $.grid.change-cell($x2 + 1, $y, $g-right);
         }
     }
 
@@ -230,17 +241,28 @@ class Terminal::Widgets::VScrollBar
         $bottom   += $layout.top-correction + $.show-end-arrows;
         $top      += $layout.top-correction + $.show-end-arrows;
 
+        # Fade bar if unneeded (everything visible, scroll = 0)
+        my $needed   = $scroll || $end < $max;
+        my $g-bar    = $needed ?? %!glyphs<bar>
+                               !! $.grid.cell(%!glyphs<bar>,    'faint');
+        my $g-handle = $needed ?? %!glyphs<handle>
+                               !! $.grid.cell(%!glyphs<handle>, 'faint');
+        my $g-up     = $needed ?? %!glyphs<up>
+                               !! $.grid.cell(%!glyphs<up>,     'faint');
+        my $g-down   = $needed ?? %!glyphs<down>
+                               !! $.grid.cell(%!glyphs<down>,   'faint');
+
         # Actually draw updated bar and handle
         my $x      =           $layout.left-correction;
         my $y1     =           $layout.top-correction    + $.show-end-arrows;
         my $y2     = $.h - 1 - $layout.bottom-correction - $.show-end-arrows;
-        $.grid.change-cell($x, $_, %!glyphs<bar>)    for $y1  .. $y2;
-        $.grid.change-cell($x, $_, %!glyphs<handle>) for $top .. $bottom;
+        $.grid.change-cell($x, $_, $g-bar)    for $y1  .. $y2;
+        $.grid.change-cell($x, $_, $g-handle) for $top .. $bottom;
 
         # Draw optional end arrows
         if $.show-end-arrows {
-            $.grid.change-cell($x, $y1 - 1, %!glyphs<up>);
-            $.grid.change-cell($x, $y2 + 1, %!glyphs<down>);
+            $.grid.change-cell($x, $y1 - 1, $g-up);
+            $.grid.change-cell($x, $y2 + 1, $g-down);
         }
     }
 
