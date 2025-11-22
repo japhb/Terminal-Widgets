@@ -287,6 +287,10 @@ class Terminal::Widgets::Viewer::Tree
 
                 self.select-node($node);
                 self.toggle-node-expanded($node);
+
+                # Skip final full-refresh, since toggle-node-expanded will
+                # already do a refresh-for-scroll, which does a full-refresh
+                return;
             }
         }
 
