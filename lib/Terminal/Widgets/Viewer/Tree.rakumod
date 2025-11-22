@@ -287,10 +287,6 @@ class Terminal::Widgets::Viewer::Tree
 
                 self.select-node($node);
                 self.toggle-node-expanded($node);
-
-                if $node {
-                    $_($node) with &!process-click;
-                }
             }
         }
 
