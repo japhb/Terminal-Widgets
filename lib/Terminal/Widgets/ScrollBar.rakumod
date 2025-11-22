@@ -2,13 +2,17 @@
 
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Widget;
+use Terminal::Widgets::Focusable;
+use Terminal::Widgets::Themable;
 use Terminal::Widgets::Scrollable;
 
 subset ScrollTarget where Str | Terminal::Widgets::Scrollable;
 
 
 #| Role for scrollbars of any orientation
-role Terminal::Widgets::Scrollbar {
+role Terminal::Widgets::Scrollbar
+does Terminal::Widgets::Themable
+does Terminal::Widgets::Focusable {
     has ScrollTarget:D $.scroll-target is required;
 
     has Bool:D $.show-end-arrows      = True;
@@ -101,16 +105,15 @@ class Terminal::Widgets::HScrollBar
         $right    += $layout.left-correction + $.show-end-arrows;
         $left     += $layout.left-correction + $.show-end-arrows;
 
-        # Fade bar if unneeded (everything visible, scroll = 0)
+        # Get current color according to theme states, fading the
+        # scrollbar if it's unneeded (everything visible, scroll = 0)
         my $needed   = $scroll || $end < $max;
-        my $g-bar    = $needed ?? %!glyphs<bar>
-                               !! $.grid.cell(%!glyphs<bar>,    'faint');
-        my $g-handle = $needed ?? %!glyphs<handle>
-                               !! $.grid.cell(%!glyphs<handle>, 'faint');
-        my $g-left   = $needed ?? %!glyphs<left>
-                               !! $.grid.cell(%!glyphs<left>,   'faint');
-        my $g-right  = $needed ?? %!glyphs<right>
-                               !! $.grid.cell(%!glyphs<right>,  'faint');
+        my $color    = self.current-color;
+           $color   ~= ' faint' unless $needed;
+        my $g-bar    = $.grid.cell(%!glyphs<bar>,    $color);
+        my $g-handle = $.grid.cell(%!glyphs<handle>, $color);
+        my $g-left   = $.grid.cell(%!glyphs<left>,   $color);
+        my $g-right  = $.grid.cell(%!glyphs<right>,  $color);
 
         # Actually draw updated bar and handle
         my $y  =           $layout.top-correction;
@@ -241,16 +244,15 @@ class Terminal::Widgets::VScrollBar
         $bottom   += $layout.top-correction + $.show-end-arrows;
         $top      += $layout.top-correction + $.show-end-arrows;
 
-        # Fade bar if unneeded (everything visible, scroll = 0)
+        # Get current color according to theme states, fading the
+        # scrollbar if it's unneeded (everything visible, scroll = 0)
         my $needed   = $scroll || $end < $max;
-        my $g-bar    = $needed ?? %!glyphs<bar>
-                               !! $.grid.cell(%!glyphs<bar>,    'faint');
-        my $g-handle = $needed ?? %!glyphs<handle>
-                               !! $.grid.cell(%!glyphs<handle>, 'faint');
-        my $g-up     = $needed ?? %!glyphs<up>
-                               !! $.grid.cell(%!glyphs<up>,     'faint');
-        my $g-down   = $needed ?? %!glyphs<down>
-                               !! $.grid.cell(%!glyphs<down>,   'faint');
+        my $color    = self.current-color;
+           $color   ~= ' faint' unless $needed;
+        my $g-bar    = $.grid.cell(%!glyphs<bar>,    $color);
+        my $g-handle = $.grid.cell(%!glyphs<handle>, $color);
+        my $g-up     = $.grid.cell(%!glyphs<up>,     $color);
+        my $g-down   = $.grid.cell(%!glyphs<down>,   $color);
 
         # Actually draw updated bar and handle
         my $x      =           $layout.left-correction;
