@@ -58,6 +58,7 @@ class Terminal::Widgets::Viewer::Tree
  does Terminal::Widgets::Focusable {
     has VTree::Node   $.root;
     has DisplayParent $.display-root is built(False);
+    has DisplayNode   $.current-node is built(False);
     has               &.process-click;
 
     has @!flat-node-cache;
@@ -97,6 +98,7 @@ class Terminal::Widgets::Viewer::Tree
     method set-root(VTree::Node:D $!root) { self!remap-root }
     method !remap-root() {
         $!display-root = DisplayParent.new(data => $!root, depth => 0);
+        $!current-node = $!display-root;
         self.clear-caches;
     }
 
@@ -152,8 +154,101 @@ class Terminal::Widgets::Viewer::Tree
         $caps.best-symbol-choice(%arrows)
     }
 
-    method line-to-display-node($line) {
+    method line-to-display-node(UInt:D $line) {
         self.flat-node-cache[$line]
+    }
+
+    method display-node-to-line($node) {
+        self.flat-node-cache.first(* === $node, :k)
+    }
+
+    method select-node($node) {
+        $!current-node = $node;
+        self.ensure-parents-expanded($node);
+        $_($node) with &!process-click;
+
+        # XXXX: Ensure visible?
+    }
+
+    method select-prev-node() {
+        my $line = self.display-node-to-line($!current-node);
+        return unless $line;
+
+        if self.line-to-display-node($line - 1) -> $node {
+            self.select-node($node);
+            self.ensure-y-span-visible($line - 1, $line);
+            self.refresh-for-scroll;
+        }
+    }
+
+    method select-next-node() {
+        my $line = self.display-node-to-line($!current-node);
+        return unless $line.defined;
+
+        if self.line-to-display-node($line + 1) -> $node {
+            self.select-node($node);
+            self.ensure-y-span-visible($line, $line + 1);
+            self.refresh-for-scroll;
+        }
+    }
+
+    method refresh-for-expand-change() {
+        self.clear-caches;
+        self.fix-scroll-maxes;
+        self.refresh-for-scroll;
+    }
+
+    method ensure-parents-expanded($node) {
+        my $parent  = $node.parent;
+        my $changed = False;
+
+        while $parent {
+            unless $parent.expanded {
+                $parent.set-expanded(True);
+                $changed = True;
+            }
+            $parent .= parent;
+        }
+
+        self.refresh-for-expand-change if $changed;
+    }
+
+    method set-node-expanded($node, Bool:D $expanded = True) {
+        if $node ~~ DisplayParent && $node.expanded != $expanded {
+            $node.set-expanded($expanded);
+            self.refresh-for-expand-change;
+        }
+    }
+
+    method toggle-node-expanded($node) {
+        if $node ~~ DisplayParent {
+            $node.toggle-expanded;
+            self.refresh-for-expand-change;
+        }
+    }
+
+    multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D
+                              $event where *.key.defined, AtTarget) {
+        my constant %keymap =
+            CursorDown  => 'node-next',
+            CursorUp    => 'node-prev',
+            CursorRight => 'node-expand',
+            CursorLeft  => 'node-collapse',
+            Ctrl-M      => 'node-toggle',   # Enter
+            Ctrl-I      => 'focus-next',    # Tab
+            ShiftTab    => 'focus-prev',    # Shift-Tab is weird and special
+            ;
+
+        my $keyname = $event.keyname;
+        with %keymap{$keyname} {
+            when 'node-next'     { self.select-next-node }
+            when 'node-prev'     { self.select-prev-node }
+            when 'node-expand'   { self.set-node-expanded($.current-node, True)  }
+            when 'node-collapse' { self.set-node-expanded($.current-node, False) }
+            when 'node-toggle'   { self.toggle-node-expanded($.current-node)     }
+            when 'focus-next'    { self.focus-next }
+            when 'focus-prev'    { self.focus-prev }
+        }
     }
 
     multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
@@ -169,12 +264,8 @@ class Terminal::Widgets::Viewer::Tree
                 my $clicked-line = $.y-scroll + $y;
                 my $node = self.line-to-display-node($clicked-line);
 
-                if $node ~~ DisplayParent {
-                    $node.toggle-expanded;
-                    self.clear-caches;
-                    self.fix-scroll-maxes;
-                    self.refresh-for-scroll;
-                }
+                self.select-node($node);
+                self.toggle-node-expanded($node);
 
                 if $node {
                     $_($node) with &!process-click;
