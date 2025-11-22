@@ -60,19 +60,54 @@ class Terminal::Widgets::Viewer::Tree
     has DisplayParent $.display-root is built(False);
     has               &.process-click;
 
+    has @!flat-node-cache;
+    has @!flat-line-cache;
+    has $!max-line-width;
+
+    # Auto-cache flattened nodes and displayable lines
+    method flat-node-cache() {
+        @!flat-node-cache ||= self.flattened-nodes($!display-root);
+    }
+    method flat-line-cache() {
+        @!flat-line-cache ||= self.node-lines($!display-root);
+    }
+    method max-line-width() {
+        $!max-line-width  ||= do {
+            # my $locale = self.terminal.locale;
+            # self.flat-line-cache.map({ $locale.width($_) }).max
+
+            # XXXX: HACK while refactoring content model
+            use Text::MiscUtils::Layout;
+            self.flat-line-cache.map({ .map({ duospace-width(.text) }).sum }).max
+        }
+    }
+    method clear-caches() {
+        @!flat-node-cache = Empty;
+        @!flat-line-cache = Empty;
+        $!max-line-width  = 0;
+    }
+
+    # Fix x-max and y-max based on current display state
+    method fix-scroll-maxes() {
+        self.set-x-max(self.max-line-width);
+        self.set-y-max($.display-root.branch-size);
+        .note for $.x-max, $.y-max;
+    }
+
     # Keep root and display-root in sync
     method set-root(VTree::Node:D $!root) { self!remap-root }
     method !remap-root() {
         $!display-root = DisplayParent.new(data => $!root, depth => 0);
+        self.clear-caches;
     }
 
     #| Provide a span line chunk for SpanBuffer display
     method span-line-chunk(UInt:D $start, UInt:D $wanted) {
-        my @lines = self.node-lines($!display-root);
-        my $count = @lines.elems;
-        my $end   = $start + $wanted - 1;
+        my @lines := self.flat-line-cache;
+        my $count  = @lines.elems;
+        my $end    = $start + $wanted - 1;
 
-        self.set-y-max($count);
+        self.fix-scroll-maxes;
 
         $count > $end ?? @lines[$start .. $end]
                       !! @lines[$start .. *]
@@ -119,7 +154,7 @@ class Terminal::Widgets::Viewer::Tree
     }
 
     method line-to-display-node($line) {
-        self.flattened-nodes($.display-root)[$line]
+        self.flat-node-cache[$line]
     }
 
     multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
@@ -137,7 +172,8 @@ class Terminal::Widgets::Viewer::Tree
 
                 if $node ~~ DisplayParent {
                     $node.toggle-expanded;
-                    self.set-y-max($.display-root.branch-size);
+                    self.clear-caches;
+                    self.fix-scroll-maxes;
                     self.refresh-for-scroll;
                 }
 
