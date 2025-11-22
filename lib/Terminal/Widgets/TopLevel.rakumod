@@ -55,9 +55,7 @@ does Terminal::Widgets::Layout::WidgetBuilding {
         # Redraw previous widget as unfocused
         if $redraw && $changed {
             $!focused-widget = Nil;
-            my $frame-info = Terminal::Widgets::FrameInfo.new;
-            $prev.do-frame($frame-info);
-            $prev.composite;
+            $prev.full-refresh;
         }
 
         # Actually send the TakeFocus event (sends even if !$changed because
@@ -67,11 +65,7 @@ does Terminal::Widgets::Layout::WidgetBuilding {
         $!focused-widget = $target;
 
         # Draw target widget as focused
-        if $redraw {
-            my $frame-info = Terminal::Widgets::FrameInfo.new;
-            $target.do-frame($frame-info);
-            $target.composite;
-        }
+        $target.full-refresh if $redraw;
     }
 
     #| Redraw entire widget tree
