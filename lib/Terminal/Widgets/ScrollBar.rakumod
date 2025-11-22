@@ -70,26 +70,32 @@ class Terminal::Widgets::HScrollBar
 
     method arrow-left-scroll() {
         $.scroll-target.change-x-scroll(-$.end-arrow-scroll-inc);
+        $.scroll-target.refresh-for-scroll;
     }
 
     method arrow-right-scroll() {
         $.scroll-target.change-x-scroll(+$.end-arrow-scroll-inc);
+        $.scroll-target.refresh-for-scroll;
     }
 
     method bar-left-scroll() {
         $.scroll-target.change-x-scroll(-$.bar-click-scroll-inc);
+        $.scroll-target.refresh-for-scroll;
     }
 
     method bar-right-scroll() {
         $.scroll-target.change-x-scroll(+$.bar-click-scroll-inc);
+        $.scroll-target.refresh-for-scroll;
     }
 
     method home-scroll() {
         $.scroll-target.set-x-scroll(0);
+        $.scroll-target.refresh-for-scroll;
     }
 
     method end-scroll() {
         $.scroll-target.set-x-scroll($.scroll-target.x-max);
+        $.scroll-target.refresh-for-scroll;
     }
 
     method draw-content() {
@@ -170,12 +176,10 @@ class Terminal::Widgets::HScrollBar
                 if $.show-end-arrows {
                     if $x == 0 {
                         self.arrow-left-scroll;
-                        $.scroll-target.refresh-for-scroll;
                         return;
                     }
                     elsif $x == $end {
                         self.arrow-right-scroll;
-                        $.scroll-target.refresh-for-scroll;
                         return;
                     }
                     else {
@@ -209,26 +213,32 @@ class Terminal::Widgets::VScrollBar
 
     method arrow-up-scroll() {
         $.scroll-target.change-y-scroll(-$.end-arrow-scroll-inc);
+        $.scroll-target.refresh-for-scroll;
     }
 
     method arrow-down-scroll() {
         $.scroll-target.change-y-scroll(+$.end-arrow-scroll-inc);
+        $.scroll-target.refresh-for-scroll;
     }
 
     method bar-up-scroll() {
         $.scroll-target.change-y-scroll(-$.bar-click-scroll-inc);
+        $.scroll-target.refresh-for-scroll;
     }
 
     method bar-down-scroll() {
         $.scroll-target.change-y-scroll(+$.bar-click-scroll-inc);
+        $.scroll-target.refresh-for-scroll;
     }
 
     method home-scroll() {
         $.scroll-target.set-y-scroll(0);
+        $.scroll-target.refresh-for-scroll;
     }
 
     method end-scroll() {
         $.scroll-target.set-y-scroll($.scroll-target.y-max);
+        $.scroll-target.refresh-for-scroll;
     }
 
     method draw-content() {
@@ -309,12 +319,10 @@ class Terminal::Widgets::VScrollBar
                 if $.show-end-arrows {
                     if $y == 0 {
                         self.arrow-up-scroll;
-                        $.scroll-target.refresh-for-scroll;
                         return;
                     }
                     elsif $y == $end {
                         self.arrow-down-scroll;
-                        $.scroll-target.refresh-for-scroll;
                         return;
                     }
                     else {
