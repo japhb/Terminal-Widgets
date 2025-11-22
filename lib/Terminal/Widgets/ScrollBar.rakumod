@@ -145,6 +145,8 @@ class Terminal::Widgets::HScrollBar
             Ctrl-CursorRight => 'bar-right-scroll',
             Home             => 'home-scroll',
             End              => 'end-scroll',
+            Ctrl-I           => 'focus-next',    # Tab
+            ShiftTab         => 'focus-prev',    # Shift-Tab is weird and special
             ;
 
         my $keyname = $event.keyname;
@@ -155,6 +157,8 @@ class Terminal::Widgets::HScrollBar
             when 'bar-right-scroll'   { self.bar-right-scroll   }
             when 'home-scroll'        { self.home-scroll        }
             when 'end-scroll'         { self.end-scroll         }
+            when 'focus-next'         { self.focus-next }
+            when 'focus-prev'         { self.focus-prev }
         }
     }
 
@@ -288,6 +292,8 @@ class Terminal::Widgets::VScrollBar
             Ctrl-CursorDown => 'bar-down-scroll',
             Home            => 'home-scroll',
             End             => 'end-scroll',
+            Ctrl-I          => 'focus-next',    # Tab
+            ShiftTab        => 'focus-prev',    # Shift-Tab is weird and special
             ;
 
         my $keyname = $event.keyname;
@@ -298,6 +304,8 @@ class Terminal::Widgets::VScrollBar
             when 'bar-down-scroll'   { self.bar-down-scroll   }
             when 'home-scroll'       { self.home-scroll       }
             when 'end-scroll'        { self.end-scroll        }
+            when 'focus-next'        { self.focus-next }
+            when 'focus-prev'        { self.focus-prev }
         }
     }
 
