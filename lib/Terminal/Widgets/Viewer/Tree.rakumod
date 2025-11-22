@@ -91,7 +91,6 @@ class Terminal::Widgets::Viewer::Tree
     method fix-scroll-maxes() {
         self.set-x-max(self.max-line-width);
         self.set-y-max($.display-root.branch-size);
-        .note for $.x-max, $.y-max;
     }
 
     # Keep root and display-root in sync
