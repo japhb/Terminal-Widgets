@@ -26,6 +26,7 @@ my class DisplayParent does DisplayNode {
     has DisplayNode:D @.children;
     has Bool:D        $.expanded = False;
 
+    #| Refresh children from volatile data and recreate DisplayNodes as needed
     method refresh-children() {
         my $depth  = $!depth + 1;
         @!children = $.data.children(:refresh).sort(*.short-name).map: {
@@ -35,8 +36,10 @@ my class DisplayParent does DisplayNode {
         }
     }
 
+    #| Toggle expanded state (using set-expanded)
     method toggle-expanded() { self.set-expanded(!$!expanded) }
 
+    #| Set expanded state, refreshing or emptying children as appropriate
     method set-expanded($!expanded) {
         if $!expanded {
             self.refresh-children;
@@ -46,6 +49,7 @@ my class DisplayParent does DisplayNode {
         }
     }
 
+    #| Number of nodes in visible child branches, including self
     method branch-size(--> UInt:D) {
         $!expanded ?? 1 + @!children.map(*.branch-size).sum
                    !! 1
@@ -88,7 +92,7 @@ class Terminal::Widgets::Viewer::Tree
         $!max-line-width  = 0;
     }
 
-    # Fix x-max and y-max based on current display state
+    #| Fix x-max and y-max based on current display state
     method fix-scroll-maxes() {
         self.set-x-max(self.max-line-width);
         self.set-y-max($.display-root.branch-size);
@@ -154,14 +158,18 @@ class Terminal::Widgets::Viewer::Tree
         $caps.best-symbol-choice(%arrows)
     }
 
+    #| Convert a displayed line index to the matching DisplayNode
     method line-to-display-node(UInt:D $line) {
         self.flat-node-cache[$line]
     }
 
+    #| Determine the displayed line index of a given DisplayNode
     method display-node-to-line($node) {
         self.flat-node-cache.first(* === $node, :k)
     }
 
+    #| Select a given node as current, expanding parents if needed and
+    #| processing a "click" on the node
     method select-node($node) {
         $!current-node = $node;
         self.ensure-parents-expanded($node);
@@ -170,6 +178,8 @@ class Terminal::Widgets::Viewer::Tree
         # XXXX: Ensure visible?
     }
 
+    #| Select the immediately previous node from the current one,
+    #| in display order (so skipping over collapsed nodes)
     method select-prev-node() {
         my $line = self.display-node-to-line($!current-node);
         return unless $line;
@@ -181,6 +191,8 @@ class Terminal::Widgets::Viewer::Tree
         }
     }
 
+    #| Select the immediately next node from the current one,
+    #| in display order (so skipping over collapsed nodes)
     method select-next-node() {
         my $line = self.display-node-to-line($!current-node);
         return unless $line.defined;
@@ -192,12 +204,15 @@ class Terminal::Widgets::Viewer::Tree
         }
     }
 
+    #| Perform cache clears and scroll changes needed for changed expanded state
     method refresh-for-expand-change() {
         self.clear-caches;
         self.fix-scroll-maxes;
         self.refresh-for-scroll;
     }
 
+    #| Walk up the parents from a given DisplayNode, making sure they are
+    #| expanded so that the node can be made visible
     method ensure-parents-expanded($node) {
         my $parent  = $node.parent;
         my $changed = False;
@@ -213,6 +228,8 @@ class Terminal::Widgets::Viewer::Tree
         self.refresh-for-expand-change if $changed;
     }
 
+    #| Set a node's expanded state, refreshing if it changed.  Silently
+    #| ignores non-DisplayParent nodes.
     method set-node-expanded($node, Bool:D $expanded = True) {
         if $node ~~ DisplayParent && $node.expanded != $expanded {
             $node.set-expanded($expanded);
@@ -220,6 +237,8 @@ class Terminal::Widgets::Viewer::Tree
         }
     }
 
+    #| Toggle a node's expanded state, and refresh.  Silently ignores
+    #| non-DisplayParent nodes.
     method toggle-node-expanded($node) {
         if $node ~~ DisplayParent {
             $node.toggle-expanded;
@@ -227,6 +246,7 @@ class Terminal::Widgets::Viewer::Tree
         }
     }
 
+    #| Handle keyboard events
     multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D
                               $event where *.key.defined, AtTarget) {
         my constant %keymap =
@@ -251,6 +271,7 @@ class Terminal::Widgets::Viewer::Tree
         }
     }
 
+    #| Handle mouse events
     multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
                               $event where !*.mouse.pressed, AtTarget) {
         # Take focus even if clicked on framing instead of content area
