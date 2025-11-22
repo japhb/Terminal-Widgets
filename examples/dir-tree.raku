@@ -16,6 +16,7 @@ class DirTreeDemo is TopLevel {
             .node(
                 .with-scrollbars(
                     .dir-tree-viewer(id => 'dir-tree',
+                                     sort-by => { -(.path.d), .short-name.fc },
                                      process-click => -> $node {
                                          self.show-details($node)
                                      }),

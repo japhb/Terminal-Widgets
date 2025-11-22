@@ -25,13 +25,14 @@ my class DisplayLeaf does DisplayNode {
 my class DisplayParent does DisplayNode {
     has DisplayNode:D @.children;
     has Bool:D        $.expanded = False;
+    has               &.sort-by is required;
 
     #| Refresh children from volatile data and recreate DisplayNodes as needed
     method refresh-children() {
         my $depth  = $!depth + 1;
-        @!children = $.data.children(:refresh).sort(*.short-name).map: {
+        @!children = $.data.children(:refresh).sort(&!sort-by).map: {
             $_ ~~ VTree::Parent
-                ?? DisplayParent.new(parent => self, data => $_, :$depth)
+                ?? DisplayParent.new(parent => self, data => $_, :$depth, :&!sort-by)
                 !! DisplayLeaf.new(  parent => self, data => $_, :$depth)
         }
     }
@@ -63,11 +64,24 @@ class Terminal::Widgets::Viewer::Tree
     has VTree::Node   $.root;
     has DisplayParent $.display-root is built(False);
     has DisplayNode   $.current-node is built(False);
+    has               &.sort-by       = *.short-name;
     has               &.process-click;
 
     has @!flat-node-cache;
     has @!flat-line-cache;
     has $!max-line-width;
+
+
+    # Keep root and display-root in sync
+    method set-root(VTree::Node:D $!root) { self!remap-root }
+    method !remap-root() {
+        $!display-root = DisplayParent.new(data => $!root, depth => 0, :&.sort-by);
+        $!current-node = $!display-root;
+        self.clear-caches;
+    }
+
+    # Clear caches when setting sort-by
+    method set-sort-by(&!sort-by) { self.clear-caches }
 
     # Auto-cache flattened nodes and displayable lines
     method flat-node-cache() {
@@ -96,14 +110,6 @@ class Terminal::Widgets::Viewer::Tree
     method fix-scroll-maxes() {
         self.set-x-max(self.max-line-width);
         self.set-y-max($.display-root.branch-size);
-    }
-
-    # Keep root and display-root in sync
-    method set-root(VTree::Node:D $!root) { self!remap-root }
-    method !remap-root() {
-        $!display-root = DisplayParent.new(data => $!root, depth => 0);
-        $!current-node = $!display-root;
-        self.clear-caches;
     }
 
     #| Provide a span line chunk for SpanBuffer display
