@@ -1,6 +1,8 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+
+0.2.2  2025-11-22T16:00:27-08:00
   [Bug Fixes]
   - Don't apply minimize-w layout style in with-scrollbars
   - Fix thinko that had broken scrollbar keypresses
