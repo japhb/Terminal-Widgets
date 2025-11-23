@@ -111,8 +111,13 @@ class Terminal::Widgets::Viewer::Tree
             # self.flat-line-cache.map({ $locale.width($_) }).max
 
             # XXXX: HACK while refactoring content model
-            use Text::MiscUtils::Layout;
-            self.flat-line-cache.map({ .map({ duospace-width(.text) }).sum }).max
+            my $debug = +($*DEBUG // 0);
+            my $t0    = now;
+            my $max   = self.flat-line-cache.map({   .[0].text.chars
+                                                   + .[1].text.chars }).max;
+            note sprintf("max-line-width: %.3fms (%d elems)",
+                         1000 * (now - $t0), @!flat-line-cache.elems) if $debug;
+            $max
         }
     }
     method clear-caches() {
