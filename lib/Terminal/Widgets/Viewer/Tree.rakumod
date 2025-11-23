@@ -76,8 +76,8 @@ class Terminal::Widgets::Viewer::Tree
     method set-root(VTree::Node:D $!root) { self!remap-root }
     method !remap-root() {
         $!display-root = DisplayParent.new(data => $!root, depth => 0, :&.sort-by);
-        $!current-node = $!display-root;
         self.clear-caches;
+        self.select-node($!display-root);
     }
 
     # Clear caches when setting sort-by
@@ -151,7 +151,8 @@ class Terminal::Widgets::Viewer::Tree
 
     #| Displayed content for a given node itself, not including children
     method node-content($node) {
-        span('', $node.data.short-name)
+        my $color = $node === $!current-node ?? 'inverse' !! '';
+        span($color, $node.data.short-name)
     }
 
     #| Arrow glyphs for given terminal capabilities
@@ -174,14 +175,39 @@ class Terminal::Widgets::Viewer::Tree
         self.flat-node-cache.first(* === $node, :k)
     }
 
+    #| Remove highlight from a node
+    method remove-highlight($node) {
+        my $line = self.display-node-to-line($node);
+        return unless $line.defined;
+
+        my @line-spans := self.flat-line-cache[$line];
+        my $color       = @line-spans[1].color.subst('inverse ', '');
+        @line-spans[1]  = span($color, @line-spans[1].text);
+    }
+
+    #| Add a highlight to a node
+    method add-highlight($node) {
+        self.ensure-parents-expanded($node);
+        my $line = self.display-node-to-line($node);
+        return unless $line.defined;
+
+        my @line-spans := self.flat-line-cache[$line];
+        @line-spans[1]  = span('inverse ' ~ @line-spans[1].color,
+                                            @line-spans[1].text);
+    }
+
     #| Select a given node as current, expanding parents if needed and
     #| processing a "click" on the node
     method select-node($node) {
-        $!current-node = $node;
-        self.ensure-parents-expanded($node);
-        $_($node) with &!process-click;
-
-        # XXXX: Ensure visible?
+        if $!current-node !=== $node {
+            self.remove-highlight($!current-node);
+            $!current-node = $node;
+            self.ensure-parents-expanded($node);
+            self.add-highlight($node);
+            self.full-refresh;
+            $_($node) with &!process-click;
+            # XXXX: Ensure visible?
+        }
     }
 
     #| Select the immediately previous node from the current one,

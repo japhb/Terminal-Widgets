@@ -14,6 +14,7 @@ class Terminal::Widgets::Viewer::DirTree
     #| Displayed content for a given node itself, not including children
     method node-content($node) {
         my $color = $.dir-colors.color-for($node.data.path);
+        $color = 'inverse ' ~ $color if $node === $.current-node;
         span($color, $node.data.short-name)
     }
 }
