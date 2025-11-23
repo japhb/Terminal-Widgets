@@ -19,7 +19,8 @@ my role DisplayNode {
 }
 
 my class DisplayLeaf does DisplayNode {
-    method branch-size(--> 1) { }
+    method expanded(--> False) { }
+    method branch-size(--> 1)  { }
 }
 
 my class DisplayParent does DisplayNode {
@@ -85,10 +86,24 @@ class Terminal::Widgets::Viewer::Tree
 
     # Auto-cache flattened nodes and displayable lines
     method flat-node-cache() {
-        @!flat-node-cache ||= self.flattened-nodes($!display-root);
+        @!flat-node-cache ||= do {
+            my $debug = +($*DEBUG // 0);
+            my $t0    = now;
+            self.flattened-nodes($!display-root, my @n);
+            note sprintf("flattened-nodes: %.3fms (%d elems)",
+                         1000 * (now - $t0), @n.elems) if $debug;
+            @n
+        }
     }
     method flat-line-cache() {
-        @!flat-line-cache ||= self.node-lines($!display-root);
+        @!flat-line-cache ||= do {
+            my $debug = +($*DEBUG // 0);
+            my $t0    = now;
+            self.node-lines($!display-root, my @l);
+            note sprintf("node-lines: %.3fms (%d elems)",
+                         1000 * (now - $t0), @l.elems) if $debug;
+            @l
+        }
     }
     method max-line-width() {
         $!max-line-width  ||= do {
@@ -124,29 +139,31 @@ class Terminal::Widgets::Viewer::Tree
                       !! @lines[$start .. *]
     }
 
-    #| Displayable lines for a given node
-    method node-lines($node) {
-        my $is-parent  = $node ~~ DisplayParent && $node.expanded;
-        my $first-line = [ self.prefix-string($node),
-                           self.node-content($node) ];
-
-        $is-parent ?? ($first-line,
-                       $node.children.map({ self.node-lines($_).Slip })).flat
-                   !! ($first-line, )
+    #| Flatten displayable lines for a given node into array @lines
+    method node-lines($node, @lines) {
+        @lines.push: [ self.prefix-string($node),
+                       self.node-content($node) ];
+        if $node.expanded {
+            self.node-lines($_, @lines) for $node.children;
+        }
     }
 
-    #| Flat list of displayable nodes starting at a given node
-    method flattened-nodes($node) {
-        my $is-parent = $node ~~ DisplayParent && $node.expanded;
-        $is-parent ?? ($node, |$node.children.map({ self.flattened-nodes($_).Slip }))
-                   !! ($node, )
+    #| Flatten displayable nodes starting at a given node into array @nodes
+    method flattened-nodes($node, @nodes) {
+        @nodes.push: $node;
+        if $node.expanded {
+            self.flattened-nodes($_, @nodes) for $node.children;
+        }
     }
 
     #| Prefix for first line of a given node
     method prefix-string($node) {
-        span('',   '  ' x $node.depth
-                 ~ ($node ~~ DisplayParent ?? self.arrows()[+$node.expanded] !! ' ')
-                 ~ ' ')
+        state @prefix-cache;
+        my $expanded = $node ~~ DisplayParent ?? +$node.expanded !! 2;
+        @prefix-cache[$node.depth][$expanded] //=
+            span('',   '  ' x $node.depth
+                     ~ ($node ~~ DisplayParent ?? self.arrows()[+$node.expanded] !! ' ')
+                     ~ ' ')
     }
 
     #| Displayed content for a given node itself, not including children
