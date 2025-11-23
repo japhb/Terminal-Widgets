@@ -1,6 +1,29 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Bug Fixes]
+  - Don't apply minimize-w layout style in with-scrollbars
+  - Fix thinko that had broken scrollbar keypresses
+  - Switch to the full-refresh protocol for TopLevel.focus-on,
+    fixing visual behavior of focus moves
+
+  [Docs]
+  - Add per-directory READMEs explaining intent of lib/ subdirs
+
+  [Examples]
+  - Extend tree-view example to expose some bugs
+  - Add dir-tree example demonstrating Viewer::DirTree
+
+  [Functionality]
+  - Support (and switch to) content-area-relative mouse events
+  - Introduce the volatile data structures tree, Volatile/
+  - Add Volatile::Tree, providing base roles for volatile tree structures
+  - Add Volatile::DirTree data structure, representing a live filesystem
+  - Add Viewer::Tree, base class for viewers of volatile trees
+  - Add Viewer::DirTree, specialized to Volatile::DirTree
+  - Fade scrollbars when not in use (everything visible and scroll = 0)
+  - Make scrollbars Themable and Focusable (and participate in tab ring)
+
   [Packaging]
   - Bump T::C and C::DC dependencies to get new SGR attr support, and thus
     more complete support for GNU dircolors in Viewer::DirTree
