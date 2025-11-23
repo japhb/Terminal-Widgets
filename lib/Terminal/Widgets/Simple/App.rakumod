@@ -71,6 +71,9 @@ class Terminal::Widgets::Simple::App is Terminal::Widgets::App {
         # Make sure we see diagnostics immediately, even if $*ERR is redirected to a file
         $*ERR.out-buffer = False;
 
+        # Turn on debugging if requested in environment
+        $PROCESS::DEBUG //= +(%*ENV<TERMINAL_WIDGETS_DEBUG> // 0);
+
         # Provide hook for subclasses to perform boot-time initialization
         self.boot-init(|c);
 
