@@ -199,7 +199,6 @@ does Terminal::Widgets::SpanBuffer {
         my $new-first-line-start = @!l-dl[$first-line];
         my $new-first-line-height = self!height-of-line(@!lines[$first-line]);
         self.set-y-scroll($new-first-line-start + min($sub-line, $new-first-line-height));
-        self.full-refresh;
         self.refresh-for-scroll;
     }
 
