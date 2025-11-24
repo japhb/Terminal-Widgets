@@ -111,10 +111,16 @@ class Terminal::Widgets::Viewer::Tree
             # self.flat-line-cache.map({ $locale.width($_) }).max
 
             # XXXX: HACK while refactoring content model
+            use Text::MiscUtils::Layout;
+            state %width-cache;
+
             my $debug = +($*DEBUG // 0);
             my $t0    = now;
-            my $max   = self.flat-line-cache.map({   .[0].text.chars
-                                                   + .[1].text.chars }).max;
+            my $max   = self.flat-line-cache.map({
+                # Only prefix has low enough cardinality to cache
+                (%width-cache{.[0].text} //= duospace-width-core(.[0].text, 0))
+                + duospace-width-core(.[1].text, 0)
+            }).max;
             note sprintf("max-line-width: %.3fms (%d elems)",
                          1000 * (now - $t0), @!flat-line-cache.elems) if $debug;
             $max
