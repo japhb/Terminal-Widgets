@@ -1,6 +1,9 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Packaging]
+  - Bump T::MU dependency for much faster duospace-width() implementation
+
 
 0.2.2  2025-11-22T16:00:27-08:00
   [Bug Fixes]

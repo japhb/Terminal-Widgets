@@ -10,7 +10,7 @@
     "Terminal::Capabilities:auth<zef:japhb>:ver<0.0.14+>",
     "Terminal::LineEditor:auth<zef:japhb>:ver<0.0.23+>",
     "Terminal::Print:auth<zef:terminal-printers>:ver<0.977+>",
-    "Text::MiscUtils:auth<zef:japhb>:ver<0.0.9+>"
+    "Text::MiscUtils:auth<zef:japhb>:ver<0.0.10+>"
   ],
   "description": "Basic TUI Widgets",
   "license": "Artistic-2.0",
