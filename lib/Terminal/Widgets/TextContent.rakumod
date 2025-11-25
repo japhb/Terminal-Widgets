@@ -209,7 +209,48 @@ class ContentRenderer {
     has %.vars;
 
 
-    ### render: RENDER TO RenderSpans
+    ### span-tree: PARSE TO SpanTree AND STOP
+
+    #| Convert MarkupString -> SpanTree and stop (so the parse can be cached)
+    multi method span-tree(MarkupString:D $ms) {
+        $ms.parse
+    }
+
+
+    ### flat-spans: PARSE TO SpanTree, FLATTEN, AND STOP
+
+    #| Convert MarkupString -> flat list of SemanticSpans and stop,
+    #| so the parse and flatten can be cached
+    multi method flat-spans(MarkupString:D $ms) {
+        $ms.parse.flatten
+    }
+
+    #| Convert SpanTree -> flat list of SemanticSpans and stop
+    multi method flat-spans(SpanTree:D $st) {
+        $st.flatten
+    }
+
+
+    ### flat-string-spans: PARSE TO SpanTree, FLATTEN, INTERPOLATE, AND STOP
+
+    #| Convert MarkupString -> flat list of SemanticSpans, interpolate vars
+    #| for any InterpolantSpans in the list, giving a flat list of StringSpans
+    multi method flat-string-spans(MarkupString:D $ms) {
+        $ms.parse.flatten.map: {
+            .isa(InterpolantSpan) ?? .interpolate(%.vars) !! $_;
+        };
+    }
+
+    #| Flatten SpanTree -> list of SemanticSpans, interpolate vars for any
+    #| InterpolantSpans in the list, giving a flat list of StringSpans
+    multi method flat-string-spans(SpanTree:D $st) {
+        $st.flatten.map: {
+            .isa(InterpolantSpan) ?? .interpolate(%.vars) !! $_;
+        };
+    }
+
+
+    ### render: RENDER ALL THE WAY TO RenderSpans
 
     #| Convert MarkupString -> SpanTree and continue rendering
     multi method render(MarkupString:D $ms) {
@@ -217,14 +258,12 @@ class ContentRenderer {
         self.render($st)
     }
 
-    #| Convert SpanTree -> flattened list of StringSpans and continue rendering
+    #| Convert SpanTree -> flattened list of RenderSpans
     multi method render(SpanTree:D $st) {
-        # XXXX: Performance could be improved by inlining the render pass
-        #       inside the map, but this is easier to test at the moment.
-        my @flat-ss = $st.flatten.map: {
-            .isa(InterpolantSpan) ?? .interpolate(%.vars) !! $_;
-        };
-        self.render(@flat-ss)
+        $st.flatten.map({
+            .isa(InterpolantSpan) ?? .interpolate(%.vars).render
+                                  !! .render
+        })
     }
 
     #| Convert a list of StringSpans -> a list of RenderSpans

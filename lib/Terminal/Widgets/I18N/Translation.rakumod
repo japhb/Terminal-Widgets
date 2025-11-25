@@ -44,11 +44,35 @@ class TranslatableContentRenderer
    is Terminal::Widgets::TextContent::ContentRenderer {
     has $.locale is required;
 
-    #| Convert TranslatableString -> MarkupString and continue rendering
-    multi method render(TranslatableString:D $ts) {
+
+    #| Translate a TranslatableString -> MarkupString and stop
+    multi method markup-string(TranslatableString:D $ts) {
         my $ms = $ts.interpolatable ?? $.locale.translate($ts, :%.vars)
                                     !! $.locale.translate($ts);
-        self.render($ms)
+    }
+
+    #| Translate TranslatableString -> MarkupString, parse that -> SpanTree,
+    #| and then stop so the translate and parse phases can be cached
+    multi method span-tree(TranslatableString:D $ts) {
+        self.span-tree(self.markup-string($ts))
+    }
+
+    #| Translate TranslatableString -> MarkupString, parse that -> SpanTree,
+    #| flatten to a list of SemanticSpans, and stop so work so far can be cached
+    multi method flat-spans(TranslatableString:D $ts) {
+        self.flat-spans(self.markup-string($ts))
+    }
+
+    #| Translate TranslatableString -> MarkupString, parse that -> SpanTree,
+    #| flatten to a list of SemanticSpans, interpolate vars for any
+    #| InterpolantSpans in the list, and then stop so work so far can be cached
+    multi method flat-string-spans(TranslatableString:D $ts) {
+        self.flat-string-spans(self.markup-string($ts))
+    }
+
+    #| Convert TranslatableString -> MarkupString and continue rendering
+    multi method render(TranslatableString:D $ts) {
+        self.render(self.markup-string($ts))
     }
 }
 
