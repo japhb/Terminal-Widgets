@@ -3,6 +3,7 @@
 unit module Terminal::Widgets::TextContent;
 
 use Text::MiscUtils::Layout;
+use Terminal::ANSIColor;
 
 
 #| An exception preventing stringification for content that requires more processing
@@ -37,6 +38,12 @@ class RenderSpan is export {
     #| Lazily calculate and cache duospace width
     method width(--> UInt:D) {
         $!width //= duospace-width-core($!text)
+    }
+
+    #| Stringify to an SGR-escaped string instead of rendering into a widget's
+    #| content area (use Widget.draw-line-spans for that)
+    method Str(--> Str:D) {
+        colored($!text, $!color)
     }
 }
 
