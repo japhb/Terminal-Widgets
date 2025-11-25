@@ -169,6 +169,34 @@ class MarkupString does SemanticText is export {
 }
 
 
+# Helper functions to build spans/trees
+
+#| Helper function to build a RenderSpan, ready for Widget.render-line-spans
+sub render-span(Str:D $text = '', Str:D $color = '') is export {
+    RenderSpan.new(:$text, :$color)
+}
+
+#| Helper function to build a StringSpan (a SemanticSpan with NO interpolants)
+sub string-span(Str:D $string, *%attributes) is export {
+    StringSpan.new(:$string, :%attributes)
+}
+
+#| Helper function to build an InterpolantSpan (a SemanticSpan for a single variable)
+sub interpolant-span(Str:D $var-name, :%flags, *%attributes) is export {
+    InterpolantSpan.new(:$var-name :%flags, :%attributes)
+}
+
+#| Helper function to build up a SpanTree with SemanticSpan leaves
+sub span-tree(*@children, *%attributes) is export {
+    SpanTree.new(:@children, :%attributes)
+}
+
+#| Helper function to turn a plain Str into a parseable MarkupString
+sub markup-string(Str:D $string, Bool:D :$interpolatable = False) is export {
+    MarkupString.new(:$string, :$interpolatable)
+}
+
+
 #| Convert content step by step towards a list of RenderSpans
 class ContentRenderer {
     has %.vars;
