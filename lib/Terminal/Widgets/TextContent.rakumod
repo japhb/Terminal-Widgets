@@ -36,7 +36,7 @@ class RenderSpan is export {
 
     #| Lazily calculate and cache duospace width
     method width(--> UInt:D) {
-        $!width //= duospace-width($!text)
+        $!width //= duospace-width-core($!text)
     }
 }
 
