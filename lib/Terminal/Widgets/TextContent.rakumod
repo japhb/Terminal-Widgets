@@ -19,21 +19,22 @@ class X::CannotStringify is Exception {
     }
 }
 
-
 #| Convenience helper to throw X::CannotStringify easily
 sub throw-cannot-stringify($type, $conversion-method, $conversion-result) is export {
     X::CannotStringify.new(:$type, :$conversion-method, :$conversion-result).throw
 }
 
 
-#| A directly renderable styled text span
-class RenderSpan is export {
-    # XXXX: Include an ID or reference marker of some type to handle user
-    #       interaction with the rendered span?
+# Forward declaration
+class StringSpan { ... }
 
-    has Str:D $.color = '';
-    has Str:D $.text  = '';
-    has UInt  $!width;
+#| A directly renderable styled text span, optionally remembering the
+#| StringSpan it was rendered from (providing a path to StringSpan.attributes)
+class RenderSpan is export {
+    has StringSpan $.string-span;
+    has Str:D      $.color = '';
+    has Str:D      $.text  = '';
+    has UInt       $!width;
 
     #| Lazily calculate and cache duospace width
     method width(--> UInt:D) {
@@ -73,7 +74,8 @@ class StringSpan does SemanticSpan {
     #| Render the string into a RenderSpan according to its attributes
     method render(--> RenderSpan:D) {
         # XXXX: Hack: Just transfer over the color attribute
-        RenderSpan.new(text => $.string, color => %.attributes<color> // '')
+        RenderSpan.new(string-span => self, text => $.string,
+                       color => %.attributes<color> // '')
     }
 
     #| Apply current span attributes on top of parent attributes, returning a
@@ -179,8 +181,8 @@ class MarkupString does SemanticText is export {
 # Helper functions to build spans/trees
 
 #| Helper function to build a RenderSpan, ready for Widget.render-line-spans
-sub render-span(Str:D $text = '', Str:D $color = '') is export {
-    RenderSpan.new(:$text, :$color)
+sub render-span(Str:D $text = '', Str:D $color = '', StringSpan :$string-span) is export {
+    RenderSpan.new(:$text, :$color, :$string-span)
 }
 
 #| Helper function to build a StringSpan (a SemanticSpan with NO interpolants)
