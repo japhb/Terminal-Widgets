@@ -2,7 +2,7 @@
 
 use Color::DirColors;
 
-use Terminal::Widgets::SpanStyle;
+use Terminal::Widgets::TextContent;
 use Terminal::Widgets::Viewer::Tree;
 
 
@@ -15,6 +15,6 @@ class Terminal::Widgets::Viewer::DirTree
     method node-content($node) {
         my $color = $.dir-colors.color-for($node.data.path);
         $color = 'inverse ' ~ $color if $node === $.current-node;
-        span($color, $node.data.short-name)
+        render-span($node.data.short-name, $color)
     }
 }

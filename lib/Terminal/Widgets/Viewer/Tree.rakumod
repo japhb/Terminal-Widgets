@@ -1,7 +1,7 @@
 # ABSTRACT: A viewer/browser for a Volatile::Tree
 
 use Terminal::Widgets::Events;
-use Terminal::Widgets::SpanStyle;
+use Terminal::Widgets::TextContent;
 use Terminal::Widgets::SpanBuffer;
 use Terminal::Widgets::Focusable;
 use Terminal::Widgets::Volatile::Tree;
@@ -110,17 +110,23 @@ class Terminal::Widgets::Viewer::Tree
             # my $locale = self.terminal.locale;
             # self.flat-line-cache.map({ $locale.width($_) }).max
 
-            # XXXX: HACK while refactoring content model
+            # XXXX: PERF HACK
             use Text::MiscUtils::Layout;
             state %width-cache;
 
             my $debug = +($*DEBUG // 0);
             my $t0    = now;
+
+            # XXXX: Sadly at high cardinality this cleaner version still
+            #       leaves too much performance on the table
+            # my $max   = self.flat-line-cache.map({ .[0].width + .[1].width }).max;
+
             my $max   = self.flat-line-cache.map({
                 # Only prefix has low enough cardinality to cache
                 (%width-cache{.[0].text} //= duospace-width-core(.[0].text, 0))
                 + duospace-width-core(.[1].text, 0)
             }).max;
+
             note sprintf("max-line-width: %.3fms (%d elems)",
                          1000 * (now - $t0), @!flat-line-cache.elems) if $debug;
             $max
@@ -172,15 +178,15 @@ class Terminal::Widgets::Viewer::Tree
         state @prefix-cache;
         my $expanded = $node ~~ DisplayParent ?? +$node.expanded !! 2;
         @prefix-cache[$node.depth][$expanded] //=
-            span('',   '  ' x $node.depth
-                     ~ ($node ~~ DisplayParent ?? self.arrows()[+$node.expanded] !! ' ')
-                     ~ ' ')
+            render-span(  '  ' x $node.depth
+                        ~ ($node ~~ DisplayParent ?? self.arrows()[+$node.expanded] !! ' ')
+                        ~ ' ', '')
     }
 
     #| Displayed content for a given node itself, not including children
     method node-content($node) {
         my $color = $node === $!current-node ?? 'inverse' !! '';
-        span($color, $node.data.short-name)
+        render-span($node.data.short-name, $color)
     }
 
     #| Arrow glyphs for given terminal capabilities
@@ -209,8 +215,9 @@ class Terminal::Widgets::Viewer::Tree
         return unless $line.defined;
 
         my @line-spans := self.flat-line-cache[$line];
-        my $color       = @line-spans[1].color.subst('inverse ', '');
-        @line-spans[1]  = span($color, @line-spans[1].text);
+        my $span        = @line-spans[1];
+        my $color       = $span.color.subst('inverse ', '');
+        @line-spans[1]  = $span.clone(:$color);
     }
 
     #| Add a highlight to a node
@@ -220,8 +227,9 @@ class Terminal::Widgets::Viewer::Tree
         return unless $line.defined;
 
         my @line-spans := self.flat-line-cache[$line];
-        @line-spans[1]  = span('inverse ' ~ @line-spans[1].color,
-                                            @line-spans[1].text);
+        my $span        = @line-spans[1];
+        my $color       = 'inverse ' ~ $span.color;
+        @line-spans[1]  = $span.clone(:$color);
     }
 
     #| Select a given node as current, expanding parents if needed and
