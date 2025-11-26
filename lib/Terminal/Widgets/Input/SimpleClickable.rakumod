@@ -4,6 +4,7 @@ use Terminal::Widgets::Events;
 use Terminal::Widgets::Input;
 use Terminal::Widgets::Input::Labeled;
 use Terminal::Widgets::Widget;
+use Terminal::Widgets::TextContent;
 
 
 #| Base for labeled input widgets that can only be clicked/pressed/selected
@@ -23,7 +24,9 @@ does Terminal::Widgets::Input::Labeled {
     #| Draw content area
     method draw-content() {
         my ($l, $t, $w, $h) = self.content-rect;
-        my @spans = $.terminal.locale.render(self.content-text($.label));
+        my $tree  = span-tree(color => self.current-color,
+                              self.content-text($.label));
+        my @spans = $.terminal.locale.render($tree);
         self.draw-line-spans($l, $t, $w, @spans);
     }
 
