@@ -1,6 +1,8 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+
+0.2.3  2025-11-26T00:19:56-08:00
   [Debugging]
   - Support TERMINAL_WIDGETS_DEBUG env var to set debug verbosity (default 0)
   - Provide a RenderSpan.Str method to get an SGR-escaped string
