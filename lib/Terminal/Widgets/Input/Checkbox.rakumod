@@ -1,5 +1,6 @@
 # ABSTRACT: A single checkbox, optionally labeled
 
+use Terminal::Widgets::TextContent;
 use Terminal::Widgets::Input::Boolean;
 
 
@@ -21,11 +22,14 @@ class Terminal::Widgets::Input::Checkbox
             Uni1  => «   ☐    ☒  »,
             Uni7  => «   🞏    🞕  »;
 
-        $caps.best-symbol-choice(%boxes)
+        # XXXX: Hoist string-span up into constant?
+        $caps.best-symbol-choice(%boxes).map({ string-span($_) })
     }
 
     #| Content (text inside framing)
     method content-text($label) {
-        self.checkboxes()[+$.state] ~ (' ' ~ $label if $label)
+        my @label-spans = $.terminal.locale.flat-string-spans($label // '');
+        my $box-span    = self.checkboxes()[+$.state];
+        span-tree($box-span, |(pad-span(1), |@label-spans if $label))
     }
 }

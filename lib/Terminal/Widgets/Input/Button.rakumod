@@ -3,6 +3,7 @@
 use Terminal::Capabilities;
 constant Uni1 = Terminal::Capabilities::SymbolSet::Uni1;
 
+use Terminal::Widgets::TextContent;
 use Terminal::Widgets::Input::SimpleClickable;
 
 
@@ -17,13 +18,18 @@ class Terminal::Widgets::Input::Button
 
     #| Content (text inside framing)
     method content-text($label) {
-        my $has-border = self.layout.computed.has-border;
-        my $symbol-set = self.terminal.caps.symbol-set;
-        my $string     = $label // '';
+        my $terminal   = self.terminal;
+        my $symbol-set = $terminal.caps.symbol-set;
+        my $has-Uni1   = $symbol-set >= Uni1;
+        my $locale     = $terminal.locale;
 
-        $has-border         ??       $string       !!
-        $symbol-set >= Uni1 ?? '⌈' ~ $string ~ '⌋' !!
-                               '[' ~ $string ~ ']'
+        my $has-border = self.layout.computed.has-border;
+        my @string     = $locale.flat-string-spans($label // '');
+
+        my @spans = $has-border ?? @string !!
+                    $has-Uni1   ?? (string-span('⌈'), |@string, string-span('⌋')) !!
+                                   (string-span('['), |@string, string-span(']'));
+        span-tree(|@spans);
     }
 
     #| Process a click event

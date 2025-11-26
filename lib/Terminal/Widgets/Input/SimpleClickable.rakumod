@@ -27,9 +27,9 @@ does Terminal::Widgets::Input::Labeled {
         my $y      = $layout.top-correction;
 
         # XXXX: Temporary hack
-        my $label  = $.terminal.locale.plain-text($.label);
+        my $text   = $.terminal.locale.plain-text(self.content-text($.label));
 
-        $.grid.set-span($x, $y, self.content-text($label), self.current-color);
+        $.grid.set-span($x, $y, $text, self.current-color);
     }
 
     #| Handle minimal keyboard events

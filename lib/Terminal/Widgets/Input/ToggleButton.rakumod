@@ -3,7 +3,7 @@
 use Terminal::Capabilities;
 constant Uni1 = Terminal::Capabilities::SymbolSet::Uni1;
 
-use Terminal::Widgets::SpanStyle;
+use Terminal::Widgets::TextContent;
 use Terminal::Widgets::Input::Boolean;
 
 
@@ -15,21 +15,23 @@ class Terminal::Widgets::Input::ToggleButton
         my $bw         = %style<border-width>;
         my $has-border = $bw ~~ Positional ?? $bw.grep(?*) !! ?$bw;
         $locale.width($label) + 2 * !$has-border
-        + 2 # XXXX: Waiting on upgrade to content model
     }
 
     #| Content (text inside framing)
     method content-text($label) {
+        my $terminal   = self.terminal;
+        my $symbol-set = $terminal.caps.symbol-set;
+        my $has-Uni1   = $symbol-set >= Uni1;
+        my $locale     = $terminal.locale;
+
         my $has-border = self.layout.computed.has-border;
-        my $symbol-set = self.terminal.caps.symbol-set;
-        my $string     = $label // '';
+        my @string     = $locale.flat-string-spans($label // '');
 
-        my $text = $has-border         ??       $string       !!
-                   $symbol-set >= Uni1 ?? '⌈' ~ $string ~ '⌋' !!
-                                          '[' ~ $string ~ ']';
+        my @spans = $has-border ?? @string !!
+                    $has-Uni1   ?? (string-span('⌈'), |@string, string-span('⌋')) !!
+                                   (string-span('['), |@string, string-span(']'));
 
-        # XXXX: Waiting on upgrade to content model
-        # $.state ?? span('white on_blue', $text) !! $text
-        $.state ?? '>' ~ $text ~ '<' !! $text
+        $.state ?? span-tree(color => 'white on_blue', |@spans)
+                !! span-tree(|@spans)
     }
 }

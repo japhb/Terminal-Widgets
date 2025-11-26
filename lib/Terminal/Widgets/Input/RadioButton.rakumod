@@ -1,5 +1,6 @@
 # ABSTRACT: A single radio button, optionally labeled
 
+use Terminal::Widgets::TextContent;
 use Terminal::Widgets::Input::Boolean;
 
 
@@ -21,11 +22,14 @@ class Terminal::Widgets::Input::RadioButton
             Uni1  => «   ○    ⊙  »,
             Uni7  => «   🞅    🞊  »;
 
-        $caps.best-symbol-choice(%buttons)
+        # XXXX: Hoist string-span up into constant?
+        $caps.best-symbol-choice(%buttons).map({ string-span($_) })
     }
 
     #| Content (text inside framing)
     method content-text($label) {
-        self.buttons()[+$.state] ~ (' ' ~ $label if $label)
+        my @label-spans = $.terminal.locale.flat-string-spans($label // '');
+        my $button-span = self.buttons()[+$.state];
+        span-tree($button-span, |(pad-span(1), |@label-spans if $label))
     }
 }
