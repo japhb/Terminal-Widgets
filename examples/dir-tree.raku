@@ -34,7 +34,7 @@ class DirTreeDemo is TopLevel {
         my $path = $data.path;
 
         my $details = %.by-id<details>;
-        $details.add-entry("\n") if $details.log;
+        $details.add-entry($?NL) if $details.log;
 
         my sub format-line(Str:D $label, Str:D() $value) {
             span-tree(string-span($label, color => 'bold yellow'),
