@@ -237,7 +237,8 @@ our sub interpolant-span(Str:D $var-name, :%flags, *%attributes) is export {
 
 #| Helper function to build up a SpanTree with SemanticSpan leaves
 our sub span-tree(*@children, *%attributes) is export {
-    SpanTree.new(:@children, :%attributes)
+    my @ss = @children.map({ $_ ~~ Str:D ?? string-span($_) !! $_ });
+    SpanTree.new(children => @ss, :%attributes)
 }
 
 #| Helper function to turn a plain Str into a parseable MarkupString
