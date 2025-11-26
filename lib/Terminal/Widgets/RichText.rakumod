@@ -1,10 +1,6 @@
 # ABSTRACT: A text widget that has clickable lines / a selected line.
 
-use Text::MiscUtils::Layout;
-
 use Terminal::Widgets::Events;
-use Terminal::Widgets::SpanStyle;
-use Terminal::Widgets::SpanBuffer;
 use Terminal::Widgets::Focusable;
 use Terminal::Widgets::SpanWrappingAndHighlighting;
 
@@ -19,8 +15,7 @@ class Terminal::Widgets::RichText
         $!wrap = $wrap if $wrap;
     }
 
-    #| Replace the contents of this RichText widget.
-    method set-text(SpanContent $content) {
+    method set-text($content) {
         self!set-text: $content;
     }
 

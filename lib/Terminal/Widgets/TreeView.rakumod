@@ -1,10 +1,6 @@
 # ABSTRACT: A text widget that has clickable lines / a selected line.
 
-use Text::MiscUtils::Layout;
-
 use Terminal::Widgets::Events;
-use Terminal::Widgets::SpanStyle;
-use Terminal::Widgets::SpanBuffer;
 use Terminal::Widgets::Focusable;
 use Terminal::Widgets::SpanWrappingAndHighlighting;
 
@@ -386,7 +382,8 @@ class Terminal::Widgets::TreeView
                                                   self.x-scroll + $x, $rel-y);
                 $!cursor-x = $x min self!chars-in-line(@!lines[$line-index]) - 1;
 
-                my $prefix-len = duospace-width(self!dn-get-prefix($dn));
+                my $locale = $.terminal.locale;
+                my $prefix-len = $locale.width(self!dn-get-prefix($dn));
                 if $!cursor-x < $prefix-len {
                     self!toggle-expand-dn($dn);
                 }
