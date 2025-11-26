@@ -218,6 +218,13 @@ our sub render-span(Str:D $text = '', Str:D $color = '',
     RenderSpan.new(:$text, :$color, :$string-span)
 }
 
+#| Helper function to return a cached StringSpan containing
+#| ONLY padding spaces and no attributes of its own
+our sub pad-span(UInt:D $pad) is export {
+    state @pad-cache;
+    @pad-cache[$pad] //= StringSpan.new(string => ' ' x $pad)
+}
+
 #| Helper function to build a StringSpan (a SemanticSpan with NO interpolants)
 our sub string-span(Str:D $string, *%attributes) is export {
     StringSpan.new(:$string, :%attributes)
