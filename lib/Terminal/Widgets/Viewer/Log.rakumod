@@ -63,11 +63,13 @@ class Terminal::Widgets::Viewer::Log
         constant TC = Terminal::Widgets::TextContent;
 
         my $as-tree = do given $entry.content {
-            when Str            { TC::span-tree(string-span($_)) }
             when SS::Span       { SS::span-tree('', [$_]) }
-            when TC::StringSpan { TC::span-tree($_) }
             when SS::SpanTree   { $_ }
+
+            when Str            { TC::span-tree($_) }
+            when TC::StringSpan { TC::span-tree($_) }
             when TC::SpanTree   { $_ }
+
             default { die "Unrecognized LogEntry.content type {.^name.raku}" }
         };
 

@@ -22,8 +22,7 @@ class Terminal::Widgets::Input::RadioButton
             Uni1  => «   ○    ⊙  »,
             Uni7  => «   🞅    🞊  »;
 
-        # XXXX: Hoist string-span up into constant?
-        $caps.best-symbol-choice(%buttons).map({ string-span($_) })
+        $caps.best-symbol-choice(%buttons)
     }
 
     #| Content (text inside framing)

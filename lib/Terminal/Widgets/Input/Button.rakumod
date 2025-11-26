@@ -25,10 +25,9 @@ class Terminal::Widgets::Input::Button
 
         my $has-border = self.layout.computed.has-border;
         my @string     = $locale.flat-string-spans($label // '');
-
-        my @spans = $has-border ?? @string !!
-                    $has-Uni1   ?? (string-span('⌈'), |@string, string-span('⌋')) !!
-                                   (string-span('['), |@string, string-span(']'));
+        my @spans      = $has-border ??        @string       !!
+                         $has-Uni1   ?? ('⌈', |@string, '⌋') !!
+                                        ('[', |@string, ']');
         span-tree(|@spans);
     }
 

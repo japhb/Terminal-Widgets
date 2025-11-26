@@ -22,8 +22,7 @@ class Terminal::Widgets::Input::Checkbox
             Uni1  => «   ☐    ☒  »,
             Uni7  => «   🞏    🞕  »;
 
-        # XXXX: Hoist string-span up into constant?
-        $caps.best-symbol-choice(%boxes).map({ string-span($_) })
+        $caps.best-symbol-choice(%boxes)
     }
 
     #| Content (text inside framing)
