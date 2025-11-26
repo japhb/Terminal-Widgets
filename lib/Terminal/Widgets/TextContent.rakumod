@@ -272,6 +272,16 @@ class ContentRenderer {
         $st.flatten
     }
 
+    #| Pass through existing SemanticSpan
+    multi method flat-spans(SemanticSpan:D $ss) {
+        $ss
+    }
+
+    #| Convert a Str to a StringSpan for convenience
+    multi method flat-spans(Str:D $str) {
+        string-span($str)
+    }
+
 
     ### flat-string-spans: PARSE TO SpanTree, FLATTEN, INTERPOLATE, AND STOP
 
@@ -289,6 +299,21 @@ class ContentRenderer {
         $st.flatten.map: {
             .isa(InterpolantSpan) ?? .interpolate(%.vars) !! $_;
         };
+    }
+
+    #| Interpolate InterpolantSpan and pass through resulting StringSpan
+    multi method flat-string-spans(InterpolantSpan:D $is) {
+        $is.interpolate(%.vars)
+    }
+
+    #| Passthrough existing StringSpan
+    multi method flat-string-spans(StringSpan:D $ss) {
+        $ss
+    }
+
+    #| Convert a Str to a StringSpan for convenience
+    multi method flat-string-spans(Str:D $str) {
+        string-span($str)
     }
 
 
