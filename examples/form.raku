@@ -1,7 +1,7 @@
 # ABSTRACT: Simple form UI example based on Terminal::Widgets::Simple
 
 use Terminal::Widgets::Simple;
-use Terminal::Widgets::SpanStyle;
+use Terminal::Widgets::TextContent;
 
 
 #| A top level UI container based on Terminal::Widgets::Simple::TopLevel
@@ -44,17 +44,18 @@ class FormUI is TopLevel {
         $log-viewer.add-entry($?NL) if $log-viewer.log;
 
         for $.form.inputs {
-            $log-viewer.add-entry(span-tree('on_white',
-                                            span('red',  $++ ~ ' '),
-                                            span('blue', .gist)));
+            $log-viewer.add-entry(span-tree(color => 'on_white',
+                                            string-span($++ ~ ' ', color => 'red'),
+                                            string-span(.gist,     color => 'blue')));
         }
 
         my $selected = %.by-id<one>.selected-member;
         $log-viewer.add-entry($selected
-                              ?? span('blue on_white',
-                                      'Radio button ' ~ $selected.id.raku ~ ' selected')
-                              !! span('red on_white',
-                                      'No radio button selected'));
+                              ?? string-span('Radio button ' ~ $selected.id.raku ~ ' selected',
+                                             color => 'blue on_white')
+
+                              !! string-span('No radio button selected',
+                                             color => 'red on_white'));
 
         $log-viewer.refresh-for-scroll;
     }
@@ -62,7 +63,7 @@ class FormUI is TopLevel {
     method show-layout() {
         my $log-viewer = %.by-id<lv>;
         $log-viewer.add-entry($?NL) if $log-viewer.log;
-        $log-viewer.add-entry(span('green', self.layout.gist));
+        $log-viewer.add-entry(string-span(self.layout.gist, color => 'green'));
         $log-viewer.refresh-for-scroll;
     }
 }
