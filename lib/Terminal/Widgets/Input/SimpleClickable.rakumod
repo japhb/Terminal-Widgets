@@ -22,14 +22,9 @@ does Terminal::Widgets::Input::Labeled {
 
     #| Draw content area
     method draw-content() {
-        my $layout = self.layout.computed;
-        my $x      = $layout.left-correction;
-        my $y      = $layout.top-correction;
-
-        # XXXX: Temporary hack
-        my $text   = $.terminal.locale.plain-text(self.content-text($.label));
-
-        $.grid.set-span($x, $y, $text, self.current-color);
+        my ($l, $t, $w, $h) = self.content-rect;
+        my @spans = $.terminal.locale.render(self.content-text($.label));
+        self.draw-line-spans($l, $t, $w, @spans);
     }
 
     #| Handle minimal keyboard events
