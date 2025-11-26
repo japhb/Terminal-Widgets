@@ -18,7 +18,9 @@ class Terminal::Widgets::I18N::Locale {
     }
     multi method translate($string) { $string }
 
-    method plain-text($content) { $.renderer.plain-text($content) }
-    method render($content)     { $.renderer.render($content) }
-    method width($content)      { $.renderer.width($content) }
+    method flat-string-spans($content) { $.renderer.flat-string-spans($content) }
+    method flat-spans($content)        { $.renderer.flat-spans($content) }
+    method plain-text($content)        { $.renderer.plain-text($content) }
+    method render($content)            { $.renderer.render($content) }
+    method width($content)             { $.renderer.width($content) }
 }
