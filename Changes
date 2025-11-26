@@ -1,8 +1,49 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Debugging]
+  - Support TERMINAL_WIDGETS_DEBUG env var to set debug verbosity (default 0)
+  - Provide a RenderSpan.Str method to get an SGR-escaped string
+
+  [Docs]
+  - Add a document explaining the basics of the TextContent model
+
+  [Functionality]
+  - Add node highlighting to Viewer::Tree (and thus Viewer::DirTree)
+  - Add helper subs for building TextContent instances
+  - Support mixed Str and span children in span-tree helper
+  - Add pad-span() convenience sub to TextContent
+  - Provide ContentRenderer methods that stop at caching points
+  - Support ContentRenderer.flat-spans/flat-string-spans in I18N::Locale
+  - Add RenderSpan.string-span for path to access attributes
+  - Add lines methods to RenderSpan, StringSpan, and SpanTree
+  - Support both old (SpanStyle) and new (TextContent) models in Viewer::Log
+  - Properly merge color attributes in TextContent trees
+  - Labeled inputs now support colored/styled labels
+
   [Packaging]
   - Bump T::MU dependency for much faster duospace-width() implementation
+  - Bump C::DC dependency for perf tweaks
+
+  [Performance]
+  - Above dependency bumps, picking up faster implementations
+  - Make use of duospace-width-core() in a few cases
+  - Show Widget.full-refresh timing info when debug > 0
+  - Show timing info for Viewer::Tree cache fills when debug > 0
+  - Optimize several key Viewer::Tree routines
+  - Remove redundant full-refresh in SpanWrappingAndHighlighting!my-refresh
+
+  [Refactoring]
+  - Switch Input modules to TextContent
+  - Switch Tree and DirTree Viewers to RenderSpans
+  - Switch debugger-mockup, dir-tree, and form examples over to TextContent
+  - Simplify flatten methods in StringSpan and InterpolantSpan
+  - Get rid of remaining bogus $.grid.set-span* calls outside where they belong
+  - Remove unneeded 'use' statements in several modules
+  - Prefer locale.width over manual duospace-width where feasible
+
+  [Tests]
+  - Prevent export conflicts in 00-use while changing content model
 
 
 0.2.2  2025-11-22T16:00:27-08:00
