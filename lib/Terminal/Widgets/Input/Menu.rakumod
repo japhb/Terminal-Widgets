@@ -3,6 +3,7 @@
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Input;
 use Terminal::Widgets::Widget;
+use Terminal::Widgets::TextContent;
 
 
 class Terminal::Widgets::Input::Menu
@@ -33,13 +34,9 @@ class Terminal::Widgets::Input::Menu
 
     #| Draw content area
     method draw-content() {
-        my $layout     = self.layout.computed;
+        my ($x, $y, $w, $h) = self.content-rect;
         my $terminal   = self.terminal;
         my $locale     = $terminal.locale;
-        my $x          = $layout.left-correction;
-        my $y          = $layout.top-correction;
-        my $w          = $.w - $layout.width-correction;
-        my $h          = $.h - $layout.height-correction;
         my $base-color = self.current-color;
         my $highlight  = $.colorset.highlight;
 
@@ -48,14 +45,14 @@ class Terminal::Widgets::Input::Menu
 
             my $item      = $!items[$i];
             my $icon      = ($item<id> && %.icons{$item<id>}) // '';
-            my $title     = $locale.plain-text($item<title>);
-            my $formatted = ' ' ~ ($icon ~ ' ' if $icon) ~ $title ~ ' ';
+            my $title     = $terminal.sanitize-text($item<title>);
+            my $formatted = span-tree(' ', ($icon ~ ' ' if $icon), $title, ' ');
             my $extra     = 0 max $w - $locale.width($formatted);
-            my $padding   = ' ' x $extra;
+            my $padding   = pad-span($extra);
             my $color     = $i == $!selected ?? $highlight
                                              !! $item<color> // $base-color;
-            $.grid.set-span($x, $y + $_,
-                            $terminal.sanitize-text($formatted) ~ $padding, $color);
+            my @spans     = $locale.render(span-tree($formatted, $padding, :$color));
+            self.draw-line-spans($x, $y + $_, $w, @spans);
         }
     }
 
