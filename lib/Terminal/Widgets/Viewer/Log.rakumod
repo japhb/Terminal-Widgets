@@ -1,16 +1,18 @@
 # ABSTRACT: Simple auto-scrolling log viewer
 
-use Terminal::Widgets::SpanStyle;
+use Terminal::Widgets::SpanStyle Empty;
+use Terminal::Widgets::TextContent;
 use Terminal::Widgets::SpanBuffer;
 
 
 my atomicint $NEXT-ID = 0;
 sub term:<NEXT-ID>() { ++⚛$NEXT-ID }
 
+subset Content where TextContent | Terminal::Widgets::SpanStyle::SpanContent;
 
 #| A single log entry, with (unprocessed) content and metadata
 my class LogEntry {
-    has SpanContent $.content is required;
+    has Content:D   $.content is required;
     has $.timestamp = now;
     has $.id        = NEXT-ID;
 }
@@ -25,7 +27,7 @@ class Terminal::Widgets::Viewer::Log
     has            %!hard-lines;
 
     #| Add content for a single entry (in styled spans or a plain string) to the log
-    multi method add-entry(SpanContent $content) {
+    multi method add-entry(Content $content) {
         self.add-entry(LogEntry.new(:$content))
     }
 
@@ -57,10 +59,21 @@ class Terminal::Widgets::Viewer::Log
 
     #| Compute the list of hard lines for a particular LogEntry
     method hard-lines(LogEntry:D $entry) {
-        my $as-tree = $entry.content ~~ Terminal::Widgets::SpanStyle::SpanTree
-                        ?? $entry.content
-                        !! span-tree('', $entry.content);
-        $as-tree.lines.eager
+        constant SS = Terminal::Widgets::SpanStyle;
+        constant TC = Terminal::Widgets::TextContent;
+
+        my $as-tree = do given $entry.content {
+            when Str            { TC::span-tree(string-span($_)) }
+            when SS::Span       { SS::span-tree('', [$_]) }
+            when TC::StringSpan { TC::span-tree($_) }
+            when SS::SpanTree   { $_ }
+            when TC::SpanTree   { $_ }
+            default { die "Unrecognized LogEntry.content type {.^name.raku}" }
+        };
+
+        $as-tree ~~ TC::SpanTree
+        ?? $as-tree.lines.map(*.map(*.render).eager).eager
+        !! $as-tree.lines.eager;
     }
 
     #| Grab a chunk of laid-out span lines to feed to SpanBuffer.draw-frame
