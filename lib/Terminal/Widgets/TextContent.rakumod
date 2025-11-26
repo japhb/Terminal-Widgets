@@ -38,7 +38,7 @@ class RenderSpan is export {
 
     #| Lazily calculate and cache duospace width
     method width(--> UInt:D) {
-        $!width //= duospace-width-core($!text)
+        $!width //= duospace-width-core($!text, 0)
     }
 
     #| Stringify to an SGR-escaped string instead of rendering into a widget's
