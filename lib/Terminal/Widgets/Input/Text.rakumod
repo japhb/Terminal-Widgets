@@ -2,7 +2,6 @@
 
 use Terminal::LineEditor::DuospaceInput;
 use Terminal::LineEditor::RawTerminalInput;
-use Text::MiscUtils::Layout;
 
 use Terminal::Widgets::Utils::Color;
 use Terminal::Widgets::Events;

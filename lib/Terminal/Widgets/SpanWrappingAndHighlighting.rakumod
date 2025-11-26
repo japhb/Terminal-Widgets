@@ -1,7 +1,5 @@
 # ABSTRACT: A role that does span wrapping.
 
-use Text::MiscUtils::Layout;
-
 use Terminal::Widgets::SpanStyle;
 use Terminal::Widgets::SpanBuffer;
 use Terminal::Widgets::Focusable;
@@ -320,8 +318,9 @@ does Terminal::Widgets::SpanBuffer {
     }
 
     method !chars-fitting-in-width($text, $width --> Int) {
+        my $locale = $.terminal.locale;
         my $count = $width;
-        while duospace-width($text.substr(0, $count)) > $width {
+        while $locale.width($text.substr(0, $count)) > $width {
             $count--;
         }
         $count

@@ -1,6 +1,5 @@
 # ABSTRACT: Per-terminal user locale information
 
-use Text::MiscUtils::Layout;
 use Terminal::Widgets::I18N::Translation;
 
 constant ContentRenderer =
