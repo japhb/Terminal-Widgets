@@ -121,8 +121,7 @@ class Terminal::Widgets::Input::Text
 
         my $refresh = $.input-field.render(:$edited);
         my $start   = $.input-field.field-start;
-        my $pos     = $start
-                    + $.input-field.left-mark-width
+        my $pos     = $.input-field.left-mark-width
                     + $.input-field.scroll-to-insert-width;
 
         self.clear-frame;
@@ -130,9 +129,9 @@ class Terminal::Widgets::Input::Text
 
         my $tree = span-tree(:$color,
                              string-span($.prompt-string, color => $prompt),
-                             ($refresh.substr(0, $pos - 1) if $pos),
+                             ($refresh.substr(0, $pos)),
                              string-span($refresh.substr($pos, 1), color => $cursor),
-                             ($refresh.substr($pos + 1) if $pos + $start < $w));
+                             ($refresh.substr($pos + 1) if $pos < $refresh.chars));
 
         my @spans = $.terminal.locale.render($tree);
         self.draw-line-spans($x, $y, $w, @spans);
