@@ -95,12 +95,9 @@ class DebuggerMockup is TopLevel {
             my $lineno      = $i + 1;
             my $lineno-span = $lineno == 7
                               ?? string-span($lineno ~ '>', color => 'bold yellow')
-                              !! string-span($lineno ~ ' ');
+                              !! $lineno ~ ' ';
             my $pad-span    = pad-span($max-lineno-width - $lineno.chars);
-            $source.add-entry(span-tree($pad-span,
-                                        $lineno-span,
-                                        string-span('│'),
-                                        string-span($line)));
+            $source.add-entry(span-tree($pad-span, $lineno-span, '│', $line));
         }
 
         $inspector.add-entry: q:to/INSPECTOR/;

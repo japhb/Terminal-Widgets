@@ -38,8 +38,8 @@ class DirTreeDemo is TopLevel {
 
         my sub format-line(Str:D $label, Str:D() $value) {
             span-tree(string-span($label, color => 'bold yellow'),
-                      string-span(' ' x 10 - $label.chars),
-                      string-span($value))
+                      pad-span(10 - $label.chars),
+                      $value)
         }
 
         $details.add-entry(format-line('Path',     $path));
