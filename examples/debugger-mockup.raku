@@ -6,7 +6,7 @@
 
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Simple;
-use Terminal::Widgets::SpanStyle;
+use Terminal::Widgets::TextContent;
 use Terminal::Widgets::I18N::Translation;
 
 
@@ -93,11 +93,14 @@ class DebuggerMockup is TopLevel {
         my $max-lineno-width = @code-lines.elems.chars;
         for @code-lines.kv -> $i, $line {
             my $lineno      = $i + 1;
-            my $lineno-span = $lineno == 7 ?? span('bold yellow', $lineno ~ '>')
-                                           !! $lineno ~ ' ';
-            $source.add-entry(span-tree('',
-                                        ' ' x ($max-lineno-width - $lineno.chars),
-                                        $lineno-span, '│', $line));
+            my $lineno-span = $lineno == 7
+                              ?? string-span($lineno ~ '>', color => 'bold yellow')
+                              !! string-span($lineno ~ ' ');
+            my $pad-span    = pad-span($max-lineno-width - $lineno.chars);
+            $source.add-entry(span-tree($pad-span,
+                                        $lineno-span,
+                                        string-span('│'),
+                                        string-span($line)));
         }
 
         $inspector.add-entry: q:to/INSPECTOR/;
