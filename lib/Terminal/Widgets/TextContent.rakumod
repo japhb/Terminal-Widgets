@@ -165,7 +165,7 @@ class SpanTree does SemanticText {
         gather for self.flatten.map(*.lines(:!chomp)).flat {
             if .string.ends-with($?NL) {
                 @spans.push($chomp ?? StringSpan.new(string => .string.chomp,
-                                                     :%.attributes)
+                                                     attributes => .attributes)
                                    !! $_);
                 take @spans.clone;
                 @spans = ();
