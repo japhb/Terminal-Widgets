@@ -5,6 +5,8 @@ unit module Terminal::Widgets::TextContent;
 use Text::MiscUtils::Layout;
 use Terminal::ANSIColor;
 
+use Terminal::Widgets::Utils::Color;
+
 
 #| An exception preventing stringification for content that requires more processing
 class X::CannotStringify is Exception {
@@ -67,8 +69,10 @@ subset TextContent is export where Str | RenderSpan | SemanticText;
 
 #| Merge together parent and child attribute hashes
 sub merge-attributes(%parent, %child) {
-    # XXXX: For now just flatten, but may need to be smarter about certain keys
-    %(|%parent, |%child)
+    my %merged = |%parent, |%child;
+    %merged<color> = color-merge(%parent<color>, %child<color>)
+                              if %parent<color> && (%child<color>:exists);
+    %merged
 }
 
 
