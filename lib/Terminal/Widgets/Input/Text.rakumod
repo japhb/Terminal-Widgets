@@ -8,6 +8,7 @@ use Terminal::Widgets::Utils::Color;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Input;
 use Terminal::Widgets::Widget;
+use Terminal::Widgets::TextContent;
 
 
 #| Single-line text entry field with history tracking and mappable keys
@@ -56,17 +57,18 @@ class Terminal::Widgets::Input::Text
     method full-refresh(Str:D $content = $.input-field.?buffer.contents // '',
                         Bool:D :$print = True) {
         if $.enabled {
+            my $terminal = self.terminal;
+            my $locale   = $terminal.locale;
+            my $caps     = $terminal.caps;
+
             # Determine new field metrics
-            my $layout        = self.layout.computed;
-            my $prompt-width  = duospace-width($.prompt-string);
-            my $field-start   = $prompt-width
-                              + $layout.left-correction;
-            my $display-width = $.w - $prompt-width
-                              - $layout.width-correction;
+            my ($x, $y, $w, $h) = self.content-rect;
+            my $prompt-width    = $locale.width($.prompt-string);
+            my $field-start     = $x + $prompt-width;
+            my $display-width   = $w - $prompt-width;
 
             # Create a new input field using the new metrics
             # XXXX: Should we support masked inputs?
-            my $caps = self.terminal.caps;
             self.set-input-field($.input-class.new(:$display-width, :$field-start, :$caps));
 
             # Insert initial content if any and refresh input field
@@ -84,16 +86,17 @@ class Terminal::Widgets::Input::Text
 
     #| Display input disabled state
     method show-disabled(Bool:D :$print = True) {
-        my $layout = self.layout.computed;
-        my $x      = $layout.left-correction;
-        my $y      = $layout.top-correction;
-        my $w      = $.w - $layout.width-correction;
-
         self.clear-frame;
         self.draw-framing;
 
-        $.grid.set-span-text($x, $y, $.disabled-string);
-        $.grid.set-span-color($x, $x + $w - 1, $y, self.current-color);
+        my ($x, $y, $w, $h) = self.content-rect;
+        my $locale = $.terminal.locale;
+        my $pad    = pad-span($w - $locale.width($.disabled-string));
+        my $tree   = span-tree(color => self.current-color,
+                               $.disabled-string, $pad);
+        my @spans  = $locale.render($tree);
+
+        self.draw-line-spans($x, $y, $w, @spans);
         self.composite(:$print);
     }
 
@@ -109,9 +112,7 @@ class Terminal::Widgets::Input::Text
 
     #| Refresh widget in input field mode
     method refresh-input-field(Bool:D $edited = True) {
-        my $layout  = self.layout.computed;
-        my $x       = $layout.left-correction;
-        my $y       = $layout.top-correction;
+        my ($x, $y, $w, $h) = self.content-rect;
 
         my $states  = self.current-theme-states;
         my $color   = self.current-color($states);
@@ -127,9 +128,14 @@ class Terminal::Widgets::Input::Text
         self.clear-frame;
         self.draw-framing;
 
-        $.grid.set-span($x,     $y, $.prompt-string, $prompt);
-        $.grid.set-span($start, $y, $refresh, $color);
-        $.grid.set-span-color($pos, $pos, $y, $cursor);
+        my $tree = span-tree(:$color,
+                             string-span($.prompt-string, color => $prompt),
+                             ($refresh.substr(0, $pos - 1) if $pos),
+                             string-span($refresh.substr($pos, 1), color => $cursor),
+                             ($refresh.substr($pos + 1) if $pos + $start < $w));
+
+        my @spans = $.terminal.locale.render($tree);
+        self.draw-line-spans($x, $y, $w, @spans);
     }
 
     #| Fetch completions based on current buffer contents and cursor pos
