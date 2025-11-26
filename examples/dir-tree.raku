@@ -2,7 +2,7 @@
 
 use Terminal::Widgets::Simple;
 use Terminal::Widgets::Events;
-use Terminal::Widgets::SpanStyle;
+use Terminal::Widgets::TextContent;
 use Terminal::Widgets::Volatile::DirTree;
 
 #| A top level UI container based on Terminal::Widgets::Simple::TopLevel
@@ -37,9 +37,9 @@ class DirTreeDemo is TopLevel {
         $details.add-entry("\n") if $details.log;
 
         my sub format-line(Str:D $label, Str:D() $value) {
-            span-tree('', span('bold yellow', $label),
-                          span('', ' ' x 10 - $label.chars),
-                          span('', $value))
+            span-tree(string-span($label, color => 'bold yellow'),
+                      string-span(' ' x 10 - $label.chars),
+                      string-span($value))
         }
 
         $details.add-entry(format-line('Path',     $path));
