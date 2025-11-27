@@ -11,6 +11,10 @@ class Terminal::Widgets::Viewer::DirTree
    is Terminal::Widgets::Viewer::Tree {
     has Color::DirColors:D $.dir-colors .= new-from-env;
 
+    submethod TWEAK() {
+        self.set-sort-by(*.short-name) unless self.sort-by;
+    }
+
     #| Displayed content for a given node itself, not including children
     method node-content($node) {
         my $color = $.dir-colors.color-for($node.data.path);
