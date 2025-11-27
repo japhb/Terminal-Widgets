@@ -79,36 +79,14 @@ class StyleUI is TopLevel {
             )
         };
 
-        # Center the style table on the screen using a simple centering trick:
-        # an outer node (horizontal or vertical) containing just 3 children --
-        # two empty space-filling nodes surrounding a minimized inner node
+        # Center the style table and a divider and quit button on the screen
         with $builder {
-            # Outer container node; centers middle node horizontally using
-            # default horizontal layout direction for all three children
-            .node(
-                # Empty for left space
-                .node(),
-                # Width-minimized center content node; centers its own content
-                # vertically by specifying vertical layout and using same trick
-                .node(:vertical, style => %(:minimize-w),
-                      # Empty for top space
-                      .node(),
-                      # Height-minimized node containing content
-                      .node(:vertical, style => %(:minimize-h),
-                            # Show the style table
-                            $table,
-
-                            # Add a horizontal divider and a quit button
-                            .divider(line-style => 'light1', style => %(set-h => 1)),
-                            .button(label => 'Quit',
-                                    process-input => { $.terminal.quit }),
-                           ),
-                      # Empty for bottom space
-                      .node(),
-                     ),
-                # Empty for right space
-                .node(),
-            )
+            .center(:vertical, style => %( :minimize-w, :minimize-h ),
+                    $table,
+                    .divider(line-style => 'light1', style => %(set-h => 1)),
+                    .button(label => 'Quit',
+                            process-input => { $.terminal.quit }),
+                   )
         }
     }
 }
