@@ -17,11 +17,12 @@ class StyleUI is TopLevel {
                 # Column 0: basic attributes
                 .widget(:vertical, style => %(padding-width => (0, 1)),
                       .plain-text(text  => 'bold',      color => 'bold'),
+                      .plain-text(text  => 'faint',     color => 'faint'),
                       .plain-text(text  => 'italic',    color => 'italic'),
                       .plain-text(text  => 'inverse',   color => 'inverse'),
                       .plain-text(text  => 'underline', color => 'underline'),
                       .plain-text(text  => 'all of the above',
-                                  color => 'bold italic inverse underline'),
+                                  color => 'bold faint italic inverse underline'),
                 ),
 
                 # First divider: light dashed
