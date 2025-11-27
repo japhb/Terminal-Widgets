@@ -26,16 +26,19 @@ my class DisplayLeaf does DisplayNode {
 my class DisplayParent does DisplayNode {
     has DisplayNode:D @.children;
     has Bool:D        $.expanded = False;
-    has               &.sort-by is required;
+    has               &.sort-by;
 
     #| Refresh children from volatile data and recreate DisplayNodes as needed
     method refresh-children() {
-        my $depth  = $!depth + 1;
-        @!children = $.data.children(:refresh).sort(&!sort-by).map: {
+        my $depth   = $!depth + 1;
+        my &create := {
             $_ ~~ VTree::Parent
                 ?? DisplayParent.new(parent => self, data => $_, :$depth, :&!sort-by)
                 !! DisplayLeaf.new(  parent => self, data => $_, :$depth)
-        }
+        };
+        @!children = &!sort-by
+                       ?? $.data.children(:refresh).sort(&!sort-by).map(&create)
+                       !! $.data.children(:refresh).map(&create)
     }
 
     #| Toggle expanded state (using set-expanded)
@@ -65,7 +68,7 @@ class Terminal::Widgets::Viewer::Tree
     has VTree::Node   $.root;
     has DisplayParent $.display-root is built(False);
     has DisplayNode   $.current-node is built(False);
-    has               &.sort-by       = *.short-name;
+    has               &.sort-by;
     has               &.process-click;
 
     has @!flat-node-cache;
