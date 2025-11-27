@@ -34,3 +34,49 @@ role Parent does Node {
     #| REQUIRED: Lazily find (and maybe cache) children, forcing a refresh if requested
     method children(::?CLASS:D: Bool:D :$refresh = False) { ... }
 }
+
+
+### STATIC TREE WRAPPING
+
+#| A static leaf node
+class StaticLeaf does Leaf {
+    has $.source;
+    has $!short-name is built;
+    has $!long-name  is built;
+
+    method short-name() { $!short-name //= $.source ~~ Cool
+                                           ?? ~$.source
+                                           !! $.source.?short-name // $.source.gist }
+    method long-name()  { $!long-name  //=    $.source.?long-name  // $.source.raku }
+}
+
+#| A parent node whose children do NOT change
+class StaticParent does Parent {
+    has @.children;
+    has $!short-name is built;
+    has $!long-name  is built;
+
+    method set-children(@!children) { }
+
+    method short-name() { $!short-name //= $!parent ?? 'parent of ' ~ @.children.elems
+                                                    !! 'root' }
+    method long-name()  { $!long-name  //= self.raku }
+}
+
+#| Helper sub to wrap a static tree that has Positionals as parent nodes;
+#| Pairs are named nodes
+our sub static-tree($source-node, *%attrs) is export {
+    do given $source-node {
+        when Node       { $_ }
+        when Pair       { static-tree(.value, |%attrs, short-name => .key) }
+        when Positional {
+            my $parent   = StaticParent.new(|%attrs);
+            my @children = .map({ static-tree($_, :$parent) });
+            $parent.set-children(@children);
+            $parent
+        }
+        default {
+            StaticLeaf.new(source => $_, |%attrs)
+        }
+    }
+}
