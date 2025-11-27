@@ -534,6 +534,18 @@ class Widget is Node {
 class WithScrollbars is Node { }
 
 
+# Structural nodes to generate centering node structures
+
+#| A structural node to horizontally center its children
+class HCenter is Node { }
+
+#| A structural node to vertically center its children
+class VCenter is Node { }
+
+#| A structural node to center its children in both directions
+class Center is Node { }
+
+
 #| Helper class for building style/layout trees
 class Builder {
     has $.context is required;
@@ -573,6 +585,49 @@ class Builder {
         }
     }
 
+    #| Helper method for building horizontal centering layout
+    method build-hcenter(*@children, :%style, *%extra) {
+        with self {
+            .build-node(HCenter,
+                        .node(),
+                        .node(|@children, :%style, |%extra),
+                        .node(),
+                       )
+        }
+    }
+
+    #| Helper method for building vertical centering layout
+    method build-vcenter(*@children, :%style, *%extra) {
+        with self {
+            .build-node(VCenter, :vertical,
+                        .node(),
+                        .node(|@children, :%style, |%extra),
+                        .node(),
+                       )
+        }
+    }
+
+    #| Helper method for building fully centering layout
+    #| (horizontal outer centering, vertical inner centering)
+    method build-center(*@children, :%style, *%extra) {
+        my %hstyle = %style.clone;
+        my %vstyle = %style.clone;
+        %hstyle<minimize-h>:delete;
+        %vstyle<minimize-w>:delete;
+
+        with self {
+            .build-node(Center,
+                        .node(),
+                        .node(:vertical, style => %hstyle,
+                              .node(),
+                              .node(|@children, style => %vstyle, |%extra),
+                              .node(),
+                             ),
+                        .node(),
+                       )
+        }
+    }
+
     # Misc leaf nodes (no children ever)
     method leaf(|c)          { self.build-leaf(Leaf,         |c) }
     method spacer(|c)        { self.build-leaf(Spacer,       |c) }
@@ -603,6 +658,11 @@ class Builder {
 
     # Nodes with required children
     method with-scrollbars(|c) { self.build-with-scrollbars( |c) }
+
+    # "Gravitational" nodes
+    method hcenter(|c)       { self.build-hcenter(           |c) }
+    method vcenter(|c)       { self.build-vcenter(           |c) }
+    method center(|c)        { self.build-center(            |c) }
 }
 
 
