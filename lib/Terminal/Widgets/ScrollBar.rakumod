@@ -162,7 +162,27 @@ class Terminal::Widgets::HScrollBar
         }
     }
 
-    #| Handle mouse events
+    #| Handle mouse wheel events
+    multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
+                              $event where { .mouse.pressed &&
+                                             .mouse.button  == 6|7 }, AtTarget) {
+        # Take focus even if wheeled over framing instead of content area
+        self.toplevel.focus-on(self);
+
+        # If enabled, process wheel left/right
+        if $.enabled {
+            given $event.mouse.button {
+                when 6 { self.arrow-left-scroll  }
+                when 7 { self.arrow-right-scroll }
+            }
+        }
+        else {
+            # Refresh even not enabled because of focus state change
+            self.full-refresh;
+        }
+    }
+
+    #| Handle mouse click events
     #  XXXX: Handle drag events
     multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
                               $event where !*.mouse.pressed, AtTarget) {
@@ -309,7 +329,27 @@ class Terminal::Widgets::VScrollBar
         }
     }
 
-    #| Handle mouse events
+    #| Handle mouse wheel events
+    multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
+                              $event where { .mouse.pressed &&
+                                             .mouse.button  == 4|5 }, AtTarget) {
+        # Take focus even if wheeled over framing instead of content area
+        self.toplevel.focus-on(self);
+
+        # If enabled, process wheel up/down
+        if $.enabled {
+            given $event.mouse.button {
+                when 4 { self.arrow-up-scroll   }
+                when 5 { self.arrow-down-scroll }
+            }
+        }
+        else {
+            # Refresh even not enabled because of focus state change
+            self.full-refresh;
+        }
+    }
+
+    #| Handle mouse click events
     #  XXXX: Handle drag events
     multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
                               $event where !*.mouse.pressed, AtTarget) {

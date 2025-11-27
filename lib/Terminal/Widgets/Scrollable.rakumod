@@ -1,5 +1,8 @@
 # ABSTRACT: Common role for scrollable widgets
 
+use Terminal::Widgets::Events;
+
+
 #| Common role for scrollable widgets
 role Terminal::Widgets::Scrollable {
     has UInt:D $.x-scroll = 0;
@@ -85,5 +88,23 @@ role Terminal::Widgets::Scrollable {
         # show the upper left corner of the rect at ($x, $y).
         self.ensure-x-span-visible($x, $x + (0 max $w - 1));
         self.ensure-y-span-visible($y, $y + (0 max $h - 1));
+    }
+
+    #| Handle mouse wheel events
+    multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
+                              $event where { .mouse.pressed &&
+                                             .mouse.button  == 4|5|6|7 }, AtTarget) {
+        # Take focus even if wheeled over framing instead of content area
+        self.toplevel.focus-on(self);
+
+        # Process wheel up/down/left/right
+        given $event.mouse.button {
+            when 4 { self.change-y-scroll: -4 }
+            when 5 { self.change-y-scroll: +4 }
+            when 6 { self.change-x-scroll: -8 }
+            when 7 { self.change-x-scroll: +8 }
+        }
+
+        self.refresh-for-scroll;
     }
 }
