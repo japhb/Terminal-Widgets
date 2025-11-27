@@ -188,7 +188,7 @@ class Terminal::Widgets::Viewer::Tree
 
     #| Displayed content for a given node itself, not including children
     method node-content($node) {
-        my $color = $node === $!current-node ?? 'inverse' !! '';
+        my $color = $node === $!current-node ?? 'inverse ' !! '';
         render-span($node.data.short-name, $color)
     }
 
