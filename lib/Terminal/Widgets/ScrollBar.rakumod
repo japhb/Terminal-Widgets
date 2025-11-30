@@ -63,13 +63,18 @@ class Terminal::Widgets::HScrollBar
  does Terminal::Widgets::Scrollbar {
     method h-arrow-scroll-inc() {
         my $ui-prefs = self.terminal.ui-prefs;
+        my $h-invert = $ui-prefs<scroll-invert-horizontal> ?? -1 !! +1;
+        my $h-speed  =         $ui-prefs<mouse-wheel-horizontal-speed>
+                       || 2 * ($ui-prefs<mouse-wheel-vertical-speed> || 4);
 
-                $ui-prefs<mouse-wheel-horizontal-speed>
-        || 2 * ($ui-prefs<mouse-wheel-vertical-speed> || 4)
+        $h-speed * $h-invert
     }
 
     method h-bar-scroll-inc() {
-        $.scroll-target.content-width
+        my $ui-prefs = self.terminal.ui-prefs;
+        my $h-invert = $ui-prefs<scroll-invert-horizontal> ?? -1 !! +1;
+
+        $.scroll-target.content-width * $h-invert
     }
 
     method arrow-left-scroll() {
@@ -235,11 +240,18 @@ class Terminal::Widgets::VScrollBar
    is Terminal::Widgets::Widget
  does Terminal::Widgets::Scrollbar {
     method v-arrow-scroll-inc() {
-        self.terminal.ui-prefs<mouse-wheel-vertical-speed> || 4
+        my $ui-prefs = self.terminal.ui-prefs;
+        my $v-invert = $ui-prefs<scroll-invert-vertical> ?? -1 !! +1;
+        my $v-speed  = $ui-prefs<mouse-wheel-vertical-speed> || 4;
+
+        $v-speed * $v-invert
     }
 
     method v-bar-scroll-inc() {
-        $.scroll-target.content-height
+        my $ui-prefs = self.terminal.ui-prefs;
+        my $v-invert = $ui-prefs<scroll-invert-vertical> ?? -1 !! +1;
+
+        $.scroll-target.content-height * $v-invert
     }
 
     method arrow-up-scroll() {

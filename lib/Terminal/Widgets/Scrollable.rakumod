@@ -101,13 +101,15 @@ role Terminal::Widgets::Scrollable {
         my $ui-prefs = self.terminal.ui-prefs;
         my $v-speed  = $ui-prefs<mouse-wheel-vertical-speed>   || 4;
         my $h-speed  = $ui-prefs<mouse-wheel-horizontal-speed> || 2 * $v-speed;
+        my $v-invert = $ui-prefs<scroll-invert-vertical>   ?? -1 !! +1;
+        my $h-invert = $ui-prefs<scroll-invert-horizontal> ?? -1 !! +1;
 
         # Process wheel up/down/left/right
         given $event.mouse.button {
-            when 4 { self.change-y-scroll: -$v-speed }
-            when 5 { self.change-y-scroll: +$v-speed }
-            when 6 { self.change-x-scroll: -$h-speed }
-            when 7 { self.change-x-scroll: +$h-speed }
+            when 4 { self.change-y-scroll: -$v-speed * $v-invert }
+            when 5 { self.change-y-scroll: +$v-speed * $v-invert }
+            when 6 { self.change-x-scroll: -$h-speed * $h-invert }
+            when 7 { self.change-x-scroll: +$h-speed * $h-invert }
         }
 
         self.refresh-for-scroll;
