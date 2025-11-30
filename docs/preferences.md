@@ -82,3 +82,9 @@ currently recognized by Terminal::Widgets:
 
 * `Bool input-activation-flash` - If `True`, flash Input widgets when
   activated, such as when a Button is clicked.  Defaults to `False`.
+
+* `UInt mouse-wheel-vertical-speed` - Sets number of scrolled lines per mouse
+  wheel vertical event, defaulting to 4 lines per event.
+
+* `UInt mouse-wheel-horizontal-speed` - Sets number of scrolled cells per mouse
+  wheel horizontal event, defaulting to twice `mouse-wheel-vertical-speed`.

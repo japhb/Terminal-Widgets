@@ -15,9 +15,7 @@ does Terminal::Widgets::Themable
 does Terminal::Widgets::Focusable {
     has ScrollTarget:D $.scroll-target is required;
 
-    has Bool:D $.show-end-arrows      = True;
-    has UInt:D $.end-arrow-scroll-inc = 0;
-    has UInt:D $.bar-click-scroll-inc = 0;
+    has Bool:D $.show-end-arrows = True;
 
     has %!glyphs = self.scrollbar-glyphs;
 
@@ -63,28 +61,34 @@ does Terminal::Widgets::Focusable {
 class Terminal::Widgets::HScrollBar
    is Terminal::Widgets::Widget
  does Terminal::Widgets::Scrollbar {
-    submethod TWEAK() {
-        $!end-arrow-scroll-inc ||= 8;
-        $!bar-click-scroll-inc ||= self.content-width;
+    method h-arrow-scroll-inc() {
+        my $ui-prefs = self.terminal.ui-prefs;
+
+                $ui-prefs<mouse-wheel-horizontal-speed>
+        || 2 * ($ui-prefs<mouse-wheel-vertical-speed> || 4)
+    }
+
+    method h-bar-scroll-inc() {
+        $.scroll-target.content-width
     }
 
     method arrow-left-scroll() {
-        $.scroll-target.change-x-scroll(-$.end-arrow-scroll-inc);
+        $.scroll-target.change-x-scroll(-self.h-arrow-scroll-inc);
         $.scroll-target.refresh-for-scroll;
     }
 
     method arrow-right-scroll() {
-        $.scroll-target.change-x-scroll(+$.end-arrow-scroll-inc);
+        $.scroll-target.change-x-scroll(+self.h-arrow-scroll-inc);
         $.scroll-target.refresh-for-scroll;
     }
 
     method bar-left-scroll() {
-        $.scroll-target.change-x-scroll(-$.bar-click-scroll-inc);
+        $.scroll-target.change-x-scroll(-self.h-bar-scroll-inc);
         $.scroll-target.refresh-for-scroll;
     }
 
     method bar-right-scroll() {
-        $.scroll-target.change-x-scroll(+$.bar-click-scroll-inc);
+        $.scroll-target.change-x-scroll(+self.h-bar-scroll-inc);
         $.scroll-target.refresh-for-scroll;
     }
 
@@ -230,28 +234,31 @@ class Terminal::Widgets::HScrollBar
 class Terminal::Widgets::VScrollBar
    is Terminal::Widgets::Widget
  does Terminal::Widgets::Scrollbar {
-    submethod TWEAK() {
-        $!end-arrow-scroll-inc ||= 4;
-        $!bar-click-scroll-inc ||= self.content-height;
+    method v-arrow-scroll-inc() {
+        self.terminal.ui-prefs<mouse-wheel-vertical-speed> || 4
+    }
+
+    method v-bar-scroll-inc() {
+        $.scroll-target.content-height
     }
 
     method arrow-up-scroll() {
-        $.scroll-target.change-y-scroll(-$.end-arrow-scroll-inc);
+        $.scroll-target.change-y-scroll(-self.v-arrow-scroll-inc);
         $.scroll-target.refresh-for-scroll;
     }
 
     method arrow-down-scroll() {
-        $.scroll-target.change-y-scroll(+$.end-arrow-scroll-inc);
+        $.scroll-target.change-y-scroll(+self.v-arrow-scroll-inc);
         $.scroll-target.refresh-for-scroll;
     }
 
     method bar-up-scroll() {
-        $.scroll-target.change-y-scroll(-$.bar-click-scroll-inc);
+        $.scroll-target.change-y-scroll(-self.v-bar-scroll-inc);
         $.scroll-target.refresh-for-scroll;
     }
 
     method bar-down-scroll() {
-        $.scroll-target.change-y-scroll(+$.bar-click-scroll-inc);
+        $.scroll-target.change-y-scroll(+self.v-bar-scroll-inc);
         $.scroll-target.refresh-for-scroll;
     }
 

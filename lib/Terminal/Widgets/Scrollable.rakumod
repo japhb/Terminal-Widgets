@@ -97,12 +97,17 @@ role Terminal::Widgets::Scrollable {
         # Take focus even if wheeled over framing instead of content area
         self.toplevel.focus-on(self);
 
+        # Fetch current mouse wheel speed preferences
+        my $ui-prefs = self.terminal.ui-prefs;
+        my $v-speed  = $ui-prefs<mouse-wheel-vertical-speed>   || 4;
+        my $h-speed  = $ui-prefs<mouse-wheel-horizontal-speed> || 2 * $v-speed;
+
         # Process wheel up/down/left/right
         given $event.mouse.button {
-            when 4 { self.change-y-scroll: -4 }
-            when 5 { self.change-y-scroll: +4 }
-            when 6 { self.change-x-scroll: -8 }
-            when 7 { self.change-x-scroll: +8 }
+            when 4 { self.change-y-scroll: -$v-speed }
+            when 5 { self.change-y-scroll: +$v-speed }
+            when 6 { self.change-x-scroll: -$h-speed }
+            when 7 { self.change-x-scroll: +$h-speed }
         }
 
         self.refresh-for-scroll;
