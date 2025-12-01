@@ -13,6 +13,8 @@ class ColorSetUI is TopLevel {
         my $theme    = $terminal.color-theme.name;
         my @variants = $terminal.color-theme.variants.keys.sort;
         my @items    = @variants.map({ %( id => $_, title => $_ ) });
+        my %top-margin = %( margin-width => (1, 0, 0, 0) );
+        my $header   = 'bold yellow underline';
 
         with $builder {
             .node(
