@@ -2,6 +2,7 @@
 
 use Text::MiscUtils::Layout;
 
+use Terminal::Widgets::Utils::Color;
 use Terminal::Widgets::TextContent;
 use Terminal::Widgets::SpanBuffer;
 
@@ -21,9 +22,10 @@ class Terminal::Widgets::PlainText
     #| Grab a chunk of laid-out span lines to feed to SpanBuffer.draw-frame
     method span-line-chunk(UInt:D $start, UInt:D $wanted) {
         my $w     = self.content-width;
+        my $color = color-merge(self.current-color, $!c);
         my @lines = ($.wrap ?? $.text.lines.map({ wrap-text($w, $_).Slip }).flat
                             !! $.text.lines)
-                    .map({ RenderSpan.new(text => $_, color => $.c), });
+                    .map({ RenderSpan.new(text => $_, :$color), });
 
         $start ?? @lines[$start..*] !! @lines
     }
