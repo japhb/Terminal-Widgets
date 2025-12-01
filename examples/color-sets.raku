@@ -26,10 +26,14 @@ class ColorSetUI is TopLevel {
                                               margin-width => [ 0, 0, 1, 1] )),
                       .plain-text(id => 'menu-label', style => %( set-h => 1 ),
                                   text => 'Theme Variant:'),
-                      .menu(  :@items, id => 'variant',
-                              process-input => { self.show-variant }),
-                      .button(id => 'quit', label => 'Quit',
-                              process-input  => { $.terminal.quit }),
+                      .menu(    id => 'variant', :@items,
+                                process-input => { self.show-variant }),
+                      .checkbox(id => 'show-active', label => 'Show Active Flash',
+                                process-input => { self.show-active-flash },
+                                style => %top-margin, state => True),
+                      .button(  id => 'quit', label => 'Quit',
+                                process-input => { $.terminal.quit },
+                                style => %top-margin),
                      ),
                 .divider(line-style => 'light1', style => %( set-w => 1)),
                 .node(:vertical,
@@ -76,7 +80,25 @@ class ColorSetUI is TopLevel {
         self.redraw-all;
     }
 
+    method set-active-flash() {
+        # Select whether input flash is active
+        my $show = %.by-id<show-active>.state;
+        $.terminal.ui-prefs<input-activation-flash> = $show;
+
+        # Refresh samples with new UI pref
+        my $samples  = %.by-id<samples>;
+        for $samples.children {
+            .full-refresh;
+        }
+    }
+
+    method show-active-flash() {
+        self.set-active-flash;
+        self.redraw-all;
+    }
+
     multi method handle-event(Terminal::Widgets::Events::LayoutBuilt:D, BubbleUp) {
+        self.set-active-flash;
         self.set-variant;
     }
 }
