@@ -38,21 +38,36 @@ class ColorSetUI is TopLevel {
                 .divider(line-style => 'light1', style => %( set-w => 1)),
                 .node(:vertical,
                       .widget(:vertical,  id => 'samples', style => %( :minimize-h ),
-                              .plain-text(id => 'text',   text  => 'Just plain text',
+                              .plain-text(id => 'text-label', text => 'Text',
+                                          c => $header),
+                              .plain-text(id => 'text', text  => 'Just plain text',
                                           extra-theme-states => %( :text )),
-                              .plain-text(id => 'hint',   text  => 'Context-sensitive hint',
+                              .plain-text(id => 'hint', text  => 'Context-sensitive hint',
                                           extra-theme-states => %( :text, :hint )),
-                              .plain-text(id => 'link',   text  => 'Clickable link',
+                              .plain-text(id => 'link', text  => 'Clickable link',
                                           extra-theme-states => %( :text, :link )),
-                              .button(    id => 'input',  label => 'Input widget'),
-                              .button(    id => 'disabled', label => 'Disabled widget',
+
+                              .plain-text(id => 'button-label', text => 'Buttons',
+                                          c => $header, style => %top-margin),
+                              .button(    id => 'disabled', label => 'Disabled',
                                           :!enabled),
-                              .text-input(id => 'prompt', prompt-string => 'Prompt >'),
-                              .text-input(id => 'error',  prompt-string => 'Error >',
-                                          error => 'Error state set'),
+                              .button(    id => 'normal', label => 'Normal'),
+                              .button(    id => 'focused', label => 'Focused',
+                                          extra-theme-states => %( :focused )),
+                              .button(    id => 'active', label => 'Active', :active,
+                                          extra-theme-states => %( :focused )),
+
+                              .plain-text(id => 'text-input-label', text => 'Text Inputs',
+                                          c => $header, style => %top-margin),
                               .text-input(id => 'disabled-text', prompt-string => '>',
                                           disabled-string => 'Disabled text input',
                                           :!enabled),
+                              .text-input(id => 'prompt', prompt-string => 'Prompt >'),
+                              .text-input(id => 'focused-text',
+                                          prompt-string => 'Focused >',
+                                          extra-theme-states => %( :focused )),
+                              .text-input(id => 'error',  prompt-string => 'Error >',
+                                          error => 'Error state set'),
                              ),
                       .node(),
                      ),
@@ -100,6 +115,10 @@ class ColorSetUI is TopLevel {
     multi method handle-event(Terminal::Widgets::Events::LayoutBuilt:D, BubbleUp) {
         self.set-active-flash;
         self.set-variant;
+
+        %.by-id<prompt>       .do-edit('insert-string', 'previous input text');
+        %.by-id<focused-text> .do-edit('insert-string', 'current input text');
+        %.by-id<error>        .do-edit('insert-string', 'incorrect input text');
     }
 }
 
