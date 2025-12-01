@@ -63,7 +63,10 @@ class ColorSetUI is TopLevel {
 
         # Refresh samples with new ColorSet
         my $samples  = %.by-id<samples>;
-        .set-colorset($colorset) for $samples.children;
+        for $samples.children {
+            .set-colorset($colorset);
+            .full-refresh;
+        }
     }
 
     method show-variant() {
