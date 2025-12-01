@@ -6,6 +6,7 @@ use Terminal::Widgets::ColorTheme;
 #| Has standard themable states
 role Terminal::Widgets::ThemableStates {
     has Bool:D $.enabled = True;
+    has %.extra-theme-states;
 
     # Set enabled flag, then refresh to pick up likely visual change
     method set-enabled(Bool:D $!enabled = True) { self.full-refresh }
@@ -19,7 +20,8 @@ role Terminal::Widgets::ThemableStates {
         my $blurred  = $focused && !($toplevel.is-current-toplevel &&
                                      $terminal.terminal-focused);
 
-        my %states   = :$focused, :$blurred, disabled => !$.enabled;
+        my %states   = :$focused, :$blurred, disabled => !$.enabled,
+                       |%.extra-theme-states;
     }
 }
 
