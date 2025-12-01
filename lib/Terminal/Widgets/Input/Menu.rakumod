@@ -9,6 +9,7 @@ use Terminal::Widgets::TextContent;
 class Terminal::Widgets::Input::Menu
    is Terminal::Widgets::Widget
  does Terminal::Widgets::Input {
+    has UInt:D $.current  = 0;
     has UInt:D $.selected = 0;
     has UInt:D $.top-item = 0;
     has        $.items;
@@ -26,10 +27,11 @@ class Terminal::Widgets::Input::Menu
     # Menu-specific gist flags
     method gist-flags() {
         |self.Terminal::Widgets::Input::gist-flags,
-        'items:' ~ $!items.elems,
+        'items:'    ~ $!items.elems,
         'top-item:' ~ $!top-item,
+        'current:'  ~ $!current,
         'selected:' ~ $!selected,
-        'hotkeys:' ~ %!hotkey.elems,
+        'hotkeys:'  ~ %!hotkey.elems,
     }
 
     #| Draw content area
@@ -45,8 +47,9 @@ class Terminal::Widgets::Input::Menu
 
             my $item      = $!items[$i];
             my $icon      = ($item<id> && %.icons{$item<id>}) // '';
-            my $title     = $terminal.sanitize-text($item<title>);
-            my $formatted = span-tree(' ', ($icon ~ ' ' if $icon), $title, ' ');
+            my $title     = $terminal.sanitize-text($locale.plain-text($item<title>));
+            my $mark      = $i == $!current ?? '>' !! ' ';
+            my $formatted = span-tree($mark, ($icon ~ ' ' if $icon), $title, ' ');
             my $extra     = 0 max $w - $locale.width($formatted);
             my $padding   = pad-span($extra);
             my $color     = $i == $!selected ?? $highlight
@@ -56,29 +59,36 @@ class Terminal::Widgets::Input::Menu
         }
     }
 
-    #| Scroll to keep the selected element visible
+    #| Scroll to keep the current element visible
     method auto-scroll() {
         my $h         = $.h - $.layout.computed.height-correction;
         my $last-top  = 0 max ($!items.elems - $h);
-        $!top-item min= $!selected min $last-top;
-        $!top-item max= $!selected + 1 - $h;
+        $!top-item min= $!current min $last-top;
+        $!top-item max= $!current + 1 - $h;
+    }
+
+    #| Set an item as current and make sure it is visible
+    method set-current(Int:D $current) {
+        if 0 <= $current <= @.items.end {
+            $!current = $current;
+            self.set-hint(@.items[$!current]<hint> // '');
+            self.auto-scroll;
+        }
     }
 
     #| Set an item as selected and make sure it is visible
     method set-selected(Int:D $selected) {
         if 0 <= $selected <= @.items.end {
-            $!selected = $selected;
-            self.set-hint(@.items[$!selected]<hint> // '');
+            $!current = $!selected = $selected;
+            self.set-hint(@.items[$!current]<hint> // '');
             self.auto-scroll;
         }
     }
 
     #| Process a select event
-    method select(UInt $i?, Bool:D :$print = True) {
-        if $i.defined {
-            return unless 0 <= $i <= @.items.end;
-            self.set-selected($i);
-        }
+    method select(UInt:D $i = $!current, Bool:D :$print = True) {
+        return unless $i <= @.items.end;
+        self.set-selected($i);
 
         $!active = True;
         self.refresh-value(:$print);
@@ -91,13 +101,13 @@ class Terminal::Widgets::Input::Menu
 
     #| Process a prev-item event
     method prev-item(Bool:D :$print = True) {
-        self.set-selected($!selected - 1);
+        self.set-current($!current - 1);
         self.refresh-value(:$print);
     }
 
     #| Process a next-item event
     method next-item(Bool:D :$print = True) {
-        self.set-selected($!selected + 1);
+        self.set-current($!current + 1);
         self.refresh-value(:$print);
     }
 
