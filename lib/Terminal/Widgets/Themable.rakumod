@@ -44,6 +44,12 @@ does Terminal::Widgets::ThemableStates {
         }
     }
 
+    #| Switch colorset for this widget
+    method set-colorset(Terminal::Widgets::ColorSet:D $colorset
+                        = self.terminal.colorset) {
+        $!colorset = %!color ?? $colorset.clone(|%!color) !! $colorset;
+    }
+
     #| Determine proper color based on state variables, taking care to handle
     #| whatever color style mixtures have been requested
     method current-color($states = self.current-theme-states) {
