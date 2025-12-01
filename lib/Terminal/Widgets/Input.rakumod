@@ -12,7 +12,7 @@ does Terminal::Widgets::Focusable {
     has        $.hint-target;
     has        $.hint;
     has        $.error;
-    has Bool:D $!active = False;   # XXXX: Handle this for all inputs?
+    has Bool:D $!active is built = False;   # XXXX: Handle this for all inputs?
 
     has Terminal::Widgets::Form $.form;
 
