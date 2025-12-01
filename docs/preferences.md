@@ -20,6 +20,12 @@ user's preference for translation languages.  If both are set, `LANGUAGE` is
 preferred over `LANG`.
 
 
+### `NO_COLOR=1`
+
+If `NO_COLOR` is set to `1`, default to a monochrome theme variant.  Otherwise
+default to a theme variant based on terminal color depth.
+
+
 ### `TERM`, `TERM_PROGRAM`, `COLORTERM`, and others
 
 Used to detect the user's terminal emulator -- and terminal multiplexer if any

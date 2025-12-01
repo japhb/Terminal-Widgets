@@ -20,7 +20,7 @@ class Terminal::Widgets::Terminal
     has Terminal::Capabilities:D          $.caps   .= new;
     has Terminal::Widgets::I18N::Locale:D $.locale .= new;
     has Terminal::Widgets::ColorTheme:D   $.color-theme = $DEFAULT-THEME;
-    has Terminal::Widgets::ColorSet:D     $.colorset = $!color-theme.variants<attr8tango>;
+    has Terminal::Widgets::ColorSet:D     $.colorset = self.default-theme-variant;
     has                                   %.ui-prefs;
 
     has Promise:D $.has-initialized .= new;
@@ -40,6 +40,14 @@ class Terminal::Widgets::Terminal
     # XXXX: Multiple T::P's in an app?
     has Terminal::Print:D $!terminal-print = PROCESS::<$TERMINAL> //= Terminal::Print.new;
 
+
+    #| Pick a default theme variant based on terminal and env vars
+    method default-theme-variant() {
+        my $variant = %*ENV<NO_COLOR>  ?? 'attrmono'   !!
+                      $!caps.color8bit ?? 'attr8tango' !!
+                                          'attr4bit';
+        $!color-theme.variants{$variant}
+    }
 
     #| Initialize terminal size to value detected by Terminal::Print at startup
     submethod TWEAK() {
