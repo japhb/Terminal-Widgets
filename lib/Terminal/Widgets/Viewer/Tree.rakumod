@@ -90,21 +90,19 @@ class Terminal::Widgets::Viewer::Tree
     # Auto-cache flattened nodes and displayable lines
     method flat-node-cache() {
         @!flat-node-cache ||= do {
-            my $debug = +($*DEBUG // 0);
-            my $t0    = now;
+            my $t0 = now;
             self.flattened-nodes($!display-root, my @n);
-            note sprintf("flattened-nodes: %.3fms (%d elems)",
-                         1000 * (now - $t0), @n.elems) if $debug;
+            note sprintf("💲 Refill flattened-nodes: %.3fms (%d elems)",
+                         1000 * (now - $t0), @n.elems) if $.debug;
             @n
         }
     }
     method flat-line-cache() {
         @!flat-line-cache ||= do {
-            my $debug = +($*DEBUG // 0);
-            my $t0    = now;
+            my $t0 = now;
             self.node-lines($!display-root, my @l);
-            note sprintf("node-lines: %.3fms (%d elems)",
-                         1000 * (now - $t0), @l.elems) if $debug;
+            note sprintf("💲 Refill node-lines: %.3fms (%d elems)",
+                         1000 * (now - $t0), @l.elems) if $.debug;
             @l
         }
     }
@@ -117,8 +115,7 @@ class Terminal::Widgets::Viewer::Tree
             use Text::MiscUtils::Layout;
             state %width-cache;
 
-            my $debug = +($*DEBUG // 0);
-            my $t0    = now;
+            my $t0 = now;
 
             # XXXX: Sadly at high cardinality this cleaner version still
             #       leaves too much performance on the table
@@ -130,12 +127,14 @@ class Terminal::Widgets::Viewer::Tree
                 + duospace-width-core(.[1].text, 0)
             }).max;
 
-            note sprintf("max-line-width: %.3fms (%d elems)",
-                         1000 * (now - $t0), @!flat-line-cache.elems) if $debug;
+            note sprintf("💲 Recalculate max-line-width: %.3fms (%d elems)",
+                         1000 * (now - $t0), @!flat-line-cache.elems) if $.debug;
             $max
         }
     }
     method clear-caches() {
+        note "💲 Clearing Viewer::Tree caches" if $.debug;
+
         @!flat-node-cache = Empty;
         @!flat-line-cache = Empty;
         $!max-line-width  = 0;
