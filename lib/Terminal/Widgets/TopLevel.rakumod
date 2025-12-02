@@ -24,6 +24,19 @@ does Terminal::Widgets::Layout::WidgetBuilding {
 
     ### Core implementation
 
+    #| Hook start/end of event processing to provide debug info
+    method process-event(Terminal::Widgets::Events::Event:D $event,
+                         Terminal::Widgets::Events::EventPhase:D $phase = TrickleDown) {
+        my $show-time = $.debug && $phase == TrickleDown;
+        note '⚙️  Processing ' ~ $event.gist if $show-time;
+        my $t0 = now;
+
+        callsame;
+
+        note sprintf("⏱️  Event #%d processed: %.3fms\n",
+                     $event.id, 1000 * (now - $t0)) if $show-time;
+    }
+
     #| Add a widget to a named group
     method add-to-group(Terminal::Widgets::Widget:D $widget, Str:D $group) {
         %!named-group{$group}.push($widget);
