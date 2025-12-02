@@ -93,6 +93,8 @@ class Terminal::Widgets::Widget
     #| Dynamic layout node associated with this widget
     has Terminal::Widgets::Layout::Dynamic $.layout;
 
+    has UInt:D $.debug = +($*DEBUG // 0);
+
     has Str:D $.id = ''; #= String ID (must be unique within TopLevel *if* non-empty)
     has Int:D $.z  = 0;  #= Z offset from parent; default = in-plane
 
@@ -667,21 +669,20 @@ class Terminal::Widgets::Widget
     method composite(|) {
         my @dirty  := self.snapshot-dirty-areas;
         my @merged := self.merge-dirty-areas(@dirty);
-        my $debug   = +($*DEBUG // 0);
 
-        note 'Compositing:' if $debug >= 2;
-        note Backtrace.new.Str.subst(/' at ' \S+/, '', :g) if $debug >= 3;
+        note 'Compositing:' if $!debug >= 2;
+        note Backtrace.new.Str.subst(/' at ' \S+/, '', :g) if $!debug >= 3;
 
         if $.parent ~~ Terminal::Widgets::Widget:D {
             if $.parent.is-current-toplevel && $.parent.grid === $*TERMINAL.current-grid {
-                note '  Printing to content area: ' ~ $.gist if $debug;
-                note self.debug-grid if $debug >= 2;
+                note '⎙  Printing to content area: ' ~ $.gist if $!debug;
+                note self.debug-grid if $!debug >= 2;
 
                 $.parent.print-to-content-area(self, $_) for @merged;
             }
             else {
-                note '  Copying to content area and dirtying parent: ' ~ $.gist if $debug;
-                note self.debug-grid if $debug >= 2;
+                note '🗐  Copying to content area and dirtying parent: ' ~ $.gist if $!debug;
+                note self.debug-grid if $!debug >= 2;
 
                 for @merged {
                     my ($x, $y, $w, $h) = $.parent.copy-to-content-area(self, $_);
@@ -690,8 +691,8 @@ class Terminal::Widgets::Widget
             }
         }
         else {
-            note '  FOLLOWING OLD COMPOSITE PATH FOR ' ~ self.^name ~ ' WITH PARENT ' ~ $.parent.^name if $debug;
-            note self.debug-grid if $debug >= 2;
+            note '!  FOLLOWING OLD COMPOSITE PATH FOR ' ~ self.gist-name ~ ' WITH PARENT ' ~ $.parent.^name if $!debug;
+            note self.debug-grid if $!debug >= 2;
 
             # XXXX: HACK, just assumes entire composed area is dirty
             $.parent.add-dirty-rect($.x, $.y, $.w, $.h) if self.parent-dirtyable;
