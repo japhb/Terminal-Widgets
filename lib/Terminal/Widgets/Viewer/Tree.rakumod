@@ -142,6 +142,8 @@ class Terminal::Widgets::Viewer::Tree
 
     #| Fix x-max and y-max based on current display state
     method fix-scroll-maxes() {
+        note "…  Fixing Viewer::Tree scroll maxes" if $.debug;
+
         self.set-x-max(self.max-line-width);
         self.set-y-max($.display-root.branch-size);
     }
@@ -275,9 +277,15 @@ class Terminal::Widgets::Viewer::Tree
 
     #| Perform cache clears and scroll changes needed for changed expanded state
     method refresh-for-expand-change() {
+        note "🆕 Starting refresh-for-expand-change of: {self.gist-name}" if $.debug;
+        my $t0 = now;
+
         self.clear-caches;
         self.fix-scroll-maxes;
         self.refresh-for-scroll(:force);
+
+        note sprintf("⏱️  Refresh for expand change of {self.gist-name}: %.3fms",
+                     1000 * (now - $t0)) if $.debug;
     }
 
     #| Walk up the parents from a given DisplayNode, making sure they are

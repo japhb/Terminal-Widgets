@@ -145,6 +145,9 @@ class Terminal::Widgets::Terminal
     #| terminal has resized or toplevel has been changed)
     method resize-toplevel() {
         with $.current-toplevel {
+            note "⚙️  Processing resize-toplevel request" if $!debug;
+            my $t0 = now;
+
             my $is-current-grid = .grid === $!terminal-print.current-grid;
 
             # note 'Updating toplevel geometry to ' ~ $!w ~ ' x ' ~ $!h;
@@ -161,6 +164,9 @@ class Terminal::Widgets::Terminal
 
             # Refresh layout, draw, and composite
             .relayout(:focus);
+
+            note sprintf("⏱️  resize-toplevel request processed: %.3fms\n",
+                         1000 * (now - $t0)) if $!debug;
         }
     }
 
