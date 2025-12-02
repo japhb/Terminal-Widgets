@@ -344,15 +344,15 @@ class Terminal::Widgets::Widget
 
     #| Fully refresh this widget and optionally force a print
     method full-refresh(Bool:D :$print = True) {
-        my $debug = +($*DEBUG // 0);
-        my $t0    = now;
+        note "🆕 Starting full-refresh of: {self.gist-name}" if $!debug;
+        my $t0 = now;
 
         self.clear-frame;
         self.draw-frame;
         self.composite(:$print);
 
-        note sprintf("  ⏱️  Full Refresh {self.gist-name}: %.3fms", 1000 * (now - $t0))
-             if $debug;
+        note sprintf("⏱️  full-refresh of {self.gist-name}: %.3fms",
+                     1000 * (now - $t0)) if $!debug;
     }
 
     #| Clear the frame and set it all-dirty (so it requires composite)
