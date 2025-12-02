@@ -9,8 +9,13 @@ use Terminal::LineEditor::RawTerminalInput;
 enum EventPhase is export < TrickleDown AtTarget BubbleUp >;
 
 
+# Unique ID generator for events
+my atomicint $NEXT-ID = 0;
+sub term:<NEXT-ID>() { ++⚛$NEXT-ID }
+
 #| A basic generic event class
 class Event {
+    has $.id      = NEXT-ID;
     has $.created = now;
     has %.bubbled-up-to is SetHash;
 }
