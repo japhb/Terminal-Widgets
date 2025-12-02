@@ -38,7 +38,7 @@ role Terminal::Widgets::Scrollable {
 
     method set-x-scroll(Int:D $x-scroll) {
         # Refresh widget if scroll position changed
-        my $new  = 0 max ($x-scroll min $!x-max);
+        my $new  = 0 max ($x-scroll min $!x-max - 1);
         if $new != $!x-scroll {
             $!x-scroll = $new;
             $!scrolled = True;
@@ -47,7 +47,7 @@ role Terminal::Widgets::Scrollable {
 
     method set-y-scroll(Int:D $y-scroll) {
         # Refresh widget if scroll position changed
-        my $new  = 0 max ($y-scroll min $!y-max);
+        my $new  = 0 max ($y-scroll min $!y-max - 1);
         if $new != $!y-scroll {
             $!y-scroll = $new;
             $!scrolled = True;
