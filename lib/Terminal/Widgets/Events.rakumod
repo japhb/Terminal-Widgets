@@ -18,6 +18,13 @@ class Event {
     has $.id      = NEXT-ID;
     has $.created = now;
     has %.bubbled-up-to is SetHash;
+
+    method gist() {
+        my $name = self.^name.subst('Terminal::Widgets::', '');
+        my $time = $!created - $*INIT-INSTANT;
+
+        $name ~ ' #' ~ $!id ~ ', created:' ~ $time.round(.001)
+    }
 }
 
 
@@ -58,12 +65,20 @@ class KeyboardEvent is FocusFollowingEvent {
             }
         }
     }
+
+    method gist() {
+        callsame() ~ ', key:' ~ self.keyname
+    }
 }
 
 
 #| A targeted event
 class TargetedEvent is Event {
     has $.target is required;
+
+    method gist() {
+        callsame() ~ ', target:' ~ $!target.gist
+    }
 }
 
 
@@ -119,6 +134,18 @@ class MouseEvent is LocalizedEvent {
         my $rel-y = $.mouse.y - 1 - $widget.y-offset - $rect[1];
 
         ($rel-x, $rel-y, $rect[2], $rect[3])
+    }
+
+    method gist() {
+        my $button-mods  = ('Meta-'   if $!mouse.meta)
+                         ~ ('Ctrl-'   if $!mouse.control)
+                         ~ ('Shift-'  if $!mouse.shift)
+                         ~ ('Motion-' if $!mouse.motion)
+                         ~ ($!mouse.pressed ?? 'Pressed-' !! 'Released-')
+                         ~ ('Button' ~ $!mouse.button);
+        my $mouse-gist = '@' ~ $!mouse.x ~ ',' ~ $!mouse.y ~ ':' ~ $button-mods;
+
+        callsame() ~ ', mouse:' ~ $mouse-gist
     }
 }
 
