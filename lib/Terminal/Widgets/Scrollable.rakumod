@@ -12,8 +12,8 @@ role Terminal::Widgets::Scrollable {
     has Bool:D $!scrolled = False;
     has %.scrollbars is SetHash;
 
-    method refresh-for-scroll() {
-        if $!scrolled {
+    method refresh-for-scroll(Bool:D :$force = False) {
+        if $!scrolled || $force {
             .full-refresh for %.scrollbars.keys;
             self.full-refresh;
             $!scrolled = False;
