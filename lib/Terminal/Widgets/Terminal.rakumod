@@ -32,6 +32,7 @@ class Terminal::Widgets::Terminal
 
     has Channel:D $.control         .= new;
     has Bool:D    $.terminal-focused = True;
+    has UInt:D    $!debug = +($*DEBUG // 0);
     has UInt:D    $.w = 0;
     has UInt:D    $.h = 0;
     has           $.app;
@@ -65,13 +66,11 @@ class Terminal::Widgets::Terminal
     #| Enter raw input mode, enable mouse events, and start per-terminal
     #| event reactor ready to pass events to toplevels
     method start {
-        my $debug = +($*DEBUG // 0);
-
-        note "Terminal entering raw mode" if $debug;
+        note "Terminal entering raw mode" if $!debug;
         self.enter-raw-mode;
         self.set-mouse-event-mode(MouseNormalEvents);
 
-        note "Terminal reactor starting up" if $debug;
+        note "Terminal reactor starting up" if $!debug;
         react {
             # Handle events from the control channel
             whenever $.control {
@@ -107,18 +106,17 @@ class Terminal::Widgets::Terminal
                 my $event = $_ ~~ MouseTrackingEvent
                             ?? Terminal::Widgets::Events::MouseEvent.new(mouse => $_)
                             !! Terminal::Widgets::Events::KeyboardEvent.new(key => $_);
-                note $event if $debug;
 
                 # Send the high-level event to the current toplevel for processing
                 .process-event($event) with $.current-toplevel;
             }
 
             # Let watchers know the terminal reactor has started
-            note "Terminal reactor started" if $debug;
+            note "Terminal reactor started\n" if $!debug;
             $!started-vow.keep(True);
         }
 
-        note "Terminal reactor shutting down" if $debug;
+        note "Terminal reactor shutting down" if $!debug;
         self!shutdown;
     }
 
