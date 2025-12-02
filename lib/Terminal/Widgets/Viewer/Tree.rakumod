@@ -237,13 +237,12 @@ class Terminal::Widgets::Viewer::Tree
 
     #| Select a given node as current, expanding parents if needed and
     #| processing a "click" on the node
-    method select-node($node) {
+    method select-node($node, Bool:D :$refresh = True) {
         if $!current-node !=== $node {
             self.remove-highlight($!current-node);
             $!current-node = $node;
-            self.ensure-parents-expanded($node);
             self.add-highlight($node);
-            self.full-refresh;
+            self.full-refresh if $refresh;
             $_($node) with &!process-click;
             # XXXX: Ensure visible?
         }
@@ -256,9 +255,9 @@ class Terminal::Widgets::Viewer::Tree
         return unless $line;
 
         if self.line-to-display-node($line - 1) -> $node {
-            self.select-node($node);
+            self.select-node($node, :!refresh);
             self.ensure-y-span-visible($line - 1, $line);
-            self.refresh-for-scroll;
+            self.refresh-for-scroll(:force);
         }
     }
 
@@ -269,9 +268,9 @@ class Terminal::Widgets::Viewer::Tree
         return unless $line.defined;
 
         if self.line-to-display-node($line + 1) -> $node {
-            self.select-node($node);
+            self.select-node($node, :!refresh);
             self.ensure-y-span-visible($line, $line + 1);
-            self.refresh-for-scroll;
+            self.refresh-for-scroll(:force);
         }
     }
 
@@ -279,7 +278,7 @@ class Terminal::Widgets::Viewer::Tree
     method refresh-for-expand-change() {
         self.clear-caches;
         self.fix-scroll-maxes;
-        self.refresh-for-scroll;
+        self.refresh-for-scroll(:force);
     }
 
     #| Walk up the parents from a given DisplayNode, making sure they are
