@@ -126,7 +126,7 @@ class InterpolantSpan does SemanticSpan {
         # XXXX: Hack ignoring flags completely for now
         my $string = %vars{$!var-name}
                   // '[MISSING INTERPOLATION VARIABLE ' ~ $!var-name.raku ~ ']';
-        StringSpan.new(:$!string, :%!attributes);
+        StringSpan.new(:$string, :%!attributes);
     }
 
     #| Apply current span attributes on top of parent attributes, returning a
