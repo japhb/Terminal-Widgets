@@ -164,21 +164,24 @@ class SpanTree does SemanticText {
     #| Convert from arbitrary tree form to a sequence of Arrays, each of which
     #| contains all the flattened StringSpans of a single (newline-delimited) line
     method lines(Bool:D :$chomp = True) {
+        my @lines;
         my @spans;
         # XXXX: This should go through the ContentRenderer!
-        gather for self.flatten.map(*.lines(:!chomp)).flat {
+        for self.flatten.map(*.lines(:!chomp)).flat {
             if .string.ends-with($?NL) {
                 @spans.push($chomp ?? StringSpan.new(string => .string.chomp,
                                                      attributes => .attributes)
                                    !! $_);
-                take @spans.clone;
+                @lines.push: @spans.clone;
                 @spans = ();
             }
             else {
                 @spans.push($_)
             }
-            LAST take @spans if @spans;
         }
+        @lines.push(@spans) if @spans;
+
+        @lines;
     }
 
     #| Disallow direct .Str without flattening
