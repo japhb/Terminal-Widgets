@@ -23,6 +23,7 @@ class Terminal::Widgets::Viewer::Log
  does Terminal::Widgets::SpanBuffer {
     has LogEntry:D @.log;
     has UInt:D     $!next-start = 0;
+    has UInt:D     @!skip-table;
     has UInt:D     %!start-line;
     has            %!hard-lines;
 
@@ -53,8 +54,9 @@ class Terminal::Widgets::Viewer::Log
         }
         $!next-start = $after;
 
-        # Finally, push new LogEntry to log history
+        # Finally, push new LogEntry to log history and update skip table
         @!log.push($entry);
+        self.update-skip-table($after);
     }
 
     #| Compute the list of hard lines for a particular LogEntry
@@ -78,13 +80,30 @@ class Terminal::Widgets::Viewer::Log
         !! $as-tree.lines.eager;
     }
 
+    #| Update the skip table with the latest log entry
+    method update-skip-table(UInt:D $after-line) {
+        @!skip-table[$after-line +> 10] = +@!log;
+    }
+
+    #| Use the skip table to find a starting point to search for a given line
+    method search-skip-table(UInt:D $line-number) {
+        my $entry = $line-number +> 10 - 1;
+
+        $entry < 0            ?? 0 !!
+        $entry < @!skip-table ?? @!skip-table[$entry] !!
+                                 @!skip-table[@!skip-table.end];
+    }
+
     #| Grab a chunk of laid-out span lines to feed to SpanBuffer.draw-frame
     method span-line-chunk(UInt:D $start, UInt:D $wanted) {
-        my $pos = 0;
+        my $t0 = now;
+
+        my $i   = self.search-skip-table($start);
+        my $pos = %!start-line{@!log[$i].id};
         my @found;
 
-        for @.log {
-            my $lines = %!hard-lines{.id};
+        while $i < @!log {
+            my $lines = %!hard-lines{@!log[$i++].id};
             my $prev  = $pos;
             $pos += $lines.elems;
             next if $start >= $pos;
@@ -93,6 +112,9 @@ class Terminal::Widgets::Viewer::Log
                                          !! @$lines);
             last if @found >= $wanted;
         }
+
+        note sprintf("⏱️  Log.span-line-chunk: %.3fms", 1000 * (now - $t0))
+            if $.debug;
 
         @found
     }
