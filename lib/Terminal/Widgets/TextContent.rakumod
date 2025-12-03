@@ -46,7 +46,7 @@ class RenderSpan is export {
     #| Break a single RenderSpan into list of RenderSpans, each containing only
     #| one line (delimited by textual newlines as usual for Str.lines)
     method lines(Bool:D :$chomp = True) {
-        $.text.lines(:$chomp).map({ RenderSpan.new(text => $_, :$.color, :$.string-span) })
+        $!text.lines(:$chomp).map({ RenderSpan.new(text => $_, :$!color, :$!string-span) })
     }
 
     #| Stringify to an SGR-escaped string instead of rendering into a widget's
@@ -84,8 +84,8 @@ class StringSpan does SemanticSpan {
     #| Render the string into a RenderSpan according to its attributes
     method render(--> RenderSpan:D) {
         # XXXX: Hack: Just transfer over the color attribute
-        RenderSpan.new(string-span => self, text => $.string,
-                       color => %.attributes<color> // '')
+        RenderSpan.new(string-span => self, text => $!string,
+                       color => %!attributes<color> // '')
     }
 
     #| Apply current span attributes on top of parent attributes, returning a
@@ -93,14 +93,14 @@ class StringSpan does SemanticSpan {
     #| This method is used primarily as a base case for SpanTree.flatten.
     method flatten(%parent-attributes? --> StringSpan:D) {
         %parent-attributes
-        ?? self.clone(attributes => merge-attributes(%parent-attributes, %.attributes))
+        ?? self.clone(attributes => merge-attributes(%parent-attributes, %!attributes))
         !! self
     }
 
     #| Break a single StringSpan into list of StringSpans, each containing only
     #| one line (delimited by textual newlines as usual for Str.lines)
     method lines(Bool:D :$chomp = True) {
-        $.string.lines(:$chomp).map({ StringSpan.new(string => $_, :%.attributes) })
+        $!string.lines(:$chomp).map({ StringSpan.new(string => $_, :%!attributes) })
     }
 
     #| Disallow direct .Str without rendering
@@ -124,9 +124,9 @@ class InterpolantSpan does SemanticSpan {
     #        *which* other variables?  Is this encoded in the flag info?
     method interpolate(%vars --> StringSpan:D) {
         # XXXX: Hack ignoring flags completely for now
-        my $string = %vars{$.var-name}
-                  // '[MISSING INTERPOLATION VARIABLE ' ~ $.var-name.raku ~ ']';
-        StringSpan.new(:$.string, :%.attributes);
+        my $string = %vars{$!var-name}
+                  // '[MISSING INTERPOLATION VARIABLE ' ~ $!var-name.raku ~ ']';
+        StringSpan.new(:$!string, :%!attributes);
     }
 
     #| Apply current span attributes on top of parent attributes, returning a
@@ -134,7 +134,7 @@ class InterpolantSpan does SemanticSpan {
     #| This method is used primarily as a base case for SpanTree.flatten.
     method flatten(%parent-attributes? --> InterpolantSpan:D) {
         %parent-attributes
-        ?? self.clone(attributes => merge-attributes(%parent-attributes, %.attributes))
+        ?? self.clone(attributes => merge-attributes(%parent-attributes, %!attributes))
         !! self
     }
 
@@ -157,8 +157,8 @@ class SpanTree does SemanticText {
     #| to override parent attributes or add new ones.
     method flatten(%parent-attributes?) {
         my %child-base-attributes = merge-attributes(%parent-attributes,
-                                                     %.attributes);
-        @.children.map(*.flatten(%child-base-attributes)).flat
+                                                     %!attributes);
+        @!children.map(*.flatten(%child-base-attributes)).flat
     }
 
     #| Convert from arbitrary tree form to a sequence of Arrays, each of which
@@ -200,7 +200,7 @@ class MarkupString does SemanticText is export {
     method parse(--> SpanTree:D) {
         # XXXX: Hack returning a SpanTree with just a single StringSpan,
         #       completely ignoring markup and interpolants
-        SpanTree.new(children => (StringSpan.new(:$.string),))
+        SpanTree.new(children => (StringSpan.new(:$!string),))
     }
 
     #| Disallow direct .Str without parsing
@@ -290,7 +290,7 @@ class ContentRenderer {
     #| for any InterpolantSpans in the list, giving a flat list of StringSpans
     multi method flat-string-spans(MarkupString:D $ms) {
         $ms.parse.flatten.map: {
-            .isa(InterpolantSpan) ?? .interpolate(%.vars) !! $_;
+            .isa(InterpolantSpan) ?? .interpolate(%!vars) !! $_;
         };
     }
 
@@ -298,13 +298,13 @@ class ContentRenderer {
     #| InterpolantSpans in the list, giving a flat list of StringSpans
     multi method flat-string-spans(SpanTree:D $st) {
         $st.flatten.map: {
-            .isa(InterpolantSpan) ?? .interpolate(%.vars) !! $_;
+            .isa(InterpolantSpan) ?? .interpolate(%!vars) !! $_;
         };
     }
 
     #| Interpolate InterpolantSpan and pass through resulting StringSpan
     multi method flat-string-spans(InterpolantSpan:D $is) {
-        $is.interpolate(%.vars)
+        $is.interpolate(%!vars)
     }
 
     #| Passthrough existing StringSpan
@@ -329,7 +329,7 @@ class ContentRenderer {
     #| Convert SpanTree -> flattened list of RenderSpans
     multi method render(SpanTree:D $st) {
         $st.flatten.map({
-            .isa(InterpolantSpan) ?? .interpolate(%.vars).render
+            .isa(InterpolantSpan) ?? .interpolate(%!vars).render
                                   !! .render
         })
     }
