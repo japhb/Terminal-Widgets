@@ -34,6 +34,8 @@ class Terminal::Widgets::Viewer::Log
 
     #| Add a single LogEntry to the log
     multi method add-entry(LogEntry:D $entry) {
+        my $t0 = now;
+
         # Cache hard line info about this LogEntry
         my $id    = ~$entry.id;
         my $lines = %!hard-lines{$id} = self.hard-lines($entry);
@@ -57,6 +59,8 @@ class Terminal::Widgets::Viewer::Log
         # Finally, push new LogEntry to log history and update skip table
         @!log.push($entry);
         self.update-skip-table($after);
+
+        note sprintf("⏱️  Log.add-entry: %.3fms", 1000 * (now - $t0)) if $.debug;
     }
 
     #| Compute the list of hard lines for a particular LogEntry
