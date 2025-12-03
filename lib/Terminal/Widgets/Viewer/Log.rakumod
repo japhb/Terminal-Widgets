@@ -61,16 +61,16 @@ class Terminal::Widgets::Viewer::Log
 
     #| Compute the list of hard lines for a particular LogEntry
     method hard-lines(LogEntry:D $entry) {
-        constant SS = Terminal::Widgets::SpanStyle;
         constant TC = Terminal::Widgets::TextContent;
+        constant SS = Terminal::Widgets::SpanStyle;
 
         my $as-tree = do given $entry.content {
-            when SS::Span       { SS::span-tree('', [$_]) }
-            when SS::SpanTree   { $_ }
-
             when Str            { TC::span-tree($_) }
             when TC::StringSpan { TC::span-tree($_) }
             when TC::SpanTree   { $_ }
+
+            when SS::Span       { SS::span-tree('', [$_]) }
+            when SS::SpanTree   { $_ }
 
             default { die "Unrecognized LogEntry.content type {.^name.raku}" }
         };
