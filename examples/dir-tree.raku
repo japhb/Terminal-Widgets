@@ -34,26 +34,29 @@ class DirTreeDemo is TopLevel {
         my $path = $data.path;
 
         my $details = %.by-id<details>;
-        $details.add-entry($?NL) if $details.log;
 
         my sub format-line(Str:D $label, Str:D() $value) {
             span-tree(string-span($label, color => 'bold yellow'),
                       pad-span(10 - $label.chars),
-                      $value)
+                      $value ~ $?NL)
         }
 
-        $details.add-entry(format-line('Path',     $path));
-        $details.add-entry(format-line('Target',   $path.readlink)) if $path.l;
-        $details.add-entry(format-line('Mode',     $path.mode));
-        $details.add-entry(format-line('User',     $path.user));
-        $details.add-entry(format-line('Group',    $path.group));
-        $details.add-entry(format-line('Inode',    $path.inode));
-        $details.add-entry(format-line('Size',     $path.s));
-        $details.add-entry(format-line('Created',  $path.created.DateTime));
-        $details.add-entry(format-line('Changed',  $path.changed.DateTime));
-        $details.add-entry(format-line('Modified', $path.modified.DateTime));
-        $details.add-entry(format-line('Accessed', $path.accessed.DateTime));
+        my $entry = span-tree(
+            |($?NL if $details.log),
+            format-line('Path',     $path),
+            |(format-line('Target',   $path.readlink) if $path.l),
+            format-line('Mode',     $path.mode),
+            format-line('User',     $path.user),
+            format-line('Group',    $path.group),
+            format-line('Inode',    $path.inode),
+            format-line('Size',     $path.s),
+            format-line('Created',  $path.created.DateTime),
+            format-line('Changed',  $path.changed.DateTime),
+            format-line('Modified', $path.modified.DateTime),
+            format-line('Accessed', $path.accessed.DateTime),
+        );
 
+        $details.add-entry($entry);
         $details.refresh-for-scroll;
     }
 
