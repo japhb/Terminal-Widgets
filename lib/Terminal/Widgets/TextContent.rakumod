@@ -156,9 +156,15 @@ class SpanTree does SemanticText {
     #| attributes fanned out to children; child node attributes are allowed
     #| to override parent attributes or add new ones.
     method flatten(%parent-attributes?) {
-        my %child-base-attributes = merge-attributes(%parent-attributes,
-                                                     %!attributes);
-        @!children.map(*.flatten(%child-base-attributes)).flat
+        # Only merge-attributes if actually needed
+        if %parent-attributes {
+            my %child-base-attributes = merge-attributes(%parent-attributes,
+                                                         %!attributes);
+            @!children.map(*.flatten(%child-base-attributes)).flat
+        }
+        else {
+            @!children.map(*.flatten(%!attributes)).flat
+        }
     }
 
     #| Convert from arbitrary tree form to a sequence of Arrays, each of which
