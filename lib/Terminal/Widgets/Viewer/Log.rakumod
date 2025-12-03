@@ -89,9 +89,16 @@ class Terminal::Widgets::Viewer::Log
     method search-skip-table(UInt:D $line-number) {
         my $entry = $line-number +> 10 - 1;
 
-        $entry < 0            ?? 0 !!
-        $entry < @!skip-table ?? @!skip-table[$entry] !!
-                                 @!skip-table[@!skip-table.end];
+        $entry <  0            ?? 0 !!
+        $entry >= @!skip-table ?? @!skip-table[@!skip-table.end] !!
+                                  @!skip-table[$entry] // do {
+            # Missing skip-table entry, start working back
+            while --$entry >= 0 {
+                return my $i = @!skip-table[$entry] if $i.defined;
+            }
+            # Didn't find any valid entry below the expected one, just return 0
+            0
+        }
     }
 
     #| Grab a chunk of laid-out span lines to feed to SpanBuffer.draw-frame
