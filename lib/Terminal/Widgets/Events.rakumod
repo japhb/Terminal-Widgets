@@ -235,11 +235,17 @@ role EventHandling {
         elsif $event ~~ LocalizedEvent {
             my @overlapped
                 = @.event-handling-children.grep({ $event.overlaps-widget($_) });
-            # XXXX: Use .z-offset instead?
-            # XXXX: Optimize special case when @overlapped == 1?
-            my $max-z = @overlapped.map(*.z).max;
-            my @top   = @overlapped.grep(*.z == $max-z);
-            .process-event($event, TrickleDown) for @top;
+
+            if @overlapped == 1 {
+                # Special case only 1 matching child for performance
+                @overlapped[0].process-event($event, TrickleDown)
+            }
+            elsif @overlapped {
+                # XXXX: Use .z-offset instead?
+                my $max-z = @overlapped.map(*.z).max;
+                my @top   = @overlapped.grep(*.z == $max-z);
+                .process-event($event, TrickleDown) for @top;
+            }
         }
         # Else just send to all children that can understand events
         else {
