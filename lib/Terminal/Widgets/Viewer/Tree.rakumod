@@ -9,6 +9,9 @@ use Terminal::Widgets::Volatile::Tree;
 constant VTree = Terminal::Widgets::Volatile::Tree;
 
 
+class Terminal::Widgets::Viewer::Tree { ... }
+
+
 my role DisplayNode {
     has DisplayNode $.parent;
     has VTree::Node $.data  is required;
@@ -24,6 +27,8 @@ my class DisplayLeaf does DisplayNode {
 }
 
 my class DisplayParent does DisplayNode {
+    has Terminal::Widgets::Viewer::Tree:D $.tree is required;
+
     has DisplayNode:D @.children;
     has Bool:D        $.expanded = False;
     has               &.sort-by;
@@ -33,8 +38,14 @@ my class DisplayParent does DisplayNode {
         my $depth   = $!depth + 1;
         my &create := {
             $_ ~~ VTree::Parent
-                ?? DisplayParent.new(parent => self, data => $_, :$depth, :&!sort-by)
-                !! DisplayLeaf.new(  parent => self, data => $_, :$depth)
+            ?? do {
+                my $new = DisplayParent.new(parent => self, data => $_,
+                                            :$depth, :$!tree, :&!sort-by);
+                my $id  = .id;
+                $new.set-expanded(True) if $id && $!tree.previously-expanded{$id};
+                $new
+            }
+            !! DisplayLeaf.new(parent => self, data => $_, :$depth)
         };
         @!children = &!sort-by
                        ?? $.data.children(:refresh).sort(&!sort-by).map(&create)
@@ -46,10 +57,13 @@ my class DisplayParent does DisplayNode {
 
     #| Set expanded state, refreshing or emptying children as appropriate
     method set-expanded($!expanded) {
+        my $id = $!data.id;
         if $!expanded {
+            $!tree.previously-expanded{$id} = True if $id;
             self.refresh-children;
         }
         else {
+            $!tree.previously-expanded{$id}:delete if $id;
             @!children = Empty;
         }
     }
@@ -71,6 +85,8 @@ class Terminal::Widgets::Viewer::Tree
     has               &.sort-by;
     has               &.process-click;
 
+    has %.previously-expanded;
+
     has @!flat-node-cache;
     has @!flat-line-cache;
     has $!max-line-width;
@@ -79,7 +95,8 @@ class Terminal::Widgets::Viewer::Tree
     # Keep root and display-root in sync
     method set-root(VTree::Node:D $!root) { self!remap-root }
     method !remap-root() {
-        $!display-root = DisplayParent.new(data => $!root, depth => 0, :&.sort-by);
+        $!display-root = DisplayParent.new(data => $!root, depth => 0,
+                                           tree => self, :&.sort-by);
         self.clear-caches;
         self.select-node($!display-root);
     }

@@ -44,6 +44,8 @@ class Dir does Parent {
     has VTree::Node:D @!children   is built;
     has Instant:D     $.cache-time .= from-posix-nanos(0);
 
+    #| Identifier unique at least among all Parent nodes
+    method id() { $!path.resolve }
 
     #| Lazily find (and cache) children, forcing a refresh if requested
     method children(::?CLASS:D: Bool:D :$refresh = False) {

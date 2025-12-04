@@ -33,6 +33,11 @@ role Leaf does Node { }
 role Parent does Node {
     #| REQUIRED: Lazily find (and maybe cache) children, forcing a refresh if requested
     method children(::?CLASS:D: Bool:D :$refresh = False) { ... }
+
+    #| OPTIONAL: Identifier unique at least among all Parent nodes
+    #| If missing, viewers won't remember expanded states of descendents
+    #| of collapsed parent nodes.
+    method id() { }
 }
 
 
