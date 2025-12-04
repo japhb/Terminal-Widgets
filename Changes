@@ -1,6 +1,70 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Bug Fixes]
+  - Fix a thinko bug with InterpolantSpans that had previously been silent
+  - Fix off-by-one error in set-x/y-scroll that would scroll all content
+    offscreen
+  - Fix Viewer::Tree node _UN_highlighting bug
+  - Fix Viewer::Tree refresh handling bug that delayed refresh when expanding
+    an empty parent node
+  - Fix some copy/pasted comments
+
+  [Debugging]
+  - Rename TERMINAL_WIDGETS_DEBUG to TW_DEBUG so that all T-W env vars have
+    the same prefix
+  - Add debug notes for status of the Terminal event reactor
+  - More concise and clear gists for Events
+  - Save $*DEBUG into Terminal!debug
+  - Give all Widgets a $.debug attribute (based on $*DEBUG as with Terminal),
+    and use instead of custom debug handling
+  - Hook TopLevel.process-event to add debugging/timing for all events
+
+  [Docs]
+  - Add doc detailing T-W configuration methods, including env vars, Terminal
+    instance attributes, and `%ui-prefs`
+
+  [Examples]
+  - Simplify styles example using centering layout builder
+  - Add faint attribute to styles example
+  - Add tree-viewer example, based on tree-view with new widgets/APIs
+  - Add color-sets example, showing effect of different theme variants and
+    the input-activation-flash preference
+
+  [Functionality]
+  - Misc
+    + Add center/hcenter/vcenter convenience layout builders
+    + Give every Event a unique ID (since process start)
+    + Allow forcing Scrollable.refresh-for-scroll
+  - Tree viewing
+    + Make Viewer::Tree sorting optional
+    + Default Viewer::DirTree sort to *.short-name
+    + Add Volatile::Tree support for static trees
+    + Remember expanded descendents of collapsed parents, automatically
+      re-expanding them when the parent makes them visible again
+  - Themes and colors
+    + Improve default theme variants: better consistency, readability, and
+      respect for the user's external preferences where possible
+    + Support NO_COLOR standard env var and theme variant autodetection
+    + Allow setting a Widget's colorset after instantiation
+    + Allow Input!active to be set at instantiation
+    + Allow Themables to set extra theme states (beyond those auto-computed,
+      and allowing overrides if desired)
+    + Merge PlainText color on top of current-color
+  - UX
+    + Separate current and selected concepts for better Input::Menu KB UX
+    + Add mouse wheel handling for ScrollBar/Scrollable; note that some
+      terminals do not send mouse wheel left/right events
+    + Support scroll speed/inversion preferences, and pick them up dynamically
+
+  [Performance]
+  - Micro-optimize several heavily used methods and critical paths
+  - Add timing/debugging of events and expensive operations
+  - Improve SpanTree performance
+  - Improve Event handling performance
+  - Improve Viewer::Log performance, especially with large logs
+  - Improve performance of dir-tree example log handling
+
 
 0.2.3  2025-11-26T00:19:56-08:00
   [Debugging]
