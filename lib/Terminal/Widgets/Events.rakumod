@@ -183,7 +183,7 @@ role EventHandling {
 
     #| Children that understand EventHandling
     method event-handling-children() {
-        @.children.grep({ $_ ~~ EventHandling })
+        @.children.grep({ EventHandling.ACCEPTS($_) })
     }
 
     #| Process an event, calling pre- and post- hooks
