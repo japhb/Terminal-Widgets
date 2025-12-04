@@ -118,7 +118,8 @@ class MouseEvent is LocalizedEvent {
         ($rel-x, $rel-y, $widget.w, $widget.h)
     }
 
-    #| Determine whether this mouse event overlapped a particular widget
+    #| Determine whether this mouse event overlapped a particular widget's
+    #| content area
     method overlaps-content-area($widget --> Bool:D) {
         my $rect  = $widget.content-rect;
         my $rel-x = $.mouse.x - 1 - $widget.x-offset - $rect[0];
@@ -127,7 +128,7 @@ class MouseEvent is LocalizedEvent {
         0 <= $rel-x < $rect[2] && 0 <= $rel-y < $rect[3]
     }
 
-    #| Compute coordinates relative to a given widget's local origin
+    #| Compute coordinates relative to a given widget's content area
     method relative-to-content-area($widget) {
         my $rect  = $widget.content-rect;
         my $rel-x = $.mouse.x - 1 - $widget.x-offset - $rect[0];
