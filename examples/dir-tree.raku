@@ -42,7 +42,7 @@ class DirTreeDemo is TopLevel {
         }
 
         my $entry = span-tree(
-            |($?NL if $details.log),
+            |($?NL unless $details.empty),
             format-line('Path',     $path),
             |(format-line('Target',   $path.readlink) if $path.l),
             format-line('Mode',     $path.mode),

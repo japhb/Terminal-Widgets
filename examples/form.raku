@@ -41,7 +41,7 @@ class FormUI is TopLevel {
 
     method show-state() {
         my $log-viewer = %.by-id<lv>;
-        $log-viewer.add-entry($?NL) if $log-viewer.log;
+        $log-viewer.add-entry($?NL) unless $log-viewer.empty;
 
         for $.form.inputs {
             $log-viewer.add-entry(span-tree(color => 'on_white',
@@ -62,7 +62,7 @@ class FormUI is TopLevel {
 
     method show-layout() {
         my $log-viewer = %.by-id<lv>;
-        $log-viewer.add-entry($?NL) if $log-viewer.log;
+        $log-viewer.add-entry($?NL) unless $log-viewer.empty;
         $log-viewer.add-entry(string-span(self.layout.gist, color => 'green'));
         $log-viewer.refresh-for-scroll;
     }

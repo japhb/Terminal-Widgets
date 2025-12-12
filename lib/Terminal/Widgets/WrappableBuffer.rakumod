@@ -30,6 +30,9 @@ does Terminal::Widgets::SpanBuffer {
     has UInt:D %!hard-line-width;
     has        %!hard-lines;
 
+    #| Determine if buffer is completely empty
+    method empty() { !@!line-groups }
+
     #| Insert a group of lines (as some TextContent variant) into the buffer
     #| at a given $pos, defaulting to appending at the end
     multi method insert-line-group(TextContent:D $content,
