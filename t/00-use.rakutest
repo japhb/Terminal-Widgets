@@ -33,6 +33,7 @@ use Terminal::Widgets::Focusable;
 use Terminal::Widgets::Scrollable;
 use Terminal::Widgets::ScrollBar;
 use Terminal::Widgets::SpanBuffer;
+use Terminal::Widgets::WrappableBuffer;
 
 use Terminal::Widgets::SpanWrappingAndHighlighting;
 use Terminal::Widgets::RichText;

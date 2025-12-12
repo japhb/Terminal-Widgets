@@ -11,7 +11,8 @@
     "Terminal::Capabilities:auth<zef:japhb>:ver<0.0.14+>",
     "Terminal::LineEditor:auth<zef:japhb>:ver<0.0.23+>",
     "Terminal::Print:auth<zef:terminal-printers>:ver<0.977+>",
-    "Text::MiscUtils:auth<zef:japhb>:ver<0.0.10+>"
+    "Text::MiscUtils:auth<zef:japhb>:ver<0.0.10+>",
+    "nano:auth<zef:lizmat>:ver<0.0.2+>"
   ],
   "description": "Basic TUI Widgets",
   "license": "Artistic-2.0",
@@ -64,7 +65,8 @@
     "Terminal::Widgets::Viz::SmokeChart": "lib/Terminal/Widgets/Viz/SmokeChart.rakumod",
     "Terminal::Widgets::Volatile::DirTree": "lib/Terminal/Widgets/Volatile/DirTree.rakumod",
     "Terminal::Widgets::Volatile::Tree": "lib/Terminal/Widgets/Volatile/Tree.rakumod",
-    "Terminal::Widgets::Widget": "lib/Terminal/Widgets/Widget.rakumod"
+    "Terminal::Widgets::Widget": "lib/Terminal/Widgets/Widget.rakumod",
+    "Terminal::Widgets::WrappableBuffer": "lib/Terminal/Widgets/WrappableBuffer.rakumod"
   },
   "resources": [
   ],
