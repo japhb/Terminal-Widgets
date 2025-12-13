@@ -1,5 +1,7 @@
 # ABSTRACT: A top-level (full-screen) widget
 
+use nano;
+
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Layout;
 use Terminal::Widgets::Widget;
@@ -29,12 +31,12 @@ does Terminal::Widgets::Layout::WidgetBuilding {
                          Terminal::Widgets::Events::EventPhase:D $phase = TrickleDown) {
         my $show-time = $.debug && $phase == TrickleDown;
         note '⚙️  Processing ' ~ $event.gist if $show-time;
-        my $t0 = now;
+        my $t0 = nano;
 
         callsame;
 
         note sprintf("⏱️  Event #%d processed: %.3fms\n",
-                     $event.id, 1000 * (now - $t0)) if $show-time;
+                     $event.id, (nano - $t0) / 1_000_000) if $show-time;
     }
 
     #| Add a widget to a named group
@@ -62,7 +64,7 @@ does Terminal::Widgets::Layout::WidgetBuilding {
     method focus-on(Terminal::Widgets::Widget:D $target,
                     Bool:D :$redraw = True) {
         note "⚙️  Processing top level focus-on for: {$target.gist-name}" if $.debug;
-        my $t0 = now;
+        my $t0 = nano;
 
         # Determine if focus is *really* changing
         my $prev    = $!focused-widget;
@@ -84,25 +86,25 @@ does Terminal::Widgets::Layout::WidgetBuilding {
         $target.full-refresh if $redraw;
 
         note sprintf("⏱️  focus-on processed for {$target.gist-name}: %.3fms\n",
-                     1000 * (now - $t0)) if $.debug;
+                     (nano - $t0) / 1_000_000) if $.debug;
     }
 
     #| Redraw entire widget tree
     method redraw-all() {
         note "🆕 Starting redraw-all of: {self.gist-name}" if $.debug;
-        my $t0 = now;
+        my $t0 = nano;
 
         my $frame-info = Terminal::Widgets::FrameInfo.new;
         self.do-frame($frame-info);
 
         note sprintf("⏱️  redraw-all of {self.gist-name}: %.3fms",
-                     1000 * (now - $t0)) if $.debug;
+                     (nano - $t0) / 1_000_000) if $.debug;
     }
 
     #| Relayout, redraw, and composite entire widget tree
     method relayout(Bool:D :$focus = False) {
         note '⚙️  Processing top level relayout request' if $.debug;
-        my $t0 = now;
+        my $t0 = nano;
 
         # Build the layout and then send a global event that layout has completed
         self.build-layout;
@@ -114,7 +116,7 @@ does Terminal::Widgets::Layout::WidgetBuilding {
         self.composite;
 
         note sprintf("⏱️  Top level relayout request processed: %.3fms\n",
-                     1000 * (now - $t0)) if $.debug;
+                     (nano - $t0) / 1_000_000) if $.debug;
     }
 
     # XXXX: Allow terminal to be disconnected or switched?

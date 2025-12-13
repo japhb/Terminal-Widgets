@@ -1,5 +1,7 @@
 # ABSTRACT: A viewer/browser for a Volatile::Tree
 
+use nano;
+
 use Terminal::Widgets::Layout;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::TextContent;
@@ -117,19 +119,19 @@ class Terminal::Widgets::Viewer::Tree
     # Auto-cache flattened nodes and displayable lines
     method flat-node-cache() {
         @!flat-node-cache ||= do {
-            my $t0 = now;
+            my $t0 = nano;
             self.flattened-nodes($!display-root, my @n);
             note sprintf("💲 Refill flattened-nodes: %.3fms (%d elems)",
-                         1000 * (now - $t0), @n.elems) if $.debug;
+                         (nano - $t0) / 1_000_000, @n.elems) if $.debug;
             @n
         }
     }
     method flat-line-cache() {
         @!flat-line-cache ||= do {
-            my $t0 = now;
+            my $t0 = nano;
             self.node-lines($!display-root, my @l);
             note sprintf("💲 Refill node-lines: %.3fms (%d elems)",
-                         1000 * (now - $t0), @l.elems) if $.debug;
+                         (nano - $t0) / 1_000_000, @l.elems) if $.debug;
             @l
         }
     }
@@ -142,7 +144,7 @@ class Terminal::Widgets::Viewer::Tree
             use Text::MiscUtils::Layout;
             state %width-cache;
 
-            my $t0 = now;
+            my $t0 = nano;
 
             # XXXX: Sadly at high cardinality this cleaner version still
             #       leaves too much performance on the table
@@ -155,7 +157,7 @@ class Terminal::Widgets::Viewer::Tree
             }).max;
 
             note sprintf("💲 Recalculate max-line-width: %.3fms (%d elems)",
-                         1000 * (now - $t0), @!flat-line-cache.elems) if $.debug;
+                         (nano - $t0) / 1_000_000, @!flat-line-cache.elems) if $.debug;
             $max
         }
     }
@@ -305,14 +307,14 @@ class Terminal::Widgets::Viewer::Tree
     #| Perform cache clears and scroll changes needed for changed expanded state
     method refresh-for-expand-change() {
         note "🆕 Starting refresh-for-expand-change of: {self.gist-name}" if $.debug;
-        my $t0 = now;
+        my $t0 = nano;
 
         self.clear-caches;
         self.fix-scroll-maxes;
         self.refresh-for-scroll(:force);
 
         note sprintf("⏱️  Refresh for expand change of {self.gist-name}: %.3fms",
-                     1000 * (now - $t0)) if $.debug;
+                     (nano - $t0) / 1_000_000) if $.debug;
     }
 
     #| Walk up the parents from a given DisplayNode, making sure they are

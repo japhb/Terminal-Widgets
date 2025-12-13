@@ -1,5 +1,7 @@
 # ABSTRACT: Pausable event pump for parsed and decoded ANSI terminal events
 
+use nano;
+
 use Terminal::Print;
 use Terminal::Capabilities;
 use Terminal::LineEditor::RawTerminalInput;
@@ -146,7 +148,7 @@ class Terminal::Widgets::Terminal
     method resize-toplevel() {
         with $.current-toplevel {
             note "⚙️  Processing resize-toplevel request" if $!debug;
-            my $t0 = now;
+            my $t0 = nano;
 
             my $is-current-grid = .grid === $!terminal-print.current-grid;
 
@@ -166,7 +168,7 @@ class Terminal::Widgets::Terminal
             .relayout(:focus);
 
             note sprintf("⏱️  resize-toplevel request processed: %.3fms\n",
-                         1000 * (now - $t0)) if $!debug;
+                         (nano - $t0) / 1_000_000) if $!debug;
         }
     }
 

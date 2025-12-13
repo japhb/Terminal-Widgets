@@ -1,5 +1,7 @@
 # ABSTRACT: Wrapper of Terminal::Print::Widget with EventHandling and Animation hooks
 
+use nano;
+
 use Terminal::Print::Widget;
 use Terminal::Print::Animated;
 use Terminal::Print::BoxDrawing;
@@ -273,14 +275,14 @@ class Terminal::Widgets::Widget
     #| Fully refresh this widget and optionally force a print
     method full-refresh(Bool:D :$print = True) {
         note "🆕 Starting full-refresh of: {self.gist-name}" if $!debug;
-        my $t0 = now;
+        my $t0 = nano;
 
         self.clear-frame;
         self.draw-frame;
         self.composite(:$print);
 
         note sprintf("⏱️  full-refresh of {self.gist-name}: %.3fms",
-                     1000 * (now - $t0)) if $!debug;
+                     (nano - $t0) / 1_000_000) if $!debug;
     }
 
     #| Clear the frame and set it all-dirty (so it requires composite)

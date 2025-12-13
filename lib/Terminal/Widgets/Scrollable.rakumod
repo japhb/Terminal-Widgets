@@ -1,5 +1,7 @@
 # ABSTRACT: Common role for scrollable widgets
 
+use nano;
+
 use Terminal::Widgets::Events;
 
 
@@ -15,14 +17,14 @@ role Terminal::Widgets::Scrollable {
     method refresh-for-scroll(Bool:D :$force = False) {
         if $!scrolled || $force {
             note "🆕 Starting refresh-for-scroll of: {self.gist-name}" if $.debug;
-            my $t0 = now;
+            my $t0 = nano;
 
             .full-refresh for %.scrollbars.keys;
             self.full-refresh;
             $!scrolled = False;
 
             note sprintf("⏱️  refresh-for-scroll of {self.gist-name}: %.3fms",
-                         1000 * (now - $t0)) if $.debug;
+                         (nano - $t0) / 1_000_000) if $.debug;
         }
     }
 
