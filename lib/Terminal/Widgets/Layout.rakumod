@@ -685,33 +685,16 @@ class Builder
         }
     }
 
+    # NOTE: If a builder method isn't found below, FALLBACK will try to find
+    #       a match in the WidgetRegistry before giving up.
+
     # Misc leaf nodes (no children ever)
     method leaf(|c)          { self.build-leaf(Leaf,         |c) }
     method spacer(|c)        { self.build-leaf(Spacer,       |c) }
     method divider(|c)       { self.build-leaf(Divider,      |c) }
-    method hscroll(|c)       { self.build-leaf(HScrollBar,   |c) }
-    method vscroll(|c)       { self.build-leaf(VScrollBar,   |c) }
-    method plain-text(|c)    { self.build-leaf(PlainText,    |c) }
-    method smoke-chart(|c)   { self.build-leaf(SmokeChart,   |c) }
-
-    # Viewer leaf nodes (no children ever)
-    method rich-text(|c)     { self.build-leaf(RichText,     |c) }
-    method tree-view(|c)     { self.build-leaf(TreeView,     |c) }
-    method log-viewer(|c)    { self.build-leaf(LogViewer,    |c) }
-    method tree-viewer(|c)   { self.build-leaf(TreeViewer,   |c) }
-    method dir-tree-viewer(|c) { self.build-leaf(DirTreeViewer, |c) }
-
-    # Input leaf nodes (no children ever)
-    method menu(|c)          { self.build-leaf(Menu,         |c) }
-    method button(|c)        { self.build-leaf(Button,       |c) }
-    method checkbox(|c)      { self.build-leaf(Checkbox,     |c) }
-    method text-input(|c)    { self.build-leaf(TextInput,    |c) }
-    method radio-button(|c)  { self.build-leaf(RadioButton,  |c) }
-    method toggle-button(|c) { self.build-leaf(ToggleButton, |c) }
 
     # Nodes with optional children
     method node(|c)          { self.build-node(Node,         |c) }
-    method widget(|c)        { self.build-node(Widget,       |c) }
 
     # Nodes with required children
     method with-scrollbars(|c) { self.build-with-scrollbars( |c) }
