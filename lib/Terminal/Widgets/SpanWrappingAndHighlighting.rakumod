@@ -272,7 +272,7 @@ does Terminal::Widgets::SpanBuffer {
     method !word-wrap(@line, $width) {
         my $text = self!spans-to-text(@line);
         my @positions;
-        my @candidates = $text ~~ m:g/ << /;
+        my @candidates = $text ~~ m:g/ << /; # >>
         @candidates .= map: *.from;
         my $pos = 0;
         my $rest-width = $width;
