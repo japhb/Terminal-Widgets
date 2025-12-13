@@ -4,6 +4,7 @@ use Terminal::Print::Widget;
 use Terminal::Print::Animated;
 use Terminal::Print::BoxDrawing;
 
+use Terminal::Widgets::WidgetRegistry;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Layout;
 use Terminal::Widgets::Themable;
@@ -87,6 +88,7 @@ class Terminal::Widgets::Widget
    is Terminal::Print::Widget
  does Terminal::Print::Animated
  does Terminal::Print::BoxDrawing
+ does Terminal::Widgets::WidgetRegistry
  does Terminal::Widgets::Events::EventHandling
  does Terminal::Widgets::DirtyAreas
  does Terminal::Widgets::Themable {
@@ -105,6 +107,18 @@ class Terminal::Widgets::Widget
 
     submethod TWEAK() {
         self.init-themable;
+    }
+
+
+    #| Register a Widget subclass for Layout and StandardWidgetBuilder
+    method register() {
+        my $moniker      = self.gist-name;
+        my $widget-class = self.WHAT;
+        my $layout-class = self.layout-class;
+        my $builder-name = $layout-class.builder-name;
+
+        self.register-widget(:$moniker, :$builder-name,
+                             :$widget-class, :$layout-class);
     }
 
 
