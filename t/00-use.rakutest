@@ -2,6 +2,7 @@ use v6.d;
 use Test;
 
 use Terminal::Widgets;
+use Terminal::Widgets::Common;
 use Terminal::Widgets::WidgetRegistry;
 
 use Terminal::Widgets::Utils;
