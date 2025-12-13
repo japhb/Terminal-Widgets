@@ -24,6 +24,7 @@
     "Terminal::Widgets::ColorTheme": "lib/Terminal/Widgets/ColorTheme.rakumod",
     "Terminal::Widgets::ColorThemes": "lib/Terminal/Widgets/ColorThemes.rakumod",
     "Terminal::Widgets::Common": "lib/Terminal/Widgets/Common.rakumod",
+    "Terminal::Widgets::DirtyAreas": "lib/Terminal/Widgets/DirtyAreas.rakumod",
     "Terminal::Widgets::Events": "lib/Terminal/Widgets/Events.rakumod",
     "Terminal::Widgets::Focusable": "lib/Terminal/Widgets/Focusable.rakumod",
     "Terminal::Widgets::Form": "lib/Terminal/Widgets/Form.rakumod",
