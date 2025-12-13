@@ -66,6 +66,7 @@
     "Terminal::Widgets::Volatile::DirTree": "lib/Terminal/Widgets/Volatile/DirTree.rakumod",
     "Terminal::Widgets::Volatile::Tree": "lib/Terminal/Widgets/Volatile/Tree.rakumod",
     "Terminal::Widgets::Widget": "lib/Terminal/Widgets/Widget.rakumod",
+    "Terminal::Widgets::WidgetRegistry": "lib/Terminal/Widgets/WidgetRegistry.rakumod",
     "Terminal::Widgets::WrappableBuffer": "lib/Terminal/Widgets/WrappableBuffer.rakumod"
   },
   "resources": [

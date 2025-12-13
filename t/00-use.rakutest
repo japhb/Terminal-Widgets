@@ -2,6 +2,8 @@ use v6.d;
 use Test;
 
 use Terminal::Widgets;
+use Terminal::Widgets::WidgetRegistry;
+
 use Terminal::Widgets::Utils;
 use Terminal::Widgets::Utils::Color;
 
