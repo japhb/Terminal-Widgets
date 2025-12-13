@@ -74,4 +74,25 @@ does Terminal::Widgets::SpanBuffer {
 
         $as-tree.lines.map(*.map(*.render).eager).eager
     }
+
+    #| Remove a LineGroup from the buffer and update caches appropriately
+    multi method remove-line-group(Terminal::Widgets::LineGroup:D $line-group) {
+        self.remove-line-group($line-group.id)
+    }
+
+    #| Remove a LineGroup by id and update caches appropriately
+    multi method remove-line-group(UInt:D $id) {
+        # Find location of LineGroup with this $id within buffer
+        my $pos = @!line-groups.grep(*.id == $id, :k) //
+            die "LineGroup id #$id does not exist in this self.gist-name()";
+
+        # Remove LineGroup from buffer and delete hard-lines cache entry
+        @!line-groups.splice($pos, 1);
+        %!hard-lines{$id}:delete;
+
+        # Update hard-line-max-width if this entry was the widest
+        my $hl-width = %!hard-line-width{$id}:delete;
+        $!hard-line-max-width = %!hard-line-width.values.max // 0
+            if $hl-width == $!hard-line-max-width;
+    }
 }
