@@ -57,21 +57,7 @@ class Terminal::Widgets::Widget
     # gist that improves readability and doesn't pull in widget backing grid
     method gist() {
         my @flags = self.gist-flags.grep(?*);
-
-        # Determine dirty areas without changing dirty state
-        my $dirty;
-        $!dirty-lock.protect: {
-            # Heuristic for 'a single dirty rect covers the whole widget by
-            # itself, even if $!all-dirty is not set'
-            my $soft-all = @!dirty-rects.first({ .[0] <= 0
-                                              && .[1] <= 0
-                                              && .[2] >= $.w - .[0]
-                                              && .[3] >= $.h - .[1] });
-            $dirty = $!all-dirty   ?? 'ALL' !!
-                     $soft-all     ?? 'soft-all' !!
-                     @!dirty-rects ?? @!dirty-rects.raku !!
-                                      'none';
-        }
+        my $dirty = self.gist-dirty-areas;
 
         # Defang possibly undefined values
         my sub d($v) { $v // '*' }

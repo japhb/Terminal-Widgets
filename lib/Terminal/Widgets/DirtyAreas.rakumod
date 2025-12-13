@@ -67,4 +67,20 @@ role Terminal::Widgets::DirtyAreas {
         my $rect   = ($x1, $y1, $x2 - $x1 + 1, $y2 - $y1 + 1);
         my @merged = $rect,;
     }
+
+    #| Summarize dirty-rects state for Widget gist without changing dirty state
+    method gist-dirty-areas() {
+        $!dirty-lock.protect: {
+            # Heuristic for 'a single dirty rect covers the whole widget by
+            # itself, even if $!all-dirty is not set'
+            my $soft-all = @!dirty-rects.first({ .[0] <= 0
+                                              && .[1] <= 0
+                                              && .[2] >= $.w - .[0]
+                                              && .[3] >= $.h - .[1] });
+            $!all-dirty   ?? 'ALL' !!
+            $soft-all     ?? 'soft-all' !!
+            @!dirty-rects ?? @!dirty-rects.raku !!
+                             'none';
+        }
+    }
 }
