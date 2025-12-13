@@ -598,8 +598,10 @@ class Builder
 
     #| Use Widget registry to automatically find builders
     method FALLBACK(Str:D $name, |c) {
-        my $layout-class = self.layout-for-builder($name) //
-            die "Unable to find a layout class for builder method $name.raku()";
+        die "Unable to find a layout class for builder method $name.raku()"
+            unless self.builder-exists($name);
+
+        my $layout-class = self.layout-for-builder($name);
 
         $layout-class ~~ Leaf ?? self.build-leaf($layout-class, |c)
                               !! self.build-node($layout-class, |c)
