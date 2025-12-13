@@ -3,6 +3,7 @@
 unit module Terminal::Widgets::Layout;
 
 use Terminal::Widgets::Common;
+use Terminal::Widgets::WidgetRegistry;
 use Terminal::Widgets::Layout::BoxModel;
 
 
@@ -549,8 +550,18 @@ class Center is Node { }
 
 
 #| Helper class for building style/layout trees
-class Builder {
+class Builder
+ does Terminal::Widgets::WidgetRegistry {
     has $.context is required;
+
+    #| Use Widget registry to automatically find builders
+    method FALLBACK(Str:D $name, |c) {
+        my $layout-class = self.layout-for-builder($name) //
+            die "Unable to find a layout class for builder method $name.raku()";
+
+        $layout-class ~~ Leaf ?? self.build-leaf($layout-class, |c)
+                              !! self.build-node($layout-class, |c)
+    }
 
     #| Helper method for building leaf nodes
     method build-leaf($node-type, :%style, *%extra) {
