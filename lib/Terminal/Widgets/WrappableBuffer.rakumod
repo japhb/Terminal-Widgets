@@ -46,8 +46,12 @@ does Terminal::Widgets::SpanBuffer {
                                    UInt:D $pos = @!line-groups.elems) {
         my $t0 = nano;
 
+        # Make sure this LineGroup hasn't already been added
+        my $id = $line-group.id;
+        die "LineGroup id #$id already exists in this self.gist-name()"
+            if %!hard-lines{$id}:exists;
+
         # Split content into hard lines and cache result
-        my $id    = $line-group.id;
         my $lines = %!hard-lines{$id} = self.hard-lines($line-group.content);
 
         # Update total hard line count and max hard line width
