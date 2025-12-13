@@ -172,6 +172,8 @@ does Terminal::Widgets::Common {
 
 #| A leaf node in the layout tree (no possible children)
 class Leaf does Dynamic {
+    method builder-name() { 'leaf' }
+
     multi method gist(Leaf:U:) {
         self.gist-name ~ ':U'
     }
@@ -206,6 +208,8 @@ class Node does Dynamic {
     submethod TWEAK() {
         .parent = self for @!children;
     }
+
+    method builder-name() { 'node' }
 
     multi method gist(Node:U:) {
         self.gist-name ~ ':U'
@@ -406,13 +410,19 @@ class Node does Dynamic {
 
 
 #| A space consumer around or between layout nodes
-class Spacer is Leaf { }
+class Spacer is Leaf {
+    method builder-name() { 'spacer' }
+}
 
 #| A visual divider (such as box-drawing lines) between layout nodes
-class Divider is Leaf { }
+class Divider is Leaf {
+    method builder-name() { 'divider' }
+}
 
 #| A horizontal scrollbar
 class HScrollBar is Leaf {
+    method builder-name() { 'hscroll' }
+
     method default-styles(:$show-end-arrows) {
         %( set-h => 1, min-w => 1 + ?$show-end-arrows )
     }
@@ -420,31 +430,47 @@ class HScrollBar is Leaf {
 
 #| A vertical scrollbar
 class VScrollBar is Leaf {
+    method builder-name() { 'vscroll' }
+
     method default-styles(:$show-end-arrows) {
         %( set-w => 1, min-h => 1 + ?$show-end-arrows )
     }
 }
 
 #| A rich text viewer widget
-class RichText is Leaf { }
+class RichText is Leaf {
+    method builder-name() { 'rich-text' }
+}
 
 #| A tree viewer widget
-class TreeView is Leaf { }
+class TreeView is Leaf {
+    method builder-name() { 'tree-view' }
+}
 
 #| A multi-line auto-scrolling log viewer
-class LogViewer is Leaf { }
+class LogViewer is Leaf {
+    method builder-name() { 'log-viewer' }
+}
 
 #| A navigable tree viewer widget
-class TreeViewer is Leaf { }
+class TreeViewer is Leaf {
+    method builder-name() { 'tree-viewer' }
+}
 
 #| A navigable tree viewer widget, specialized for directory trees
-class DirTreeViewer is TreeViewer { }
+class DirTreeViewer is TreeViewer {
+    method builder-name() { 'dir-tree-viewer' }
+}
 
 #| A simple smoke chart visualization
-class SmokeChart is Leaf { }
+class SmokeChart is Leaf {
+    method builder-name() { 'smoke-chart' }
+}
 
 #| A minimal plain text container
 class PlainText is Leaf {
+    method builder-name() { 'plain-text' }
+
     method default-styles(:$locale!, :$text = '') {
         my @lines = $locale.plain-text($text).lines;
 
@@ -455,6 +481,8 @@ class PlainText is Leaf {
 
 #| A multi-line single-select menu
 class Menu is Leaf {
+    method builder-name() { 'menu' }
+
     method default-styles(:$locale!, :@items, :%icons) {
         my $max-icon = 0 max %icons.values.map({ $locale.width($_) }).max;
         my $spacing  = 2 + ?$max-icon;
@@ -477,27 +505,33 @@ class SingleLineInput is Leaf {
 
 #| A single button
 class Button is SingleLineInput {
-    method input-class() { ::('Terminal::Widgets::Input::Button') }
+    method builder-name() { 'button' }
+    method input-class()  { ::('Terminal::Widgets::Input::Button') }
 }
 
 #| A single checkbox
 class Checkbox is SingleLineInput {
-    method input-class() { ::('Terminal::Widgets::Input::Checkbox') }
+    method builder-name() { 'checkbox' }
+    method input-class()  { ::('Terminal::Widgets::Input::Checkbox') }
 }
 
 #| A single radio button
 class RadioButton is SingleLineInput {
-    method input-class() { ::('Terminal::Widgets::Input::RadioButton') }
+    method builder-name() { 'radio-button' }
+    method input-class()  { ::('Terminal::Widgets::Input::RadioButton') }
 }
 
 #| A single toggle button (looks like a button, acts like a checkbox)
 class ToggleButton is SingleLineInput {
-    method input-class() { ::('Terminal::Widgets::Input::ToggleButton') }
+    method builder-name() { 'toggle-button' }
+    method input-class()  { ::('Terminal::Widgets::Input::ToggleButton') }
 }
 
 #| A single-line text input field
 class TextInput is SingleLineInput {
-    method input-class() { ::('Terminal::Widgets::Input::Text') }
+    method builder-name() { 'text-input' }
+    method input-class()  { ::('Terminal::Widgets::Input::Text') }
+
     method default-styles() { hash(set-h => 1) }
 }
 
@@ -534,19 +568,27 @@ class Widget is Node {
 
 
 #| A structural node to associate a scrollable child with matched scrollbars
-class WithScrollbars is Node { }
+class WithScrollbars is Node {
+    method builder-name() { 'with-scrollbars' }
+}
 
 
 # Structural nodes to generate centering node structures
 
 #| A structural node to horizontally center its children
-class HCenter is Node { }
+class HCenter is Node {
+    method builder-name() { 'hcenter' }
+}
 
 #| A structural node to vertically center its children
-class VCenter is Node { }
+class VCenter is Node {
+    method builder-name() { 'vcenter' }
+}
 
 #| A structural node to center its children in both directions
-class Center is Node { }
+class Center is Node {
+    method builder-name() { 'center' }
+}
 
 
 #| Helper class for building style/layout trees
