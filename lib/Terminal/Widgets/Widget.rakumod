@@ -53,8 +53,7 @@ class Terminal::Widgets::Widget
                              :$widget-class, :$layout-class);
     }
 
-
-    # gist that improves readability and doesn't pull in widget backing grid
+    #| gist that improves readability and doesn't pull in widget backing grid
     method gist() {
         my @flags = self.gist-flags.grep(?*);
         my $dirty = self.gist-dirty-areas;
@@ -69,7 +68,7 @@ class Terminal::Widgets::Widget
         ~ ' dirty:' ~ $dirty
     }
 
-    # General widget gist flags
+    #| General widget gist flags
     method gist-flags() {
         my $is-toplevel = self.toplevel === self;
 
