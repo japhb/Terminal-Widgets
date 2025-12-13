@@ -504,6 +504,8 @@ class TextInput is SingleLineInput {
 #| A widget node; localizes xy coordinate frame for children
 #| (upper left of this widget becomes new 0,0 for children)
 class Widget is Node {
+    method builder-name() { 'widget' }
+
     method propagate-xy() {
         my $x = $.computed.left-correction;
         my $y = $.computed.top-correction;

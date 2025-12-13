@@ -41,6 +41,8 @@ class Terminal::Widgets::Widget
         self.init-themable;
     }
 
+    #| OVERRIDE IN SUBCLASSES: Set the layout-class for this Widget type
+    method layout-class() { Terminal::Widgets::Layout::Widget }
 
     #| Register a Widget subclass for Layout and StandardWidgetBuilder
     method register() {
@@ -630,3 +632,7 @@ class Terminal::Widgets::Widget
         }
     }
 }
+
+
+# Register this base Widget class as a buildable widget type
+Terminal::Widgets::Widget.register;
