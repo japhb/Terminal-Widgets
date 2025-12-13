@@ -4,11 +4,14 @@ use Terminal::Capabilities;
 constant Uni1 = Terminal::Capabilities::SymbolSet::Uni1;
 
 use Terminal::Widgets::TextContent;
+use Terminal::Widgets::Layout;
 use Terminal::Widgets::Input::SimpleClickable;
 
 
 class Terminal::Widgets::Input::Button
  does Terminal::Widgets::Input::SimpleClickable {
+    method layout-class() { Terminal::Widgets::Layout::Button }
+
     #| Compute minimum content width for requested style and attributes
     method min-width(:$locale!, :%style!, :$label = '') {
         my $bw         = %style<border-width>;
@@ -42,3 +45,7 @@ class Terminal::Widgets::Input::Button
         self.refresh-value(:$print);
     }
 }
+
+
+# Register Button as a buildable widget type
+Terminal::Widgets::Input::Button.register;

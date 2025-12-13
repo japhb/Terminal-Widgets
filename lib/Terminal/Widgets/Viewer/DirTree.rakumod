@@ -3,6 +3,7 @@
 use Color::DirColors;
 
 use Terminal::Widgets::TextContent;
+use Terminal::Widgets::Layout;
 use Terminal::Widgets::Viewer::Tree;
 
 
@@ -10,6 +11,8 @@ use Terminal::Widgets::Viewer::Tree;
 class Terminal::Widgets::Viewer::DirTree
    is Terminal::Widgets::Viewer::Tree {
     has Color::DirColors:D $.dir-colors .= new-from-env;
+
+    method layout-class() { Terminal::Widgets::Layout::DirTreeViewer }
 
     submethod TWEAK() {
         self.set-sort-by(*.short-name) unless self.sort-by;
@@ -22,3 +25,7 @@ class Terminal::Widgets::Viewer::DirTree
         render-span($node.data.short-name, $color)
     }
 }
+
+
+# Register Viewer::DirTree as a buildable widget type
+Terminal::Widgets::Viewer::DirTree.register;

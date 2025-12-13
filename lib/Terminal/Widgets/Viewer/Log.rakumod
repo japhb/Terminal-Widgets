@@ -3,6 +3,7 @@
 use nano;
 
 use Terminal::Widgets::TextContent;
+use Terminal::Widgets::Layout;
 use Terminal::Widgets::WrappableBuffer;
 
 
@@ -17,6 +18,8 @@ class Terminal::Widgets::Viewer::Log
  does Terminal::Widgets::WrappableBuffer {
     has UInt:D @!skip-table;
     has UInt:D %!start-line;
+
+    method layout-class() { Terminal::Widgets::Layout::LogViewer }
 
     #| Add content for a single entry (in styled spans or a plain string) to the log
     multi method add-entry(TextContent:D $content) {
@@ -96,3 +99,7 @@ class Terminal::Widgets::Viewer::Log
         @found
     }
 }
+
+
+# Register Viewer::Log as a buildable widget type
+Terminal::Widgets::Viewer::Log.register;

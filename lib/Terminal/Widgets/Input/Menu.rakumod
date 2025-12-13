@@ -1,5 +1,6 @@
 # ABSTRACT: Simple single-selection menu
 
+use Terminal::Widgets::Layout;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Input;
 use Terminal::Widgets::Widget;
@@ -15,6 +16,8 @@ class Terminal::Widgets::Input::Menu
     has        $.items;
     has        %.icons;
     has        %!hotkey;
+
+    method layout-class() { Terminal::Widgets::Layout::Menu }
 
     #| Do basic input TWEAK, then compute hotkey hash
     submethod TWEAK() {
@@ -161,3 +164,7 @@ class Terminal::Widgets::Input::Menu
         self.set-selected($!selected);
     }
 }
+
+
+# Register Menu as a buildable widget type
+Terminal::Widgets::Input::Menu.register;

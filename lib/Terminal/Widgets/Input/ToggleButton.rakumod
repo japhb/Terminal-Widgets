@@ -4,12 +4,15 @@ use Terminal::Capabilities;
 constant Uni1 = Terminal::Capabilities::SymbolSet::Uni1;
 
 use Terminal::Widgets::TextContent;
+use Terminal::Widgets::Layout;
 use Terminal::Widgets::Input::Boolean;
 
 
 #| A simple toggle button (looks like a button, acts like a checkbox)
 class Terminal::Widgets::Input::ToggleButton
  does Terminal::Widgets::Input::Boolean {
+    method layout-class() { Terminal::Widgets::Layout::ToggleButton }
+
     #| Compute minimum content width for requested style and attributes
     method min-width(:$locale!, :%style!, :$label = '') {
         my $bw         = %style<border-width>;
@@ -34,3 +37,7 @@ class Terminal::Widgets::Input::ToggleButton
                 !! span-tree(|@spans)
     }
 }
+
+
+# Register ToggleButton as a buildable widget type
+Terminal::Widgets::Input::ToggleButton.register;

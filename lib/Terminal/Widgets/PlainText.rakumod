@@ -4,6 +4,7 @@ use Text::MiscUtils::Layout;
 
 use Terminal::Widgets::Utils::Color;
 use Terminal::Widgets::TextContent;
+use Terminal::Widgets::Layout;
 use Terminal::Widgets::SpanBuffer;
 
 
@@ -13,6 +14,8 @@ class Terminal::Widgets::PlainText
     has Str:D  $.text  = '';
     has Str:D  $.c     = '';
     has Bool:D $.wrap  = False;
+
+    method layout-class() { Terminal::Widgets::Layout::PlainText }
 
     # Setters that also trigger display refresh
     method set-text(Str:D $!text)                   { self.full-refresh }
@@ -30,3 +33,7 @@ class Terminal::Widgets::PlainText
         $start ?? @lines[$start..*] !! @lines
     }
 }
+
+
+# Register PlainText as a buildable widget type
+Terminal::Widgets::PlainText.register;

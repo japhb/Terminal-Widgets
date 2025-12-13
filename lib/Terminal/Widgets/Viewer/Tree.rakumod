@@ -1,5 +1,6 @@
 # ABSTRACT: A viewer/browser for a Volatile::Tree
 
+use Terminal::Widgets::Layout;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::TextContent;
 use Terminal::Widgets::SpanBuffer;
@@ -91,6 +92,8 @@ class Terminal::Widgets::Viewer::Tree
     has @!flat-line-cache;
     has $!max-line-width;
 
+
+    method layout-class() { Terminal::Widgets::Layout::TreeViewer }
 
     # Keep root and display-root in sync
     method set-root(VTree::Node:D $!root) { self!remap-root }
@@ -392,3 +395,7 @@ class Terminal::Widgets::Viewer::Tree
         self.full-refresh;
     }
 }
+
+
+# Register Viewer::Tree as a buildable widget type
+Terminal::Widgets::Viewer::Tree.register;

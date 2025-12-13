@@ -1,12 +1,15 @@
 # ABSTRACT: A single radio button, optionally labeled
 
 use Terminal::Widgets::TextContent;
+use Terminal::Widgets::Layout;
 use Terminal::Widgets::Input::Boolean;
 
 
 #| A single optionally labeled radio button
 class Terminal::Widgets::Input::RadioButton
    is Terminal::Widgets::Input::GroupedBoolean {
+    method layout-class() { Terminal::Widgets::Layout::RadioButton }
+
     #| Compute minimum content width for requested style and attributes
     method min-width(:$locale!, :$context!, :$label = '') {
         my @buttons   = self.buttons($context.caps);
@@ -32,3 +35,7 @@ class Terminal::Widgets::Input::RadioButton
         span-tree($button-span, |(pad-span(1), |@label-spans if $label))
     }
 }
+
+
+# Register RadioButton as a buildable widget type
+Terminal::Widgets::Input::RadioButton.register;

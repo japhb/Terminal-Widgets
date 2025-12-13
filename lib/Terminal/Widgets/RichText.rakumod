@@ -1,5 +1,6 @@
 # ABSTRACT: A text widget that has clickable lines / a selected line.
 
+use Terminal::Widgets::Layout;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Focusable;
 use Terminal::Widgets::SpanWrappingAndHighlighting;
@@ -8,6 +9,8 @@ class Terminal::Widgets::RichText
  does Terminal::Widgets::SpanWrappingAndHighlighting
  does Terminal::Widgets::Focusable {
     has &.process-click;
+
+    method layout-class() { Terminal::Widgets::Layout::RichText }
 
     submethod TWEAK(:$wrap) {
         # The following is a workaround of https://github.com/rakudo/rakudo/issues/5599
@@ -71,3 +74,7 @@ class Terminal::Widgets::RichText
         self.full-refresh;
     }
 }
+
+
+# Register RichText as a buildable widget type
+Terminal::Widgets::RichText.register;

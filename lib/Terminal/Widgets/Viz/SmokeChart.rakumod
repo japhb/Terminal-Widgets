@@ -2,6 +2,7 @@
 
 use Terminal::Capabilities;
 
+use Terminal::Widgets::Layout;
 use Terminal::Widgets::Widget;
 
 
@@ -126,6 +127,8 @@ class Terminal::Widgets::Viz::SmokeChart
     has $!left;
     has $!right;
     has $!bottom;
+
+    method layout-class() { Terminal::Widgets::Layout::SmokeChart }
 
     submethod TWEAK() {
         self.compute-sizing;
@@ -313,3 +316,7 @@ class Terminal::Widgets::Viz::SmokeChart
         self.composite;
     }
 }
+
+
+# Register SmokeChart as a buildable widget type
+Terminal::Widgets::Viz::SmokeChart.register;

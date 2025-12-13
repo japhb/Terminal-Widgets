@@ -1,5 +1,7 @@
 # ABSTRACT: A text widget that has clickable lines / a selected line.
 
+
+use Terminal::Widgets::Layout;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Focusable;
 use Terminal::Widgets::SpanWrappingAndHighlighting;
@@ -41,6 +43,8 @@ role Terminal::Widgets::RichTreeViewNode
 class Terminal::Widgets::TreeView
  does Terminal::Widgets::SpanWrappingAndHighlighting
  does Terminal::Widgets::Focusable {
+    method layout-class() { Terminal::Widgets::Layout::TreeView }
+
     my class NodeProperties {
         has $.id;
         has Bool $.expanded is rw;
@@ -397,3 +401,7 @@ class Terminal::Widgets::TreeView
         self.full-refresh;
     }
 }
+
+
+# Register TreeView as a buildable widget type
+Terminal::Widgets::TreeView.register;

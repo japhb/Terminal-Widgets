@@ -1,12 +1,15 @@
 # ABSTRACT: A single checkbox, optionally labeled
 
 use Terminal::Widgets::TextContent;
+use Terminal::Widgets::Layout;
 use Terminal::Widgets::Input::Boolean;
 
 
 #| A single optionally labeled checkbox
 class Terminal::Widgets::Input::Checkbox
  does Terminal::Widgets::Input::Boolean {
+    method layout-class() { Terminal::Widgets::Layout::Checkbox }
+
     #| Compute minimum content width for requested style and attributes
     method min-width(:$locale!, :$context!, :$label = '') {
         my @boxes  = self.checkboxes($context.caps);
@@ -32,3 +35,7 @@ class Terminal::Widgets::Input::Checkbox
         span-tree($box-span, |(pad-span(1), |@label-spans if $label))
     }
 }
+
+
+# Register Checkbox as a buildable widget type
+Terminal::Widgets::Input::Checkbox.register;

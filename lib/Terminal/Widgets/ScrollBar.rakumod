@@ -1,5 +1,6 @@
 # ABSTRACT: Roles and classes for scrollbars
 
+use Terminal::Widgets::Layout;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Widget;
 use Terminal::Widgets::Focusable;
@@ -61,6 +62,8 @@ does Terminal::Widgets::Focusable {
 class Terminal::Widgets::HScrollBar
    is Terminal::Widgets::Widget
  does Terminal::Widgets::Scrollbar {
+    method layout-class() { Terminal::Widgets::Layout::HScrollBar }
+
     method h-arrow-scroll-inc() {
         my $ui-prefs = self.terminal.ui-prefs;
         my $h-invert = $ui-prefs<scroll-invert-horizontal> ?? -1 !! +1;
@@ -242,6 +245,8 @@ class Terminal::Widgets::HScrollBar
 class Terminal::Widgets::VScrollBar
    is Terminal::Widgets::Widget
  does Terminal::Widgets::Scrollbar {
+    method layout-class() { Terminal::Widgets::Layout::VScrollBar }
+
     method v-arrow-scroll-inc() {
         my $ui-prefs = self.terminal.ui-prefs;
         my $v-invert = $ui-prefs<scroll-invert-vertical> ?? -1 !! +1;
@@ -416,3 +421,8 @@ class Terminal::Widgets::VScrollBar
         self.full-refresh;
     }
 }
+
+
+# Register both ScrollBars as buildable widget types
+Terminal::Widgets::HScrollBar.register;
+Terminal::Widgets::VScrollBar.register;

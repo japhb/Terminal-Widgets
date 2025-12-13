@@ -4,10 +4,11 @@ use Terminal::LineEditor::DuospaceInput;
 use Terminal::LineEditor::RawTerminalInput;
 
 use Terminal::Widgets::Utils::Color;
+use Terminal::Widgets::TextContent;
+use Terminal::Widgets::Layout;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Input;
 use Terminal::Widgets::Widget;
-use Terminal::Widgets::TextContent;
 
 
 #| Single-line text entry field with history tracking and mappable keys
@@ -29,6 +30,9 @@ class Terminal::Widgets::Input::Text
     has Bool:D $.clear-on-finish = True;
     has Str:D  $.prompt-string   = '>';
     has Str:D  $.disabled-string = '';
+
+
+    method layout-class() { Terminal::Widgets::Layout::TextInput }
 
     # Text input specific gist flags
     method gist-flags() {
@@ -310,3 +314,7 @@ class Terminal::Widgets::Input::Text
         self.full-refresh(self.history-entry);
     }
 }
+
+
+# Register Input::Text as a buildable widget type
+Terminal::Widgets::Input::Text.register;
