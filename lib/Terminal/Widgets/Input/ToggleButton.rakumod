@@ -8,6 +8,14 @@ use Terminal::Widgets::Layout;
 use Terminal::Widgets::Input::Boolean;
 
 
+#| Layout node for a toggle button input widget
+class Terminal::Widgets::Layout::ToggleButton
+   is Terminal::Widgets::Layout::SingleLineInput {
+    method builder-name() { 'toggle-button' }
+    method input-class()  { ::('Terminal::Widgets::Input::ToggleButton') }
+}
+
+
 #| A simple toggle button (looks like a button, acts like a checkbox)
 class Terminal::Widgets::Input::ToggleButton
  does Terminal::Widgets::Input::Boolean {

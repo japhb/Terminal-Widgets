@@ -7,6 +7,13 @@ use Terminal::Widgets::Layout;
 use Terminal::Widgets::Viewer::Tree;
 
 
+#| Layout node for a directory tree viewer widget
+class Terminal::Widgets::Layout::DirTreeViewer
+   is Terminal::Widgets::Layout::TreeViewer {
+    method builder-name() { 'dir-tree-viewer' }
+}
+
+
 #| Tree viewer class specialized for directory trees, with dircolors awareness
 class Terminal::Widgets::Viewer::DirTree
    is Terminal::Widgets::Viewer::Tree {

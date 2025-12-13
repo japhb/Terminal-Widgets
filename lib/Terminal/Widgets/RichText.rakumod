@@ -5,6 +5,15 @@ use Terminal::Widgets::Events;
 use Terminal::Widgets::Focusable;
 use Terminal::Widgets::SpanWrappingAndHighlighting;
 
+
+#| Layout node for a rich text viewer widget
+class Terminal::Widgets::Layout::RichText
+   is Terminal::Widgets::Layout::Leaf {
+    method builder-name() { 'rich-text' }
+}
+
+
+#| A rich text viewer widget
 class Terminal::Widgets::RichText
  does Terminal::Widgets::SpanWrappingAndHighlighting
  does Terminal::Widgets::Focusable {

@@ -10,6 +10,28 @@ use Terminal::Widgets::Scrollable;
 subset ScrollTarget where Str | Terminal::Widgets::Scrollable;
 
 
+#| Layout node for a horizontal scrollbar
+class Terminal::Widgets::Layout::HScrollBar
+   is Terminal::Widgets::Layout::Leaf {
+    method builder-name() { 'hscroll' }
+
+    method default-styles(:$show-end-arrows) {
+        %( set-h => 1, min-w => 1 + ?$show-end-arrows )
+    }
+}
+
+
+#| Layout node for a vertical scrollbar
+class Terminal::Widgets::Layout::VScrollBar
+   is Terminal::Widgets::Layout::Leaf {
+    method builder-name() { 'vscroll' }
+
+    method default-styles(:$show-end-arrows) {
+        %( set-w => 1, min-h => 1 + ?$show-end-arrows )
+    }
+}
+
+
 #| Role for scrollbars of any orientation
 role Terminal::Widgets::Scrollbar
 does Terminal::Widgets::Themable

@@ -7,6 +7,23 @@ use Terminal::Widgets::Widget;
 use Terminal::Widgets::TextContent;
 
 
+#| Layout node for a menu input widget
+class Terminal::Widgets::Layout::Menu
+   is Terminal::Widgets::Layout::Leaf {
+    method builder-name() { 'menu' }
+
+    method default-styles(:$locale!, :@items, :%icons) {
+        my $max-icon = 0 max %icons.values.map({ $locale.width($_) }).max;
+        my $spacing  = 2 + ?$max-icon;
+
+        %( min-h => @items.elems,
+           min-w => $spacing + $max-icon +
+                    (0 max @items.map({ $locale.width(.<title>) }).max) )
+    }
+}
+
+
+#| A multi-line single-select menu
 class Terminal::Widgets::Input::Menu
    is Terminal::Widgets::Widget
  does Terminal::Widgets::Input {

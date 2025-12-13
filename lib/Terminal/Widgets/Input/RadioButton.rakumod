@@ -5,6 +5,14 @@ use Terminal::Widgets::Layout;
 use Terminal::Widgets::Input::Boolean;
 
 
+#| Layout node for a radio button input widget
+class Terminal::Widgets::Layout::RadioButton
+   is Terminal::Widgets::Layout::SingleLineInput {
+    method builder-name() { 'radio-button' }
+    method input-class()  { ::('Terminal::Widgets::Input::RadioButton') }
+}
+
+
 #| A single optionally labeled radio button
 class Terminal::Widgets::Input::RadioButton
    is Terminal::Widgets::Input::GroupedBoolean {

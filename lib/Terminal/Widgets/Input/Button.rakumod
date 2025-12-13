@@ -8,6 +8,14 @@ use Terminal::Widgets::Layout;
 use Terminal::Widgets::Input::SimpleClickable;
 
 
+#| Layout node for a button input widget
+class Terminal::Widgets::Layout::Button
+   is Terminal::Widgets::Layout::SingleLineInput {
+    method builder-name() { 'button' }
+    method input-class()  { ::('Terminal::Widgets::Input::Button') }
+}
+
+
 class Terminal::Widgets::Input::Button
  does Terminal::Widgets::Input::SimpleClickable {
     method layout-class() { Terminal::Widgets::Layout::Button }

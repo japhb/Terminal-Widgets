@@ -7,6 +7,13 @@ use Terminal::Widgets::Layout;
 use Terminal::Widgets::WrappableBuffer;
 
 
+#| Layout node for a log viewer widget
+class Terminal::Widgets::Layout::LogViewer
+   is Terminal::Widgets::Layout::Leaf {
+    method builder-name() { 'log-viewer' }
+}
+
+
 #| A single log entry, with (unprocessed) content and metadata
 my class LogEntry is Terminal::Widgets::LineGroup {
     has $.timestamp = now;

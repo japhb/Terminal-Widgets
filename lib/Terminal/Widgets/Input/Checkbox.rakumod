@@ -5,6 +5,14 @@ use Terminal::Widgets::Layout;
 use Terminal::Widgets::Input::Boolean;
 
 
+#| Layout node for a checkbox input widget
+class Terminal::Widgets::Layout::Checkbox
+   is Terminal::Widgets::Layout::SingleLineInput {
+    method builder-name() { 'checkbox' }
+    method input-class()  { ::('Terminal::Widgets::Input::Checkbox') }
+}
+
+
 #| A single optionally labeled checkbox
 class Terminal::Widgets::Input::Checkbox
  does Terminal::Widgets::Input::Boolean {

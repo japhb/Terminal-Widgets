@@ -6,6 +6,13 @@ use Terminal::Widgets::Layout;
 use Terminal::Widgets::Widget;
 
 
+#| Layout node for a smoke chart widget
+class Terminal::Widgets::Layout::SmokeChart
+   is Terminal::Widgets::Layout::Leaf {
+    method builder-name() { 'smoke-chart' }
+}
+
+
 #| Statistics for a single slice of the chart (one pixel-wide column or row)
 my role SliceStats {
     # Counts

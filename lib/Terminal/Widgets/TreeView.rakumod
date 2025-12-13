@@ -6,6 +6,14 @@ use Terminal::Widgets::Events;
 use Terminal::Widgets::Focusable;
 use Terminal::Widgets::SpanWrappingAndHighlighting;
 
+
+#| Layout node for a tree viewer widget
+class Terminal::Widgets::Layout::TreeView
+   is Terminal::Widgets::Layout::Leaf {
+    method builder-name() { 'tree-view' }
+}
+
+
 role Terminal::Widgets::TreeViewNode {
     #| A single line of text for this node.
     has Str $.text;

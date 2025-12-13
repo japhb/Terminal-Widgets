@@ -419,80 +419,6 @@ class Divider is Leaf {
     method builder-name() { 'divider' }
 }
 
-#| A horizontal scrollbar
-class HScrollBar is Leaf {
-    method builder-name() { 'hscroll' }
-
-    method default-styles(:$show-end-arrows) {
-        %( set-h => 1, min-w => 1 + ?$show-end-arrows )
-    }
-}
-
-#| A vertical scrollbar
-class VScrollBar is Leaf {
-    method builder-name() { 'vscroll' }
-
-    method default-styles(:$show-end-arrows) {
-        %( set-w => 1, min-h => 1 + ?$show-end-arrows )
-    }
-}
-
-#| A rich text viewer widget
-class RichText is Leaf {
-    method builder-name() { 'rich-text' }
-}
-
-#| A tree viewer widget
-class TreeView is Leaf {
-    method builder-name() { 'tree-view' }
-}
-
-#| A multi-line auto-scrolling log viewer
-class LogViewer is Leaf {
-    method builder-name() { 'log-viewer' }
-}
-
-#| A navigable tree viewer widget
-class TreeViewer is Leaf {
-    method builder-name() { 'tree-viewer' }
-}
-
-#| A navigable tree viewer widget, specialized for directory trees
-class DirTreeViewer is TreeViewer {
-    method builder-name() { 'dir-tree-viewer' }
-}
-
-#| A simple smoke chart visualization
-class SmokeChart is Leaf {
-    method builder-name() { 'smoke-chart' }
-}
-
-#| A minimal plain text container
-class PlainText is Leaf {
-    method builder-name() { 'plain-text' }
-
-    method default-styles(:$locale!, :$text = '') {
-        my @lines = $locale.plain-text($text).lines;
-
-        %( min-h => @lines.elems,
-           min-w => 0 max @lines.map({ $locale.width($_) }).max )
-    }
-}
-
-#| A multi-line single-select menu
-class Menu is Leaf {
-    method builder-name() { 'menu' }
-
-    method default-styles(:$locale!, :@items, :%icons) {
-        my $max-icon = 0 max %icons.values.map({ $locale.width($_) }).max;
-        my $spacing  = 2 + ?$max-icon;
-
-        %( min-h => @items.elems,
-           min-w => $spacing + $max-icon +
-                    (0 max @items.map({ $locale.width(.<title>) }).max) )
-    }
-}
-
 #| Single line inputs
 class SingleLineInput is Leaf {
     method input-class() { ... }
@@ -501,38 +427,6 @@ class SingleLineInput is Leaf {
         my $min-w = self.input-class.min-width(|c);
         %( :$min-w, set-h => 1 )
     }
-}
-
-#| A single button
-class Button is SingleLineInput {
-    method builder-name() { 'button' }
-    method input-class()  { ::('Terminal::Widgets::Input::Button') }
-}
-
-#| A single checkbox
-class Checkbox is SingleLineInput {
-    method builder-name() { 'checkbox' }
-    method input-class()  { ::('Terminal::Widgets::Input::Checkbox') }
-}
-
-#| A single radio button
-class RadioButton is SingleLineInput {
-    method builder-name() { 'radio-button' }
-    method input-class()  { ::('Terminal::Widgets::Input::RadioButton') }
-}
-
-#| A single toggle button (looks like a button, acts like a checkbox)
-class ToggleButton is SingleLineInput {
-    method builder-name() { 'toggle-button' }
-    method input-class()  { ::('Terminal::Widgets::Input::ToggleButton') }
-}
-
-#| A single-line text input field
-class TextInput is SingleLineInput {
-    method builder-name() { 'text-input' }
-    method input-class()  { ::('Terminal::Widgets::Input::Text') }
-
-    method default-styles() { hash(set-h => 1) }
 }
 
 

@@ -8,6 +8,20 @@ use Terminal::Widgets::Layout;
 use Terminal::Widgets::SpanBuffer;
 
 
+#| Layout node for a plain text widget
+class Terminal::Widgets::Layout::PlainText
+   is Terminal::Widgets::Layout::Leaf {
+    method builder-name() { 'plain-text' }
+
+    method default-styles(:$locale!, :$text = '') {
+        my @lines = $locale.plain-text($text).lines;
+
+        %( min-h => @lines.elems,
+           min-w => 0 max @lines.map({ $locale.width($_) }).max )
+    }
+}
+
+
 #| A simple scrollable plain text widget with a default color
 class Terminal::Widgets::PlainText
  does Terminal::Widgets::SpanBuffer {

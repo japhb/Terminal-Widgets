@@ -10,6 +10,13 @@ use Terminal::Widgets::Volatile::Tree;
 constant VTree = Terminal::Widgets::Volatile::Tree;
 
 
+#| Layout node for a tree viewer widget
+class Terminal::Widgets::Layout::TreeViewer
+   is Terminal::Widgets::Layout::Leaf {
+    method builder-name() { 'tree-viewer' }
+}
+
+
 class Terminal::Widgets::Viewer::Tree { ... }
 
 

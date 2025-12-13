@@ -11,6 +11,16 @@ use Terminal::Widgets::Input;
 use Terminal::Widgets::Widget;
 
 
+#| Layout node for a single line text input widget
+class Terminal::Widgets::Layout::TextInput
+   is Terminal::Widgets::Layout::SingleLineInput {
+    method builder-name() { 'text-input' }
+    method input-class()  { ::('Terminal::Widgets::Input::Text') }
+
+    method default-styles() { hash(set-h => 1) }
+}
+
+
 #| Single-line text entry field with history tracking and mappable keys
 class Terminal::Widgets::Input::Text
    is Terminal::Widgets::Widget
