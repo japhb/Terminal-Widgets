@@ -1,5 +1,6 @@
 # ABSTRACT: Base class for dynamically building standard widgets
 
+use Terminal::Widgets::WidgetRegistry;
 use Terminal::Widgets::Layout;
 
 # Load all core widget types so they self-register
@@ -23,35 +24,11 @@ use Terminal::Widgets::Viewer::DirTree;
 use Terminal::Widgets::Viz::SmokeChart;
 
 
-#| Base class for dynamically building widgets, with knowledge of standard library
-class Terminal::Widgets::StandardWidgetBuilder {
-    #| Map layout nodes with default build rules
-    method default-build-nodes() {
-        my %defaults{Any} =
-            (Terminal::Widgets::Layout::Widget)       => Terminal::Widgets::Widget,
-            (Terminal::Widgets::Layout::PlainText)    => Terminal::Widgets::PlainText,
-            (Terminal::Widgets::Layout::RichText)     => Terminal::Widgets::RichText,
-            (Terminal::Widgets::Layout::TreeView)     => Terminal::Widgets::TreeView,
-            (Terminal::Widgets::Layout::HScrollBar)   => Terminal::Widgets::HScrollBar,
-            (Terminal::Widgets::Layout::VScrollBar)   => Terminal::Widgets::VScrollBar,
-            (Terminal::Widgets::Layout::Menu)         => Terminal::Widgets::Input::Menu,
-            (Terminal::Widgets::Layout::Button)       => Terminal::Widgets::Input::Button,
-            (Terminal::Widgets::Layout::Checkbox)     => Terminal::Widgets::Input::Checkbox,
-            (Terminal::Widgets::Layout::RadioButton)  => Terminal::Widgets::Input::RadioButton,
-            (Terminal::Widgets::Layout::ToggleButton) => Terminal::Widgets::Input::ToggleButton,
-            (Terminal::Widgets::Layout::TextInput)    => Terminal::Widgets::Input::Text,
-            (Terminal::Widgets::Layout::LogViewer)    => Terminal::Widgets::Viewer::Log,
-            (Terminal::Widgets::Layout::TreeViewer)   => Terminal::Widgets::Viewer::Tree,
-            (Terminal::Widgets::Layout::DirTreeViewer) => Terminal::Widgets::Viewer::DirTree,
-            (Terminal::Widgets::Layout::SmokeChart)   => Terminal::Widgets::Viz::SmokeChart,
-        ;
-    }
-
-    #| Build widgets from the standard widget library based on dynamic layout
+#| Base class for dynamically building widgets
+class Terminal::Widgets::StandardWidgetBuilder
+ does Terminal::Widgets::WidgetRegistry {
+    #| Build widgets from the registered widget library based on dynamic layout
     method build-node($node, $geometry) {
-        # XXXX: Optimize this away
-        my $default-build := self.default-build-nodes;
-
         do given $node.WHAT {
             # XXXX: Temporary workaround while changing content model
             when Terminal::Widgets::Layout::PlainText {
@@ -59,8 +36,8 @@ class Terminal::Widgets::StandardWidgetBuilder {
                 %extra<c> = %extra<color>:delete if %extra<color>:exists;
                 Terminal::Widgets::PlainText.new(|$geometry, |%extra)
             }
-            when $default-build {
-                $default-build{$_}.new(|$geometry, |$node.extra)
+            when self.layout-exists($_) {
+                self.widget-for-layout($_).new(|$geometry, |$node.extra)
             }
             when Terminal::Widgets::Layout::Divider {
                 my $style = $node.extra<line-style> || $geometry<parent>.default-box-style;
