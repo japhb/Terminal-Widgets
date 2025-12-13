@@ -4,6 +4,7 @@ use Terminal::Print::Widget;
 use Terminal::Print::Animated;
 use Terminal::Print::BoxDrawing;
 
+use Terminal::Widgets::Common;
 use Terminal::Widgets::WidgetRegistry;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Layout;
@@ -88,14 +89,13 @@ class Terminal::Widgets::Widget
    is Terminal::Print::Widget
  does Terminal::Print::Animated
  does Terminal::Print::BoxDrawing
+ does Terminal::Widgets::Common
  does Terminal::Widgets::WidgetRegistry
  does Terminal::Widgets::Events::EventHandling
  does Terminal::Widgets::DirtyAreas
  does Terminal::Widgets::Themable {
     #| Dynamic layout node associated with this widget
     has Terminal::Widgets::Layout::Dynamic $.layout;
-
-    has UInt:D $.debug = +($*DEBUG // 0);
 
     has Str:D $.id = ''; #= String ID (must be unique within TopLevel *if* non-empty)
     has Int:D $.z  = 0;  #= Z offset from parent; default = in-plane
@@ -149,11 +149,6 @@ class Terminal::Widgets::Widget
         ~ ' x:' ~ d($.x) ~ ',y:' ~ d($.y) ~ ',z:' ~ d($.z)
         ~ ' xo:' ~ d($.x-offset) ~ ',yo:' ~ d($.y-offset) ~ ',zo:' ~ d($.z-offset)
         ~ ' dirty:' ~ $dirty
-    }
-
-    # Shortened name for gists
-    method gist-name() {
-        self.^name.subst('Terminal::Widgets::', '')
     }
 
     # General widget gist flags

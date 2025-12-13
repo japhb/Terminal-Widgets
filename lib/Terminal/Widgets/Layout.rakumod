@@ -2,6 +2,7 @@
 
 unit module Terminal::Widgets::Layout;
 
+use Terminal::Widgets::Common;
 use Terminal::Widgets::Layout::BoxModel;
 
 
@@ -89,7 +90,8 @@ class Style
 
 
 #| Role for dynamic layout nodes, tracking both requested and computed styles
-role Dynamic {
+role Dynamic
+does Terminal::Widgets::Common {
     has         %.extra;
     has Style   $.requested;
     has Style   $.computed is rw;
@@ -102,8 +104,6 @@ role Dynamic {
     method propagate-xy()   { ... }
 
     method default-styles() { hash() }
-
-    method gist-name() { self.^name.subst('Terminal::Widgets::', '') }
 
     method update-requested(*%updates) {
         self.uncompute;

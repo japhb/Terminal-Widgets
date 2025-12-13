@@ -2,9 +2,11 @@
 
 unit module Terminal::Widgets::Volatile::Tree;
 
+use Terminal::Widgets::Common;
+
 
 #| Basic generic tree node that knows its parent (if any)
-role Node {
+role Node does Terminal::Widgets::Common {
     has Node $.parent;
 
     #| REQUIRED: Short name for display, usually unique within siblings
@@ -12,11 +14,6 @@ role Node {
 
     #| REQUIRED: Long name for display, usually unique within entire tree
     method long-name() { ... }
-
-    #| Shortened class name for gists
-    method gist-name() {
-        self.^name.subst('Terminal::Widgets::', '')
-    }
 
     #| Find root node via parent chain, runtime is O(depth)
     method root(::?CLASS:D:) {
