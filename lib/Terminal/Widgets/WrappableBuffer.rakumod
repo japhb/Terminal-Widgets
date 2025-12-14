@@ -20,15 +20,49 @@ class Terminal::Widgets::LineGroup {
 }
 
 
+#| Available text wrapping/filling modes; each works *within* a LineGroup.
+#| *Wrap variants can only split lines; *Fill variants can merge them.
+enum Terminal::Widgets::WrapMode is export
+    < NoWrap GraphemeWrap WordWrap GraphemeFill WordFill >;
+
+#| Style selection for wrapping/filling modes
+class Terminal::Widgets::WrapStyle {
+    has Terminal::Widgets::WrapMode:D $.wrap-mode = NoWrap;
+    has Bool:D $.compress-whitespace = False;
+    has Str:D  $.wrapped-line-prefix = '';
+}
+
+
 #| A SpanBuffer extension handling line wraps and fills
 role Terminal::Widgets::WrappableBuffer
 does Terminal::Widgets::SpanBuffer {
     has Terminal::Widgets::LineGroup:D @.line-groups;
+    has Terminal::Widgets::WrapStyle:D $.wrap-style .= new;
 
     has UInt:D $!hard-line-max-width = 0;
     has UInt:D $!hard-line-count     = 0;
     has UInt:D %!hard-line-width;
     has        %!hard-lines;
+
+    has UInt:D $!wrap-width = self.content-width;
+    has        %!wrapped-lines;
+
+    #| Set wrap-style and clear wrap caches
+    method set-wrap-style(Terminal::Widgets::WrapStyle:D $new-style) {
+        if  $!wrap-style !=== $new-style {
+            $!wrap-style    = $new-style;
+            %!wrapped-lines = Empty;
+        }
+    }
+
+    #| Check that wrap width has not changed; otherwise, clear wrap caches
+    method check-wrap-width() {
+        my $width  = self.content-width;
+        if $width != $!wrap-width {
+            $!wrap-width    = $width;
+            %!wrapped-lines = Empty;
+        }
+    }
 
     #| Determine if buffer is completely empty
     method empty() { !@!line-groups }
