@@ -244,13 +244,13 @@ class Terminal::Widgets::Viewer::Tree
 
     #| Convert a displayed line index to the matching DisplayNode
     method line-to-display-node(UInt:D $line) {
-        note '…  line-to-display-node';
+        note '…  line-to-display-node' if $.debug;
         self.flat-node-cache[$line]
     }
 
     #| Determine the displayed line index of a given DisplayNode
     method display-node-to-line($node) {
-        note '…  display-node-to-line';
+        note '…  display-node-to-line' if $.debug;
         self.flat-node-cache.first(* === $node, :k)
     }
 
@@ -280,7 +280,7 @@ class Terminal::Widgets::Viewer::Tree
     #| Select a given node as current, expanding parents if needed and
     #| processing a "click" on the node
     method select-node($node, Bool:D :$refresh = True) {
-        note '…  select-node';
+        note '…  select-node' if $.debug;
         if $!current-node !=== $node {
             self.remove-highlight($!current-node);
             $!current-node = $node;
