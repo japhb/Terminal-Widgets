@@ -6,6 +6,7 @@ use Terminal::Print;
 use Terminal::Capabilities;
 use Terminal::LineEditor::RawTerminalInput;
 
+use Terminal::Widgets::Common;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::TopLevel;
 use Terminal::Widgets::TextContent;
@@ -17,7 +18,8 @@ use Terminal::Widgets::ColorThemes;
 #| A container for the unique ANSI terminal event pump for a given terminal
 class Terminal::Widgets::Terminal
  does Terminal::LineEditor::RawTerminalIO
- does Terminal::LineEditor::RawTerminalUtils {
+ does Terminal::LineEditor::RawTerminalUtils
+ does Terminal::Widgets::Common {
     has Terminal::Widgets::TopLevel       $.current-toplevel;
     has Terminal::Capabilities:D          $.caps   .= new;
     has Terminal::Widgets::I18N::Locale:D $.locale .= new;
@@ -34,7 +36,6 @@ class Terminal::Widgets::Terminal
 
     has Channel:D $.control         .= new;
     has Bool:D    $.terminal-focused = True;
-    has UInt:D    $!debug = +($*DEBUG // 0);
     has UInt:D    $.w = 0;
     has UInt:D    $.h = 0;
     has           $.app;
