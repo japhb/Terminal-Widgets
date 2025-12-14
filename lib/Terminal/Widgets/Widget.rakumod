@@ -281,8 +281,7 @@ class Terminal::Widgets::Widget
         self.draw-frame;
         self.composite(:$print);
 
-        note sprintf("⏱️  full-refresh of {self.gist-name}: %.3fms",
-                     (nano - $t0) / 1_000_000) if $!debug;
+        self.debug-elapsed($t0, desc => self.gist-name ~ '.full-refresh');
     }
 
     #| Clear the frame and set it all-dirty (so it requires composite)

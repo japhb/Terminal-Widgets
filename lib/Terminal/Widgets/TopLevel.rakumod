@@ -35,8 +35,10 @@ does Terminal::Widgets::Layout::WidgetBuilding {
 
         callsame;
 
-        note sprintf("⏱️  Event #%d processed: %.3fms\n",
-                     $event.id, (nano - $t0) / 1_000_000) if $show-time;
+        if $show-time {
+            self.debug-elapsed($t0, desc => 'Event #' ~ $event.id ~ ' processed');
+            note '' unless $event ~~ Terminal::Widgets::Events::TakeFocus;
+        }
     }
 
     #| Add a widget to a named group
@@ -85,8 +87,7 @@ does Terminal::Widgets::Layout::WidgetBuilding {
         # Draw target widget as focused
         $target.full-refresh if $redraw;
 
-        note sprintf("⏱️  focus-on processed for {$target.gist-name}: %.3fms\n",
-                     (nano - $t0) / 1_000_000) if $.debug;
+        self.debug-elapsed($t0, desc => 'focus-on processed for ' ~ $target.gist-name);
     }
 
     #| Redraw entire widget tree
@@ -97,8 +98,7 @@ does Terminal::Widgets::Layout::WidgetBuilding {
         my $frame-info = Terminal::Widgets::FrameInfo.new;
         self.do-frame($frame-info);
 
-        note sprintf("⏱️  redraw-all of {self.gist-name}: %.3fms",
-                     (nano - $t0) / 1_000_000) if $.debug;
+        self.debug-elapsed($t0);
     }
 
     #| Relayout, redraw, and composite entire widget tree
@@ -115,8 +115,7 @@ does Terminal::Widgets::Layout::WidgetBuilding {
         self.redraw-all;
         self.composite;
 
-        note sprintf("⏱️  Top level relayout request processed: %.3fms\n",
-                     (nano - $t0) / 1_000_000) if $.debug;
+        self.debug-elapsed($t0);
     }
 
     # XXXX: Allow terminal to be disconnected or switched?

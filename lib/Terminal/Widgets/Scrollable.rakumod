@@ -23,8 +23,7 @@ role Terminal::Widgets::Scrollable {
             self.full-refresh;
             $!scrolled = False;
 
-            note sprintf("⏱️  refresh-for-scroll of {self.gist-name}: %.3fms",
-                         (nano - $t0) / 1_000_000) if $.debug;
+            self.debug-elapsed($t0);
         }
     }
 

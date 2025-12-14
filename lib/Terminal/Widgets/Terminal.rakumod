@@ -168,8 +168,7 @@ class Terminal::Widgets::Terminal
             # Refresh layout, draw, and composite
             .relayout(:focus);
 
-            note sprintf("⏱️  resize-toplevel request processed: %.3fms\n",
-                         (nano - $t0) / 1_000_000) if $!debug;
+            self.debug-elapsed($t0);
         }
     }
 

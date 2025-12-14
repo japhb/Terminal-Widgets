@@ -54,8 +54,7 @@ class Terminal::Widgets::Viewer::Log
             self.set-y-scroll($!hard-line-count - $ch);
         }
 
-        note sprintf("⏱️  Log.add-entry: %.3fms",
-                     (nano - $t0) / 1_000_000) if $.debug;
+        self.debug-elapsed($t0);
     }
 
     #| Update the skip table with the latest log entry
@@ -100,8 +99,7 @@ class Terminal::Widgets::Viewer::Log
             last if @found >= $wanted;
         }
 
-        note sprintf("⏱️  Log.span-line-chunk: %.3fms",
-                     (nano - $t0) / 1_000_000) if $.debug;
+        self.debug-elapsed($t0);
 
         @found
     }

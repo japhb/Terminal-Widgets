@@ -63,8 +63,7 @@ does Terminal::Widgets::SpanBuffer {
         # Actually splice line group into buffer
         @!line-groups.splice($pos, 0, $line-group);
 
-        note sprintf("⏱️  WrappableBuffer.insert-line-group: %.3fms",
-                     (nano - $t0) / 1_000_000) if $.debug;
+        self.debug-elapsed($t0);
     }
 
     #| Split arbitrary TextContent into an array of lines, each of which is
