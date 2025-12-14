@@ -2,6 +2,9 @@
 
 unit module Terminal::Widgets::Volatile::DirTree;
 
+use nano;
+
+use Terminal::Widgets::Common;
 use Terminal::Widgets::Volatile::Tree;
 
 constant VTree = Terminal::Widgets::Volatile::Tree;
@@ -40,7 +43,7 @@ class SymLink does Node {
     }
 }
 
-class Dir does Parent {
+class Dir does Parent does Terminal::Widgets::Common {
     has VTree::Node:D @!children   is built;
     has Instant:D     $.cache-time .= from-posix-nanos(0);
 
@@ -51,12 +54,17 @@ class Dir does Parent {
     method children(::?CLASS:D: Bool:D :$refresh = False) {
         # XXXX: For now, just fake real caching and be lazy
         if $refresh || !$!cache-time {
+            my $t0 = nano;
+
             $!cache-time = now;
 
             # Directory read may fail due to insufficient permissions
             try my @entries = $!path.dir;
 
             @!children = @entries.map({ dir-tree-node($_, parent => self) });
+
+            self.debug-elapsed($t0, icon => '💲',
+                               desc => "Refill children for dir {self.short-name.raku}");
         }
         @!children
     }
