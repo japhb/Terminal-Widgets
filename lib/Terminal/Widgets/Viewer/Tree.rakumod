@@ -2,6 +2,7 @@
 
 use nano;
 
+use Terminal::Widgets::Common;
 use Terminal::Widgets::Layout;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::TextContent;
@@ -36,7 +37,7 @@ my class DisplayLeaf does DisplayNode {
     method branch-size(--> 1)  { }
 }
 
-my class DisplayParent does DisplayNode {
+my class DisplayParent does DisplayNode does Terminal::Widgets::Common {
     has Terminal::Widgets::Viewer::Tree:D $.tree is required;
 
     has DisplayNode:D @.children;
@@ -67,6 +68,9 @@ my class DisplayParent does DisplayNode {
 
     #| Set expanded state, refreshing or emptying children as appropriate
     method set-expanded($!expanded) {
+        note "⚙️  Starting set-expanded to $!expanded for dir {$!data.short-name.raku}" if $!debug;
+        my $t0 = nano;
+
         my $id = $!data.id;
         if $!expanded {
             $!tree.previously-expanded{$id} = True if $id;
@@ -76,6 +80,8 @@ my class DisplayParent does DisplayNode {
             $!tree.previously-expanded{$id}:delete if $id;
             @!children = Empty;
         }
+
+        self.debug-elapsed($t0, desc => "set-expanded to $!expanded for dir {$!data.short-name.raku}");
     }
 
     #| Number of nodes in visible child branches, including self
@@ -117,12 +123,16 @@ class Terminal::Widgets::Viewer::Tree
     method set-sort-by(&!sort-by) { self.clear-caches }
 
     # Auto-cache flattened nodes and displayable lines
+    my sub cache-size(@c) {
+        my $count = @c.elems;
+        $count ~ ' elem' ~ ($count == 1 ?? '' !! 's')
+    }
     method flat-node-cache() {
         @!flat-node-cache ||= do {
             my $t0 = nano;
             self.flattened-nodes($!display-root, my @n);
-            note sprintf("💲 Refill flattened-nodes: %.3fms (%d elems)",
-                         (nano - $t0) / 1_000_000, @n.elems) if $.debug;
+            self.debug-elapsed($t0, icon => '💲',
+                               desc => "Refill flat-node-cache ({cache-size @n})");
             @n
         }
     }
@@ -130,8 +140,8 @@ class Terminal::Widgets::Viewer::Tree
         @!flat-line-cache ||= do {
             my $t0 = nano;
             self.node-lines($!display-root, my @l);
-            note sprintf("💲 Refill node-lines: %.3fms (%d elems)",
-                         (nano - $t0) / 1_000_000, @l.elems) if $.debug;
+            self.debug-elapsed($t0, icon => '💲',
+                               desc => "Refill flat-line-cache ({cache-size @l})");
             @l
         }
     }
@@ -156,8 +166,8 @@ class Terminal::Widgets::Viewer::Tree
                 + duospace-width-core(.[1].text, 0)
             }).max;
 
-            note sprintf("💲 Recalculate max-line-width: %.3fms (%d elems)",
-                         (nano - $t0) / 1_000_000, @!flat-line-cache.elems) if $.debug;
+            self.debug-elapsed($t0, icon => '💲',
+                desc => "Recalc max-line-width ({cache-size @!flat-line-cache})");
             $max
         }
     }
@@ -234,11 +244,13 @@ class Terminal::Widgets::Viewer::Tree
 
     #| Convert a displayed line index to the matching DisplayNode
     method line-to-display-node(UInt:D $line) {
+        note '…  line-to-display-node';
         self.flat-node-cache[$line]
     }
 
     #| Determine the displayed line index of a given DisplayNode
     method display-node-to-line($node) {
+        note '…  display-node-to-line';
         self.flat-node-cache.first(* === $node, :k)
     }
 
@@ -268,6 +280,7 @@ class Terminal::Widgets::Viewer::Tree
     #| Select a given node as current, expanding parents if needed and
     #| processing a "click" on the node
     method select-node($node, Bool:D :$refresh = True) {
+        note '…  select-node';
         if $!current-node !=== $node {
             self.remove-highlight($!current-node);
             $!current-node = $node;
@@ -313,8 +326,7 @@ class Terminal::Widgets::Viewer::Tree
         self.fix-scroll-maxes;
         self.refresh-for-scroll(:force);
 
-        note sprintf("⏱️  Refresh for expand change of {self.gist-name}: %.3fms",
-                     (nano - $t0) / 1_000_000) if $.debug;
+        self.debug-elapsed($t0);
     }
 
     #| Walk up the parents from a given DisplayNode, making sure they are
