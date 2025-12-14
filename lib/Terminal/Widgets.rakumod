@@ -1,4 +1,4 @@
-unit class Terminal::Widgets:auth<zef:japhb>:api<0>:ver<0.2.4>;
+unit class Terminal::Widgets:auth<zef:japhb>:api<0>:ver<0.2.5>;
 
 
 =begin pod
