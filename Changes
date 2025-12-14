@@ -1,6 +1,31 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Bug Fixes]
+  - Work around an Emacs source code highlighting bug
+
+  [Docs]
+  - Rewrite adding-new-widgets doc for clarity and to conform to current
+    self-registering widget class API
+  - Fix some comment markers that should have been WHY markers
+
+  [Functionality]
+  - Add a WidgetRegistry that every widget class self-registers into, with
+    caches and accessors to make registry looks fast
+  - Add WIP WrappableBuffer abstraction (not ready for full use this release)
+
+  [Performance]
+  - Switch to using `nano` to get nanosecond counts as fast as possible for all
+    performance stopwatches; `now` is now only used for getting Instant stamps
+
+  [Refactoring]
+  - Refactor layout tree and widget building using the WidgetRegistry API
+  - Move layout class definitions out to widget implementation modules
+  - Move `DEBUG` and `gist-name` to a new Common role
+  - Move DirtyAreas role to its own module file
+  - Factor `gist-dirty-areas` out to DirtyAreas role
+  - Rebase Viewer::Log on top of WIP WrappableBuffer
+
 
 0.2.4  2025-12-03T23:14:40-08:00
   [Bug Fixes]
