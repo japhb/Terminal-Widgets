@@ -37,7 +37,7 @@ Add a dependency in `META6.json` on T::W:
 
 ```
   "depends": [
-    "Terminal::Widgets:auth<zef:japhb>:ver<0.2.4+>"
+    "Terminal::Widgets:auth<zef:japhb>:ver<0.2.5+>"
   ],
 ```
 
