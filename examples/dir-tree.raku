@@ -5,6 +5,9 @@ use Terminal::Widgets::Events;
 use Terminal::Widgets::TextContent;
 use Terminal::Widgets::Volatile::DirTree;
 
+constant Dir = Terminal::Widgets::Volatile::DirTree::Dir;
+
+
 #| A top level UI container based on Terminal::Widgets::Simple::TopLevel
 class DirTreeDemo is TopLevel {
     method initial-layout($builder, $width, $height) {
@@ -16,7 +19,7 @@ class DirTreeDemo is TopLevel {
             .node(
                 .with-scrollbars(
                     .dir-tree-viewer(id => 'dir-tree',
-                                     sort-by => { -(.path.d), .short-name.fc },
+                                     sort-by => { (1 - ($_ ~~ Dir)) ~ .short-name.fc },
                                      process-click => -> $node {
                                          self.show-details($node)
                                      }),
