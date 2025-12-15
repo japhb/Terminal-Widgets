@@ -79,6 +79,24 @@ does Terminal::Widgets::SpanBuffer {
         }
     }
 
+    #| Update scrolling maxes as needed
+    method update-scroll-maxes() {
+        if $.wrap-style.wrap-mode == NoWrap {
+            self.set-x-max($!hard-line-max-width) if $!hard-line-max-width > $.x-max;
+            self.set-y-max($!hard-line-count);
+        }
+        else {
+            # Fixup x-max, possibly clearing wrapped-lines cache if needed
+            self.check-wrap-width;
+            self.set-x-max($!wrap-width);
+
+            # Make sure all LineGroups have wrapped lines cached,
+            # then set y-max equal to total of all wrapped lines
+            %!wrapped-lines{.id} = self.wrap-lines(.id) for @!line-groups;
+            self.set-y-max(%!wrapped-lines.values.map(*.elems).sum);
+        }
+    }
+
     #| Determine if buffer is completely empty
     method empty() { !@!line-groups }
 
