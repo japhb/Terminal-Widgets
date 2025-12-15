@@ -45,7 +45,8 @@ class Terminal::Widgets::Viewer::Log
         self.update-skip-table;
 
         # Update scrolling maxes as needed
-        self.set-x-max($!hard-line-max-width) if $!hard-line-max-width > $.x-max;
+        self.set-x-max($!hard-line-max-width) if $!hard-line-max-width > $.x-max
+                                              && $.wrap-style.wrap-mode == NoWrap;
         self.set-y-max($!hard-line-count);
 
         # Auto-scroll to make room for new entry if previous line visible
