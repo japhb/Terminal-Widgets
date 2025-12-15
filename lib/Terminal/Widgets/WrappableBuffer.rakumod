@@ -2,6 +2,7 @@
 
 use nano;
 
+use Terminal::Widgets::Terminal;
 use Terminal::Widgets::SpanBuffer;
 use Terminal::Widgets::TextContent;
 
@@ -27,9 +28,20 @@ enum Terminal::Widgets::WrapMode is export
 
 #| Style selection for wrapping/filling modes
 class Terminal::Widgets::WrapStyle {
+    has Terminal::Widgets::Terminal:D $.terminal  is required;
     has Terminal::Widgets::WrapMode:D $.wrap-mode = NoWrap;
-    has Bool:D $.compress-whitespace = False;
-    has Str:D  $.wrapped-line-prefix = '';
+
+    has TextContent:D $.wrapped-line-prefix = '';
+    has Bool:D        $.compress-whitespace = False;
+
+    has @.rendered-prefix is built(False);
+    has $.prefix-length   is built(False);
+
+    submethod TWEAK() {
+        my $renderer      = $!terminal.locale.renderer;
+        @!rendered-prefix = $renderer.render($!wrapped-line-prefix);
+        $!prefix-length   = @!rendered-prefix.map(*.width).sum;
+    }
 }
 
 
@@ -37,7 +49,7 @@ class Terminal::Widgets::WrapStyle {
 role Terminal::Widgets::WrappableBuffer
 does Terminal::Widgets::SpanBuffer {
     has Terminal::Widgets::LineGroup:D @.line-groups;
-    has Terminal::Widgets::WrapStyle:D $.wrap-style .= new;
+    has Terminal::Widgets::WrapStyle:D $.wrap-style .= new(terminal => self.terminal);
 
     has UInt:D $!hard-line-max-width = 0;
     has UInt:D $!hard-line-count     = 0;
@@ -47,11 +59,14 @@ does Terminal::Widgets::SpanBuffer {
     has UInt:D $!wrap-width = self.content-width;
     has        %!wrapped-lines;
 
-    #| Set wrap-style and clear wrap caches
+    #| Set wrap-style, then clear wrap caches and fix horizontal scroll width
     method set-wrap-style(Terminal::Widgets::WrapStyle:D $new-style) {
         if  $!wrap-style !=== $new-style {
             $!wrap-style    = $new-style;
             %!wrapped-lines = Empty;
+
+            my $wrapping = $!wrap-style.wrap-mode != NoWrap;
+            self.set-x-max($wrapping ?? $!wrap-width !! $!hard-line-max-width);
         }
     }
 
@@ -142,8 +157,139 @@ does Terminal::Widgets::SpanBuffer {
         return $hard if $mode == NoWrap || $mode <= WordWrap
                      && $!wrap-width >= %!hard-line-width{$id};
 
-        # XXXX: STUB, just hand back hard lines
-        $hard
+        # Determine prefix to use for second and later wrapped lines
+        my @prefix     := $!wrap-style.rendered-prefix;
+        my $prefix-len  = $!wrap-style.prefix-length;
+        if $prefix-len >= $!wrap-width {
+            # Wrapped line prefix would fill entire wrap-width by itself;
+            # fall back to ignoring prefix to fit actual content instead
+            @prefix    := [];
+            $prefix-len = 0;
+        }
+
+        # Wrapping state
+        my @wrapped;                #= Fully wrapped lines
+        my @partial;                #= Current partial line
+        my $pos = 0;                #= Horizontal position within current line
+        my $just-finished = False;  #= Just finished a line; only prefix in current
+
+        # Helper sub to finish a line and start a new one
+        my sub finish-line($span) {
+            @partial.push($span);
+            @wrapped.push(@partial);
+
+            if @prefix {
+                @partial := @prefix.clone;
+                $pos      = $prefix-len;
+            }
+            else {
+                @partial := [];
+                $pos      = 0;
+            }
+
+            $just-finished = True;
+        }
+
+        # Full wrap/fill logic, per WrapMode
+        given $mode {
+            when GraphemeWrap {
+                # Break lines between graphemes, without regard to "words"
+
+                # For each span within each hard line in the LineGroup ...
+                for @$hard -> $line {
+                    for @$line -> $span {
+                        # Try to fit span within current partial line
+                        my $width = $span.width;
+                        my $next  = $pos + $width;
+
+                        # Still more room in line, continue
+                        if $next < $!wrap-width {
+                            $just-finished = False;
+                            @partial.push($span);
+                            $pos = $next;
+                        }
+                        # Hit end of line exactly, push and start new line
+                        elsif $next == $!wrap-width {
+                            finish-line($span);
+                        }
+                        # Need to split span at line end
+                        else {
+                            # Cache for creating span pieces (can't just clone
+                            # because RenderSpan has lazily-updated private attrs)
+                            my $text        = $span.text;
+                            my $color       = $span.color;
+                            my $string-span = $span.string-span;
+
+                            # Check whether span is monospace or duospace
+                            if $width == $text.chars {
+                                # Monospace, assuming no 0-width characters
+
+                                # Work through text of $span, chopping off
+                                # pieces that finish lines
+                                while $text {
+                                    my $avail = $!wrap-width - $pos;
+                                    my $need  = $text.chars;
+                                    my $first = $text.substr(0, $avail);
+                                    my $piece = $span.new(:$string-span, :$color,
+                                                          text => $first);
+                                    if $need >= $avail {
+                                        $text = $text.substr($avail);
+                                        finish-line($piece);
+                                    }
+                                    else {
+                                        $just-finished = False;
+                                        @partial.push($piece);
+                                        $pos += $first.chars;
+                                        $text = '';
+                                    }
+                                }
+                            }
+                            else {
+                                # Duospace; need to account for wide chars
+                                # At least half of $avail will always fit
+
+                                !!! "WIP"
+                            }
+                        }
+                    }
+
+                    # Add last partial line if any, ignoring a prefix-only line.
+                    # Next line will start with no wrap prefix again.
+                    unless $just-finished {
+                        @wrapped.push(@partial);
+                        @partial := [];
+                        $pos      = 0;
+                    }
+                }
+
+                @wrapped
+            }
+            when WordWrap {
+                # Break and wrap lines between words unless a single word is
+                # too long to fit
+
+                # XXXX: STUB, just hand back hard lines
+                $hard
+            }
+            when GraphemeFill {
+                # Attempt to backfill all short lines (except the last) in
+                # order to create a mostly-rectangular block of graphemes
+
+                # XXXX: STUB, just hand back hard lines
+                $hard
+            }
+            when WordFill {
+                # Attempt to backfill all short lines (except the last) with
+                # words from later lines in order to create a more-rectangular
+                # block of word spans
+
+                # XXXX: STUB, just hand back hard lines
+                $hard
+            }
+            default {
+                die "Don't know how to handle WrapMode $mode";
+            }
+        }
     }
 
     #| OPTIONAL OVERRIDE: Skip forward to first visible LineGroup
