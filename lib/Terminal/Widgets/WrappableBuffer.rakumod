@@ -119,13 +119,65 @@ does Terminal::Widgets::SpanBuffer {
         my $pos = @!line-groups.grep(*.id == $id, :k) //
             die "LineGroup id #$id does not exist in this self.gist-name()";
 
-        # Remove LineGroup from buffer and delete hard-lines cache entry
+        # Remove LineGroup from buffer and delete hard-lines/wrapped-lines
+        # cache entries
         @!line-groups.splice($pos, 1);
         %!hard-lines{$id}:delete;
+        %!wrapped-lines{$id}:delete;
 
         # Update hard-line-max-width if this entry was the widest
         my $hl-width = %!hard-line-width{$id}:delete;
         $!hard-line-max-width = %!hard-line-width.values.max // 0
             if $hl-width == $!hard-line-max-width;
+    }
+
+    #| Wrap or fill hard lines for a given LineGroup id
+    #| into wrapped lines as per $!wrap-style.wrap-mode
+    method wrap-lines(UInt:D $id) {
+        my $mode = $!wrap-style.wrap-mode;
+        my $hard = %!hard-lines{$id};
+
+        # Quick exit: Not filling, and wrap-width is wide enough so that
+        #             normal wrapping won't affect this LineGroup
+        return $hard if $mode == NoWrap || $mode <= WordWrap
+                     && $!wrap-width >= %!hard-line-width{$id};
+
+        # XXXX: STUB, just hand back hard lines
+        $hard
+    }
+
+    #| OPTIONAL OVERRIDE: Skip forward to first visible LineGroup
+    method span-line-start(UInt:D $start) {
+        # Default: No special skip, just start at the beginning of the buffer
+        0, 0
+    }
+
+    #| Grab a chunk of laid-out span lines to feed to SpanBuffer.draw-frame
+    method span-line-chunk(UInt:D $start, UInt:D $wanted) {
+        my $t0 = nano;
+
+        # Phase 1: Jump forward to first visible LineGroup if possible
+        my ($i, $pos) = self.span-line-start($start);
+
+        # Phase 2: Search for lines overlapping range and add them to @found
+        my @found;
+        while $i < @!line-groups {
+            my $id    = @!line-groups[$i++].id;
+            my $lines = $!wrap-style.wrap-mode == NoWrap
+                        ?? %!hard-lines{$id}
+                        !! %!wrapped-lines{$id} //= self.wrap-lines($id);
+
+            my $prev  = $pos;
+            $pos += $lines.elems;
+            next if $start >= $pos;
+
+            @found.append($start > $prev ?? @$lines[($start - $prev)..*]
+                                         !! @$lines);
+            last if @found >= $wanted;
+        }
+
+        self.debug-elapsed($t0);
+
+        @found
     }
 }
