@@ -78,30 +78,16 @@ class Terminal::Widgets::Viewer::Log
         }
     }
 
-    #| Grab a chunk of laid-out span lines to feed to SpanBuffer.draw-frame
-    method span-line-chunk(UInt:D $start, UInt:D $wanted) {
-        my $t0 = nano;
-
-        return [] unless @!line-groups;
-
-        my $i   = self.search-skip-table($start);
-        my $pos = %!start-line{@!line-groups[$i].id};
-        my @found;
-
-        while $i < @!line-groups {
-            my $lines = %!hard-lines{@!line-groups[$i++].id};
-            my $prev  = $pos;
-            $pos += $lines.elems;
-            next if $start >= $pos;
-
-            @found.append($start > $prev ?? @$lines[($start - $prev)..*]
-                                         !! @$lines);
-            last if @found >= $wanted;
+    #| Skip forward nearer to first visible LineGroup
+    method span-line-start(UInt:D $start) {
+        if @!line-groups {
+            my $i   = self.search-skip-table($start);
+            my $pos = %!start-line{@!line-groups[$i].id};
+            $i, $pos
         }
-
-        self.debug-elapsed($t0);
-
-        @found
+        else {
+            0, 0
+        }
     }
 }
 
