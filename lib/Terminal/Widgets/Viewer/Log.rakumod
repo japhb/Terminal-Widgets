@@ -40,19 +40,15 @@ class Terminal::Widgets::Viewer::Log
         # Set start line for entry
         my $start = %!start-line{$entry.id} = $!hard-line-count;
 
-        # Append the new LogEntry and update the skip table
+        # Append the new LogEntry, then update the skip table and scroll maxes
         self.insert-line-group($entry);
         self.update-skip-table;
-
-        # Update scrolling maxes as needed
-        self.set-x-max($!hard-line-max-width) if $!hard-line-max-width > $.x-max
-                                              && $.wrap-style.wrap-mode == NoWrap;
-        self.set-y-max($!hard-line-count);
+        self.update-scroll-maxes;
 
         # Auto-scroll to make room for new entry if previous line visible
         my $ch = self.content-height;
         if $.y-scroll + $ch >= $start {
-            self.set-y-scroll($!hard-line-count - $ch);
+            self.set-y-scroll($.y-max - $ch);
         }
 
         self.debug-elapsed($t0);
