@@ -1,11 +1,15 @@
 # ABSTRACT: Demonstrate the tree view widget for dynamic directory navigation
 
+use Terminal::Capabilities;
+
 use Terminal::Widgets::Simple;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::TextContent;
+use Terminal::Widgets::WrappableBuffer;
 use Terminal::Widgets::Volatile::DirTree;
 
-constant Dir = Terminal::Widgets::Volatile::DirTree::Dir;
+constant Uni1 = Terminal::Capabilities::SymbolSet::Uni1;
+constant Dir  = Terminal::Widgets::Volatile::DirTree::Dir;
 
 
 #| A top level UI container based on Terminal::Widgets::Simple::TopLevel
@@ -64,7 +68,17 @@ class DirTreeDemo is TopLevel {
     }
 
     multi method handle-event(Terminal::Widgets::Events::LayoutBuilt:D, BubbleUp) {
+        # Set root node of tree viewer
         %.by-id<dir-tree>.set-root(dir-tree-node($*HOME || '/'));
+
+        # Set line wrapping style for log: Grapheme wrapping with wrap markers
+        my $log        = %.by-id<details>;
+        my $marker     = $.terminal.caps.symbol-set >= Uni1 ?? '↳ ' !! '> ';
+        my $wrap-style = $log.wrap-style.new:
+                         :$.terminal,
+                         wrap-mode => GraphemeWrap,
+                         wrapped-line-prefix => ' ' x 8 ~ $marker;
+        $log.set-wrap-style($wrap-style);
     }
 }
 
