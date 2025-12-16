@@ -2,6 +2,8 @@
 
 use nano;
 
+use Text::MiscUtils::Layout;
+
 use Terminal::Widgets::Terminal;
 use Terminal::Widgets::SpanBuffer;
 use Terminal::Widgets::TextContent;
@@ -32,7 +34,7 @@ class Terminal::Widgets::WrapStyle {
     has Terminal::Widgets::WrapMode:D $.wrap-mode = NoWrap;
 
     has TextContent:D $.wrapped-line-prefix = '';
-    has Bool:D        $.compress-whitespace = False;
+    has Bool:D        $.compress-whitespace = False;  # XXXX: NYI
 
     has @.rendered-prefix is built(False);
     has $.prefix-length   is built(False);
@@ -192,8 +194,8 @@ does Terminal::Widgets::SpanBuffer {
         my $just-finished = False;  #= Just finished a line; only prefix in current
 
         # Helper sub to finish a line and start a new one
-        my sub finish-line($span) {
-            @partial.push($span);
+        my sub finish-line($span?) {
+            @partial.push($span) if $span;
             @wrapped.push(@partial);
 
             if @prefix {
@@ -208,68 +210,174 @@ does Terminal::Widgets::SpanBuffer {
             $just-finished = True;
         }
 
+        # Helper sub to add to a partial line and move $pos
+        my sub add-to-partial($span, $width) {
+            $just-finished = False;
+            @partial.push($span);
+            $pos += $width;
+        }
+
+        # Core span loop for Grapheme modes
+        my sub grapheme-span-loop($line) {
+            for @$line -> $span {
+                # Try to fit span within current partial line
+                my $width = $span.width;
+                my $next  = $pos + $width;
+
+                # Still more room in line, continue
+                if $next < $!wrap-width {
+                    add-to-partial($span, $width);
+                }
+                # Hit end of line exactly, push and start new line
+                elsif $next == $!wrap-width {
+                    finish-line($span);
+                }
+                # Need to split span at line end
+                else {
+                    # Cache for creating span pieces (can't just clone
+                    # because RenderSpan has lazily-updated private attrs)
+                    my $text        = $span.text;
+                    my $color       = $span.color;
+                    my $string-span = $span.string-span;
+
+                    # Check whether span is monospace or duospace
+                    # (monospace can use a faster splitting path)
+                    if $width == $text.chars {
+                        # Monospace, assuming no 0-width characters
+
+                        # Work through text of $span, chopping off
+                        # pieces that finish lines (last line may be
+                        # partial)
+                        while $text {
+                            my $avail  = $!wrap-width - $pos;
+                            my $length = $text.chars;
+                            my $first  = $text.substr(0, $avail);
+                            my $piece  = $span.new(:$string-span, :$color,
+                                                   text => $first);
+                            if $length >= $avail {
+                                finish-line($piece);
+                                $text = $text.substr($avail);
+                            }
+                            else {
+                                add-to-partial($piece, $first.chars);
+                                $text = '';
+                            }
+                        }
+                    }
+                    else {
+                        # Duospace; need to account for wide chars and
+                        # mixed width spans
+
+                        # Work through text of $span, chopping off
+                        # pieces that finish lines.
+                        while $text {
+                            # duospace-width(-core) is O(n), and
+                            # splitting may require O(log n) search, so
+                            # runtime for each wrapped line is O(n log n),
+                            # where n is the wrap-width.  Since the
+                            # number of wrapped lines will be approx.
+                            # the original text length divided by the
+                            # wrap-width, the result is O(N log n),
+                            # where N is the original text length and n
+                            # remains the wrap-width.
+
+                            my $avail  = $!wrap-width - $pos;
+                            my $more   = $avail div 2;
+                            my $width  = 0;
+                            my $length = $text.chars;
+
+                            # If this is guaranteed to be the last
+                            # piece because there's definitely enough
+                            # available space on the current partial
+                            # line, just directly add the final piece
+                            # and fall out to next span
+                            if $more >= $length {
+                                my $piece = $span.new(:$string-span,
+                                                      :$color, :$text);
+                                $width = duospace-width-core($text, 0);
+                                $text  = '';
+
+                                if $width == $avail {
+                                    finish-line($piece);
+                                }
+                                else {
+                                    add-to-partial($piece, $width);
+                                }
+                            }
+                            # Otherwise we might have to split again,
+                            # and finding the split point is going to
+                            # require some work.
+                            else {
+                                my $chars = 0;
+                                my $first = '';
+
+                                # Enough characters for at least half
+                                # of unused cells will always fit even
+                                # if initial chars are all wide, or up
+                                # to twice that if they are mostly
+                                # narrow, so converge on correct break
+                                # using pseudo-binary search.
+                                while $more > 0 && $chars < $length {
+                                    $chars += $more;
+                                    $first  = $text.substr(0, $chars);
+                                    $width  = duospace-width-core($first, 0);
+                                    $more   = ($avail - $width) div 2;
+                                }
+
+                                # Might be able to fit one more narrow
+                                # character after initial binary search
+                                if $avail > $width && $chars < $length {
+                                    # Try fitting one more character
+                                    my $try-text  = $text.substr(0, $chars + 1);
+                                    my $try-width =
+                                        duospace-width-core($try-text, 0);
+
+                                    # If it worked, commit
+                                    if $avail >= $try-width {
+                                        $width = $try-width;
+                                        $first = $try-text;
+                                        $chars++;
+                                    }
+                                }
+
+                                # Did we fit any chars into this partial?
+                                my $first-length = $first.chars;
+                                if $first-length {
+                                    # Managed to fit some, make a piece
+                                    my $piece = $span.new(:$string-span, :$color,
+                                                          text => $first);
+                                    $text = $text.substr($first-length);
+
+                                    if $width == $avail {
+                                        finish-line($piece);
+                                    }
+                                    else {
+                                        add-to-partial($piece, $width);
+                                    }
+                                }
+                                else {
+                                    # Couldn't fit any, which means there
+                                    # was only one cell left and the first
+                                    # character is wide.  Close out this
+                                    # line and try again with the next one.
+                                    finish-line;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         # Full wrap/fill logic, per WrapMode
         given $mode {
             when GraphemeWrap {
                 # Break lines between graphemes, without regard to "words"
 
-                # For each span within each hard line in the LineGroup ...
+                # For each hard line in the LineGroup ...
                 for @$hard -> $line {
-                    for @$line -> $span {
-                        # Try to fit span within current partial line
-                        my $width = $span.width;
-                        my $next  = $pos + $width;
-
-                        # Still more room in line, continue
-                        if $next < $!wrap-width {
-                            $just-finished = False;
-                            @partial.push($span);
-                            $pos = $next;
-                        }
-                        # Hit end of line exactly, push and start new line
-                        elsif $next == $!wrap-width {
-                            finish-line($span);
-                        }
-                        # Need to split span at line end
-                        else {
-                            # Cache for creating span pieces (can't just clone
-                            # because RenderSpan has lazily-updated private attrs)
-                            my $text        = $span.text;
-                            my $color       = $span.color;
-                            my $string-span = $span.string-span;
-
-                            # Check whether span is monospace or duospace
-                            if $width == $text.chars {
-                                # Monospace, assuming no 0-width characters
-
-                                # Work through text of $span, chopping off
-                                # pieces that finish lines
-                                while $text {
-                                    my $avail = $!wrap-width - $pos;
-                                    my $need  = $text.chars;
-                                    my $first = $text.substr(0, $avail);
-                                    my $piece = $span.new(:$string-span, :$color,
-                                                          text => $first);
-                                    if $need >= $avail {
-                                        $text = $text.substr($avail);
-                                        finish-line($piece);
-                                    }
-                                    else {
-                                        $just-finished = False;
-                                        @partial.push($piece);
-                                        $pos += $first.chars;
-                                        $text = '';
-                                    }
-                                }
-                            }
-                            else {
-                                # Duospace; need to account for wide chars
-                                # At least half of $avail will always fit
-
-                                !!! "WIP"
-                            }
-                        }
-                    }
+                    # Run the standard core span loop for Grapheme modes
+                    grapheme-span-loop($line);
 
                     # Add last partial line if any, ignoring a prefix-only line.
                     # Next line will start with no wrap prefix again.
