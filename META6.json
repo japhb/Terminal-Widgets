@@ -63,6 +63,7 @@
     "Terminal::Widgets::Utils::Color": "lib/Terminal/Widgets/Utils/Color.rakumod",
     "Terminal::Widgets::Viewer::DirTree": "lib/Terminal/Widgets/Viewer/DirTree.rakumod",
     "Terminal::Widgets::Viewer::Log": "lib/Terminal/Widgets/Viewer/Log.rakumod",
+    "Terminal::Widgets::Viewer::RichText": "lib/Terminal/Widgets/Viewer/RichText.rakumod",
     "Terminal::Widgets::Viewer::Tree": "lib/Terminal/Widgets/Viewer/Tree.rakumod",
     "Terminal::Widgets::Viz::SmokeChart": "lib/Terminal/Widgets/Viz/SmokeChart.rakumod",
     "Terminal::Widgets::Volatile::DirTree": "lib/Terminal/Widgets/Volatile/DirTree.rakumod",
