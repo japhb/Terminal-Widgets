@@ -39,10 +39,16 @@ class Terminal::Widgets::WrapStyle {
     has @.rendered-prefix is built(False);
     has $.prefix-length   is built(False);
 
-    submethod TWEAK() {
+    # Ensure render-prefix is called on any new or clone
+    submethod TWEAK {  self.render-prefix }
+    method clone { callsame.render-prefix }
+
+    method render-prefix() {
         my $renderer      = $!terminal.locale.renderer;
         @!rendered-prefix = $renderer.render($!wrapped-line-prefix);
         $!prefix-length   = @!rendered-prefix.map(*.width).sum;
+
+        self
     }
 }
 

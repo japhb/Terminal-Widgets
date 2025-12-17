@@ -74,10 +74,9 @@ class DirTreeDemo is TopLevel {
         # Set line wrapping style for log: Grapheme wrapping with wrap markers
         my $log        = %.by-id<details>;
         my $marker     = $.terminal.caps.symbol-set >= Uni1 ?? '↳ ' !! '> ';
-        my $wrap-style = $log.wrap-style.new:
-                         :$.terminal,
-                         wrap-mode => GraphemeWrap,
-                         wrapped-line-prefix => ' ' x 8 ~ $marker;
+        my $wrap-style = $log.wrap-style.clone:
+                             wrap-mode => GraphemeWrap,
+                             wrapped-line-prefix => ' ' x 8 ~ $marker;
         $log.set-wrap-style($wrap-style);
     }
 }
