@@ -27,19 +27,19 @@ role Terminal::Widgets::Scrollable {
         }
     }
 
-    # NOTE: If changing both x-max and x-scroll, call this one first!
     method set-x-max(UInt:D $x-max) {
         if  $!x-max != $x-max {
             $!x-max  = $x-max;
             $!scrolled = True;
+            self.set-x-scroll($!x-scroll);
         }
     }
 
-    # NOTE: If changing both y-max and y-scroll, call this one first!
     method set-y-max(UInt:D $y-max) {
         if  $!y-max != $y-max {
             $!y-max  = $y-max;
             $!scrolled = True;
+            self.set-y-scroll($!y-scroll);
         }
     }
 
