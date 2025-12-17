@@ -100,7 +100,7 @@ does Terminal::Widgets::SpanBuffer {
 
             # Make sure all LineGroups have wrapped lines cached,
             # then set y-max equal to total of all wrapped lines
-            %!wrapped-lines{.id} = self.wrap-lines(.id) for @!line-groups;
+            %!wrapped-lines{.id} //= self.wrap-lines(.id) for @!line-groups;
             self.set-y-max(%!wrapped-lines.values.map(*.elems).sum);
         }
     }
@@ -112,7 +112,7 @@ does Terminal::Widgets::SpanBuffer {
     #| at a given $pos, defaulting to appending at the end
     multi method insert-line-group(TextContent:D $content,
                                    UInt:D $pos = @!line-groups.elems) {
-        self.add-line-group(Terminal::Widgets::LineGroup.new(:$content), $pos)
+        self.insert-line-group(Terminal::Widgets::LineGroup.new(:$content), $pos)
     }
 
     #| Insert a single LineGroup into the buffer at a given $pos, defaulting
