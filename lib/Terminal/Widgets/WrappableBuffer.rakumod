@@ -407,8 +407,14 @@ does Terminal::Widgets::SpanBuffer {
                 # Attempt to backfill all short lines (except the last) in
                 # order to create a mostly-rectangular block of graphemes
 
-                # XXXX: STUB, just hand back hard lines
-                $hard
+                # Run the standard core span loop for Grapheme modes
+                # for each hard line in the LineGroup
+                grapheme-span-loop($_) for @$hard;
+
+                # Add last partial line if any, ignoring a prefix-only line
+                @wrapped.push(@partial) unless $just-finished;
+
+                @wrapped
             }
             when WordFill {
                 # Attempt to backfill all short lines (except the last) with
