@@ -287,9 +287,7 @@ does Terminal::Widgets::SpanBuffer {
 
                     # Check whether span is monospace or duospace
                     # (monospace can use a faster splitting path)
-                    if $width == $text.chars {
-                        # Monospace, assuming no 0-width characters
-
+                    if $width == $text.chars && is-monospace-core($text, 0) {
                         # Work through text of $span, chopping off
                         # pieces that finish lines (last line may be
                         # partial)

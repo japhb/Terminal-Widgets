@@ -1,6 +1,7 @@
 # ABSTRACT: Wrapper of Terminal::Print::Widget with EventHandling and Animation hooks
 
 use nano;
+use Text::MiscUtils::Layout;
 
 use Terminal::Print::Widget;
 use Terminal::Print::Animated;
@@ -425,9 +426,7 @@ class Terminal::Widgets::Widget
         my $span-x = 0;
         for @line {
             my $next = $span-x + .width;
-            if .width == .text.chars {
-                # Span is monospace (assuming no 0-width characters in .text)
-
+            if is-monospace-core(.text, 0) {
                 if $x-scroll <= $span-x && $next <= $x-scroll + $w  {
                     # Span fully visible and monospace; render entire span and
                     # move line-x the full width. This is the FASTEST span path.
