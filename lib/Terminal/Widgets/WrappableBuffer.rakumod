@@ -160,9 +160,10 @@ does Terminal::Widgets::SpanBuffer {
         my $pos = @!line-groups.grep(*.id == $id, :k) //
             die "LineGroup id #$id does not exist in this self.gist-name()";
 
-        # Remove LineGroup from buffer and delete hard-lines/wrapped-lines
-        # cache entries
+        # Remove LineGroup from buffer, reduce hard-line-count, and delete
+        # hard-lines/wrapped-lines cache entries
         @!line-groups.splice($pos, 1);
+        $!hard-line-count -= %!hard-lines{$id}.elems;
         %!hard-lines{$id}:delete;
         %!wrapped-lines{$id}:delete;
 
