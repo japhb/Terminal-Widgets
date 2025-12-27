@@ -424,7 +424,7 @@ does Terminal::Widgets::SpanBuffer {
                 my $string-span = $span.string-span;
 
                 my  @runs := string-runs($span.text);
-                for @runs -> $ws is copy, $nws {
+                for @runs -> $ws, $nws {
                     # First half: Whitespace run
                     if $ws {
                         # XXXX: Handle zero-width, ideographic, and joining spaces
@@ -450,15 +450,16 @@ does Terminal::Widgets::SpanBuffer {
                                 # Work through the whitespace, chopping off
                                 # pieces that finish lines (last line may be
                                 # partial)
-                                while $ws {
+                                my $text = $ws;
+                                while $text {
                                     # There's only one Unicode whitespace char
                                     # with width > 1: U+3000 IDEOGRAPHIC SPACE
                                     # All the rest are 0 or 1.
                                     my $avail = $!wrap-width - $pos;
-                                    my $chars = $ws.contains("\x3000")
+                                    my $chars = $text.contains("\x3000")
                                                  ?? $avail div 2
                                                  !! $avail;
-                                    my $first = $ws.substr(0, $chars);
+                                    my $first = $text.substr(0, $chars);
                                        $width = duospace-width-core($first, 0);
 
                                     # XXXX: Adjust chars/first/width for
@@ -473,7 +474,7 @@ does Terminal::Widgets::SpanBuffer {
                                         add-to-partial($piece, $width);
                                     }
 
-                                    $ws := $ws.substr($chars);
+                                    $text .= substr($chars);
                                 }
                             }
                         }
