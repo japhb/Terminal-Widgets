@@ -24,13 +24,16 @@ class Terminal::Widgets::LineGroup {
 
 
 #| Available text wrapping/filling modes; each works *within* a LineGroup.
-#| *Wrap variants can only split lines; *Fill variants can merge them.
+#| *Wrap variants can only split lines; *Fill variants can merge them as well.
 enum Terminal::Widgets::WrapMode is export
     < NoWrap GraphemeWrap WordWrap GraphemeFill WordFill >;
 
-#| Handling of whitespace when wrapping/filling within a LineGroup
+#| Handling of whitespace when wrapping/filling within a LineGroup.
+#| Partial replaces whitespace runs inside a span with a single space.
+#| Full additionally removes leading whitespace at start of line and
+#| squashes whitespace that crosses span boundaries to a single space.
 enum Terminal::Widgets::WhitespaceSquashMode is export
-    < NoSquash SquashInsideSpans SquashAcrossSpans >;
+    < NoSquash PartialSquash FullSquash >;
 
 #| Style selection for wrapping/filling modes
 class Terminal::Widgets::WrapStyle {
@@ -428,7 +431,7 @@ does Terminal::Widgets::SpanBuffer {
                     if $ws {
                         # XXXX: Handle zero-width, ideographic, and joining spaces
 
-                        # Squash modes: NoSquash SquashInsideSpans SquashAcrossSpans
+                        # Squash modes: NoSquash, PartialSquash, FullSquash
                         if $squash == NoSquash {
                             my $avail = $!wrap-width - $pos;
                             my $width = duospace-width-core($ws, 0);
@@ -478,7 +481,7 @@ does Terminal::Widgets::SpanBuffer {
                                 }
                             }
                         }
-                        elsif $squash == SquashInsideSpans || !$in-whitespace {
+                        elsif $squash == PartialSquash || !$in-whitespace {
                             my $width = duospace-width-core($ws, 0);
                             if $width {
                                 # A single cell-width space must always fit
