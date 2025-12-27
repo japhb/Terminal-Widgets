@@ -415,6 +415,176 @@ does Terminal::Widgets::SpanBuffer {
             }
         }
 
+        # Core span loop for Word modes
+        my sub word-span-loop($line) {
+            for @$line -> $span {
+                # Cache for creating span pieces (can't just clone
+                # because RenderSpan has lazily-updated private attrs)
+                my $color       = $span.color;
+                my $string-span = $span.string-span;
+
+                my  @runs := string-runs($span.text);
+                for @runs -> $ws is copy, $nws {
+                    # First half: Whitespace run
+                    if $ws {
+                        # XXXX: Handle zero-width, ideographic, and joining spaces
+
+                        # Squash modes: NoSquash SquashInsideSpans SquashAcrossSpans
+                        if $squash == NoSquash {
+                            my $avail = $!wrap-width - $pos;
+                            my $width = duospace-width-core($ws, 0);
+
+                            if $width < $avail {
+                                my $piece = $span.new(:$string-span, :$color,
+                                                      text => $ws);
+                                add-to-partial($piece, $width);
+                            }
+                            elsif $width == $avail {
+                                my $piece = $span.new(:$string-span, :$color,
+                                                      text => $ws);
+                                finish-line($piece);
+                            }
+                            else {
+                                # Need to split a run of spaces across lines
+
+                                # Work through the whitespace, chopping off
+                                # pieces that finish lines (last line may be
+                                # partial)
+                                while $ws {
+                                    # There's only one Unicode whitespace char
+                                    # with width > 1: U+3000 IDEOGRAPHIC SPACE
+                                    # All the rest are 0 or 1.
+                                    my $avail = $!wrap-width - $pos;
+                                    my $chars = $ws.contains("\x3000")
+                                                 ?? $avail div 2
+                                                 !! $avail;
+                                    my $first = $ws.substr(0, $chars);
+                                       $width = duospace-width-core($first, 0);
+
+                                    # XXXX: Adjust chars/first/width for
+                                    #       mixed-width spaces
+
+                                    my $piece = $span.new(:$string-span, :$color,
+                                                          text => $first);
+                                    if $width == $avail {
+                                        finish-line($piece);
+                                    }
+                                    else {
+                                        add-to-partial($piece, $width);
+                                    }
+
+                                    $ws := $ws.substr($chars);
+                                }
+                            }
+                        }
+                        elsif $squash == SquashInsideSpans || !$in-whitespace {
+                            my $width = duospace-width-core($ws, 0);
+                            if $width {
+                                # A single cell-width space must always fit
+                                # (otherwise the previous line would have been
+                                # finished already, resulting in a new partial
+                                # that would have room).
+
+                                # Determine whether the squash should be to a
+                                # width-2 IDEOGRAPHIC SPACE, or just a normal
+                                # width-1 SPACE character
+                                my $avail = $!wrap-width - $pos;
+                                my $wants-ideo = $avail >= 2 && $width >= 2
+                                                 && $ws.contains("\x3000");
+                                my $text  = $wants-ideo ?? "\x3000" !! ' ';
+                                my $need  = $wants-ideo + 1;
+                                my $piece = $span.new(:$string-span, :$color,
+                                                      :$text);
+
+                                if $avail == $need {
+                                    finish-line($piece);
+                                }
+                                else {
+                                    add-to-partial($piece, $need);
+                                }
+                            }
+                        }
+
+                        # Remember whitespace state for next span
+                        $in-whitespace = True;
+                    }
+
+                    # Second half: NON-whitespace run
+                    if $nws {
+                        my $avail = $!wrap-width - $pos;
+                        my $width = duospace-width-core($nws, 0);
+
+                        if $width < $avail {
+                            my $piece = $span.new(:$string-span, :$color,
+                                                  text => $nws);
+                            add-to-partial($piece, $width);
+                        }
+                        elsif $width == $avail {
+                            my $piece = $span.new(:$string-span, :$color,
+                                                  text => $nws);
+                            finish-line($piece);
+                        }
+                        else {
+                            # Might need to split a run of NON-whitespace
+                            # (a "word") across lines
+
+                            # Will it even fit if it was on a line by itself?
+                            my $max = $!wrap-width - $prefix-len;
+                            if $max > $width {
+                                # Finish current line, put it in a new partial
+                                my $piece = $span.new(:$string-span, :$color,
+                                                      text => $nws);
+                                finish-line;
+                                add-to-partial($piece, $width);
+                            }
+                            elsif $max == $width {
+                                # Put it on a line completely by itself
+                                my $piece = $span.new(:$string-span, :$color,
+                                                      text => $nws);
+                                finish-line;
+                                finish-line($piece);
+                            }
+                            else {
+                                # The "word" won't fit even on a line by
+                                # itself, and we need to split it somehow.
+
+                                # XXXX: Perhaps treat this case as if it was a
+                                #       grapheme wrap instead?  If so, should
+                                #       there be a wrap marker?
+
+                                # XXXX: What if it fits if the first chunk
+                                #       fills out the *current* line?
+
+                                # XXXX: What about multi-line wraps where
+                                #       part could fit on the first line,
+                                #       without leaving too much space on
+                                #       the last line?
+
+                                # XXXX: Do we care about punctuation v. letters?
+
+                                # XXXX: What about a wide char across the
+                                #       dividing point?
+
+                                if $width <= $max + $avail {
+                                    # XXXX: Split with some on this line,
+                                    #       some on maybe-partial next line
+                                    !!!
+                                }
+                                else {
+                                    # XXXX: Too big to even fit with just
+                                    #       one split.  Now what?
+                                    !!!
+                                }
+                            }
+                        }
+
+                        # Remember whitespace state for next span
+                        $in-whitespace = False;
+                    }
+                }
+            }
+        }
+
         # Full wrap/fill logic, per WrapMode
         given $mode {
             when GraphemeWrap {
