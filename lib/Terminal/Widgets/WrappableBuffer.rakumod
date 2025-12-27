@@ -253,6 +253,7 @@ does Terminal::Widgets::SpanBuffer {
             }
 
             $just-finished = True;
+            $in-whitespace = True;
         }
 
         # Helper sub to add to a partial line and move $pos
@@ -470,9 +471,10 @@ does Terminal::Widgets::SpanBuffer {
                                     }
                                     else {
                                         add-to-partial($piece, $width);
+                                        $in-whitespace = True;
                                     }
 
-                                    $text .= substr($chars);
+                                    $text = $text.substr($chars);
                                 }
                             }
                         }
@@ -517,6 +519,7 @@ does Terminal::Widgets::SpanBuffer {
                             my $piece = $span.new(:$string-span, :$color,
                                                   text => $nws);
                             add-to-partial($piece, $width);
+                            $in-whitespace = False;
                         }
                         elsif $width == $avail {
                             my $piece = $span.new(:$string-span, :$color,
@@ -527,17 +530,18 @@ does Terminal::Widgets::SpanBuffer {
                             # Might need to split a run of NON-whitespace
                             # (a "word") across lines
 
-                            # Will it even fit if it was on a line by itself?
+                            # Will it fit on a line by itself?
                             my $max = $!wrap-width - $prefix-len;
                             if $max > $width {
-                                # Finish current line, put it in a new partial
+                                # Yes, use it to start a new partial line
                                 my $piece = $span.new(:$string-span, :$color,
                                                       text => $nws);
                                 finish-line;
                                 add-to-partial($piece, $width);
+                                $in-whitespace = False;
                             }
                             elsif $max == $width {
-                                # Put it on a line completely by itself
+                                # Yes, put it on a line completely by itself
                                 my $piece = $span.new(:$string-span, :$color,
                                                       text => $nws);
                                 finish-line;
@@ -545,40 +549,42 @@ does Terminal::Widgets::SpanBuffer {
                             }
                             else {
                                 # The "word" won't fit even on a line by
-                                # itself, and we need to split it somehow.
+                                # itself, so we need to split it somehow.
+                                # Resolve this segment by simulating grapheme
+                                # wrapping instead.
 
-                                # XXXX: Perhaps treat this case as if it was a
-                                #       grapheme wrap instead?  If so, should
-                                #       there be a wrap marker?
-
-                                # XXXX: What if it fits if the first chunk
-                                #       fills out the *current* line?
-
-                                # XXXX: What about multi-line wraps where
-                                #       part could fit on the first line,
-                                #       without leaving too much space on
-                                #       the last line?
-
-                                # XXXX: Do we care about punctuation v. letters?
-
-                                # XXXX: What about a wide char across the
-                                #       dividing point?
-
-                                if $width <= $max + $avail {
-                                    # XXXX: Split with some on this line,
-                                    #       some on maybe-partial next line
-                                    !!!
+                                # Check whether text is monospace or duospace
+                                # (monospace can use a faster splitting path)
+                                if $width == $nws.chars
+                                && is-monospace-core($nws, 0) {
+                                    # Work through text of $span, chopping off
+                                    # pieces that finish lines (last line may be
+                                    # partial)
+                                    my $text = $nws;
+                                    while $text {
+                                        my $avail  = $!wrap-width - $pos;
+                                        my $length = $text.chars;
+                                        my $first  = $text.substr(0, $avail);
+                                        my $piece  = $span.new(:$string-span, :$color,
+                                                               text => $first);
+                                        if $length >= $avail {
+                                            finish-line($piece);
+                                            $text = $text.substr($avail);
+                                        }
+                                        else {
+                                            add-to-partial($piece, $first.chars);
+                                            $in-whitespace = False;
+                                            $text = '';
+                                        }
+                                    }
                                 }
                                 else {
-                                    # XXXX: Too big to even fit with just
-                                    #       one split.  Now what?
-                                    !!!
+                                    # Duospace; need to account for wide chars and
+                                    # mixed width spans
+                                    !!! "XXXX: Really need to DRY this up"
                                 }
                             }
                         }
-
-                        # Remember whitespace state for next span
-                        $in-whitespace = False;
                     }
                 }
             }
