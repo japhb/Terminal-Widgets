@@ -200,6 +200,32 @@ does Terminal::Widgets::SpanBuffer {
         my $pos = 0;                #= Horizontal position within current line
         my $just-finished = False;  #= Just finished a line; only prefix in current
 
+        # Split a string into alternating whitespace/non-whitespace runs;
+        # first whitespace and last non-whitespace runs MAY be empty strings.
+        my sub string-runs($string) {
+            # This needs to be AFAP, so into NQP land it goes
+            use nqp;
+
+            my str $str   = $string;
+            my int $chars = nqp::chars($str);
+            my int $pos   = 0;
+            my int $next  = 0;
+            my int $WS    = nqp::const::CCLASS_WHITESPACE;
+            my     $runs := nqp::list();
+
+            while $pos < $chars {
+                # Look for end of whitespace and add a run for it
+                $next = nqp::findnotcclass($WS, $str, $pos, $chars);
+                nqp::push($runs, nqp::substr($str, $pos, $next - $pos));
+
+                # Look for end of NON-whitespace and add a run for it
+                $pos = nqp::findcclass($WS, $str, $next, $chars);
+                nqp::push($runs, nqp::substr($str, $next, $pos - $next));
+            }
+
+            nqp::hllize($runs)
+        }
+
         # Helper sub to finish a line and start a new one
         my sub finish-line($span?) {
             @partial.push($span) if $span;
