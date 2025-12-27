@@ -627,8 +627,9 @@ does Terminal::Widgets::SpanBuffer {
                     # Next line will start with no wrap prefix again.
                     unless $just-finished {
                         @wrapped.push(@partial);
-                        @partial := [];
-                        $pos      = 0;
+                        @partial      := [];
+                        $pos           = 0;
+                        $in-whitespace = True;
                     }
                 }
 
