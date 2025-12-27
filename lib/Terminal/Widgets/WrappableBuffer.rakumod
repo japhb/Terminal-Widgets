@@ -615,8 +615,21 @@ does Terminal::Widgets::SpanBuffer {
                 # Break and wrap lines between words unless a single word is
                 # too long to fit
 
-                # XXXX: STUB, just hand back hard lines
-                $hard
+                # For each hard line in the LineGroup ...
+                for @$hard -> $line {
+                    # Run the standard core span loop for Word modes
+                    word-span-loop($line);
+
+                    # Add last partial line if any, ignoring a prefix-only line.
+                    # Next line will start with no wrap prefix again.
+                    unless $just-finished {
+                        @wrapped.push(@partial);
+                        @partial := [];
+                        $pos      = 0;
+                    }
+                }
+
+                @wrapped
             }
             when GraphemeFill {
                 # Attempt to backfill all short lines (except the last) in
@@ -636,8 +649,14 @@ does Terminal::Widgets::SpanBuffer {
                 # words from later lines in order to create a more-rectangular
                 # block of word spans
 
-                # XXXX: STUB, just hand back hard lines
-                $hard
+                # Run the standard core span loop for Word modes
+                # for each hard line in the LineGroup
+                word-span-loop($_) for @$hard;
+
+                # Add last partial line if any, ignoring a prefix-only line
+                @wrapped.push(@partial) unless $just-finished;
+
+                @wrapped
             }
             default {
                 die "Don't know how to handle WrapMode $mode";
