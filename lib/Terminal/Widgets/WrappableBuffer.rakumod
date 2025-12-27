@@ -28,13 +28,18 @@ class Terminal::Widgets::LineGroup {
 enum Terminal::Widgets::WrapMode is export
     < NoWrap GraphemeWrap WordWrap GraphemeFill WordFill >;
 
+#| Handling of whitespace when wrapping/filling within a LineGroup
+enum Terminal::Widgets::WhitespaceSquashMode is export
+    < NoSquash SquashInsideSpans SquashAcrossSpans >;
+
 #| Style selection for wrapping/filling modes
 class Terminal::Widgets::WrapStyle {
-    has Terminal::Widgets::Terminal:D $.terminal  is required;
-    has Terminal::Widgets::WrapMode:D $.wrap-mode = NoWrap;
+    has Terminal::Widgets::Terminal:D $.terminal is required;
+
+    has Terminal::Widgets::WrapMode:D             $.wrap-mode   = NoWrap;
+    has Terminal::Widgets::WhitespaceSquashMode:D $.squash-mode = NoSquash;
 
     has TextContent:D $.wrapped-line-prefix = '';
-    has Bool:D        $.compress-whitespace = False;  # XXXX: NYI
 
     has @.rendered-prefix is built(False);
     has $.prefix-length   is built(False);
@@ -176,12 +181,16 @@ does Terminal::Widgets::SpanBuffer {
     #| Wrap or fill hard lines for a given LineGroup id
     #| into wrapped lines as per $!wrap-style.wrap-mode
     method wrap-lines(UInt:D $id) {
-        my $mode = $!wrap-style.wrap-mode;
-        my $hard = %!hard-lines{$id};
+        my $hard   = %!hard-lines{$id};
+        my $mode   = $!wrap-style.wrap-mode;
+        my $squash = $!wrap-style.squash-mode;
 
-        # Quick exit: Not filling, and wrap-width is wide enough so that
-        #             normal wrapping won't affect this LineGroup
-        return $hard if $mode == NoWrap || $mode <= WordWrap
+        # Quick exit: Not filling, not needing to squash whitespace, and
+        #             wrap-width is wide enough so that normal wrapping
+        #             won't affect this LineGroup
+        return $hard if $mode == NoWrap
+                     || (   $mode == GraphemeWrap
+                         || $mode == WordWrap && $squash == NoSquash)
                      && $!wrap-width >= %!hard-line-width{$id};
 
         # Determine prefix to use for second and later wrapped lines
@@ -199,6 +208,7 @@ does Terminal::Widgets::SpanBuffer {
         my @partial;                #= Current partial line
         my $pos = 0;                #= Horizontal position within current line
         my $just-finished = False;  #= Just finished a line; only prefix in current
+        my $in-whitespace = False;  #= Currently within a whitespace segment
 
         # Split a string into alternating whitespace/non-whitespace runs;
         # first whitespace and last non-whitespace runs MAY be empty strings.
@@ -214,6 +224,8 @@ does Terminal::Widgets::SpanBuffer {
             my     $runs := nqp::list();
 
             while $pos < $chars {
+                # XXXX: Handle non-breaking spaces
+
                 # Look for end of whitespace and add a run for it
                 $next = nqp::findnotcclass($WS, $str, $pos, $chars);
                 nqp::push($runs, nqp::substr($str, $pos, $next - $pos));
