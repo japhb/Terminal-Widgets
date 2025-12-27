@@ -19,6 +19,9 @@ class RichTextViewerDemo is TopLevel {
         string-span('  Span 6  ', color => 'on_magenta'),
     );
 
+    has $!list = string-span("\n\nHat,\n  scarf,   gloves,  \njacket, boots\n\n",
+                             color => 'inverse');
+
 
     method initial-layout($builder, $width, $height) {
         my sub wrap-args($wrap-mode) {
@@ -93,6 +96,7 @@ class RichTextViewerDemo is TopLevel {
         with %.by-id<buffer> {
             if .empty {
                 .insert-line-group($!spans);
+                .insert-line-group($!list);
                 .insert-line-group($!text);
                 .update-scroll-maxes;
             }
