@@ -208,7 +208,7 @@ does Terminal::Widgets::SpanBuffer {
         my @partial;                #= Current partial line
         my $pos = 0;                #= Horizontal position within current line
         my $just-finished = False;  #= Just finished a line; only prefix in current
-        my $in-whitespace = False;  #= Currently within a whitespace segment
+        my $in-whitespace = True;   #= Previous segment was whitespace (or start of line)
 
         # Split a string into alternating whitespace/non-whitespace runs;
         # first whitespace and last non-whitespace runs MAY be empty strings.
