@@ -276,7 +276,8 @@ does Terminal::Widgets::SpanBuffer {
                         # mixed width spans
 
                         # Work through text of $span, chopping off
-                        # pieces that finish lines.
+                        # pieces that finish lines (last line may be
+                        # partial)
                         while $text {
                             # duospace-width(-core) is O(n), and
                             # splitting may require O(log n) search, so
