@@ -503,9 +503,10 @@ does Terminal::Widgets::SpanBuffer {
                                             $more   = ($avail - $width) div 2;
                                         }
 
-                                        # Might be able to fit one more narrow
-                                        # character after initial binary search
-                                        if $avail > $width && $chars < $length {
+                                        # Might be able to fit more width-0 or
+                                        # width-1 characters after initial
+                                        # binary search
+                                        while $avail > $width && $chars < $length {
                                             # Try fitting one more character
                                             my $try-text  =
                                                 $remainder.substr(0, $chars + 1);
