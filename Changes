@@ -1,8 +1,35 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Bug Fixes]
+  - Switch to more accurate (and still decently quick) monospace checks
+
+  [Debugging]
+  - Condition remaining debug notes on debug level
+
+  [Examples]
+  - Add rich-text-viewer example program, showing off WrappableBuffer features
+  - Set log wrapping style in dir-tree example
+
+  [Functionality]
+  - Create WrappableBuffer, implementing wrapping, filling, and whitespace
+    squashing functionality on top of SpanBuffer
+  - Add a trivial Viewer::RichText wrapper around WrappableBuffer
+  - Make Scrollable.set-x/y-max a bit less footgunny
+  - Support eight-direction content-pushing layout nodes
+
   [Packaging]
   - Bump Text::MiscUtils dependency to 0.0.11+ for is-monospace()
+
+  [Performance]
+  - Greatly speed dir-tree example sort-by block
+  - Add Common.debug-elapsed for DWIM timing info
+  - Convert most timing messages to use Common.debug-elapsed
+  - Improve debugging and timing info for Viewer::Tree and Volatile::DirTree
+
+  [Refactoring]
+  - Terminal now does Common
+  - Refactor Viewer::Log in terms of WrappableBuffer
 
 
 0.2.5  2025-12-13T17:26:57-08:00
