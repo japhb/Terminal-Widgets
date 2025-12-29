@@ -305,7 +305,7 @@ does Terminal::Widgets::SpanBuffer {
                     for @runs -> $ws, $nws {
                         # First half: Whitespace run
                         if $ws {
-                            # XXXX: Handle zero-width, ideographic, and joining spaces
+                            # XXXX: Handle joining and non-breaking spaces correctly
 
                             # Squash modes: NoSquash, PartialSquash, FullSquash
                             if $squash == NoSquash {
@@ -321,7 +321,31 @@ does Terminal::Widgets::SpanBuffer {
                                     $width < $avail ?? add-to-partial($piece, $width)
                                                     !! finish-line($piece);
                                 }
-                                # Need to split a run of spaces across lines
+                                # Need to split a run of whitespace, but can
+                                # optimize because it is all width-1 spaces
+                                elsif $all-mono || $width == $ws.chars
+                                                   && is-monospace-core($ws, 0) {
+                                    # Work through the whitespace, chopping off
+                                    # pieces that finish lines (last line may be
+                                    # partial)
+                                    my $remainder = $ws;
+                                    while $remainder {
+                                        my $avail = $!wrap-width - $pos;
+                                        my $first = $remainder.substr(0, $avail);
+                                        my $piece = $span.new(:$string-span, :$color,
+                                                              text => $first);
+
+                                        $width = $first.chars;
+                                        $width < $avail
+                                            ?? add-to-partial($piece, $width)
+                                            !! finish-line($piece);
+
+                                        $after-ws  = True;
+                                        $remainder = $remainder.substr($width);
+                                    }
+                                }
+                                # Need to split a run of spaces across lines,
+                                # and the run contains width-0 or width-2 spaces
                                 else {
                                     # Work through the whitespace, chopping off
                                     # pieces that finish lines (last line may be
@@ -331,27 +355,85 @@ does Terminal::Widgets::SpanBuffer {
                                         # There's only one Unicode whitespace char
                                         # with width > 1: U+3000 IDEOGRAPHIC SPACE
                                         # All the rest are 0 or 1.
-                                        my $avail = $!wrap-width - $pos;
-                                        my $chars = !$all-mono
-                                                 && $remainder.contains("\x3000")
-                                                 ?? $avail div 2 !! $avail;
-                                        my $first = $remainder.substr(0, $chars);
-                                           $width = $all-mono
-                                                    ?? $first.chars
-                                                    !! duospace-width-core($first, 0);
+                                        my $avail  = $!wrap-width - $pos;
+                                        my $more   = $remainder.contains("\x3000")
+                                                      ?? $avail div 2 !! $avail;
+                                        my $width  = 0;
+                                        my $length = $remainder.chars;
 
-                                        # XXXX: Adjust chars/first/width for
-                                        #       mixed-width spaces
+                                        # Last piece, because there's guaranteed
+                                        # enough room?  Excellent, add it.
+                                        if $more >= $length {
+                                            my $piece = $span.new(:$string-span,
+                                                                  :$color, :$remainder);
+                                            $width = duospace-width-core($remainder, 0);
 
-                                        my $piece = $span.new(:$string-span, :$color,
-                                                              text => $first);
-                                        $width < $avail
-                                            ?? add-to-partial($piece, $width)
-                                            !! finish-line($piece);
+                                            if $width == $avail {
+                                                finish-line($piece);
+                                            }
+                                            else {
+                                                add-to-partial($piece, $width);
+                                                $after-ws = False;
+                                            }
 
-                                        $after-ws  = True;
-                                        my $split  = $chars min $first.chars;
-                                        $remainder = $remainder.substr($split);
+                                            $remainder = '';
+                                        }
+                                        # We might have to split again
+                                        else {
+                                            my $chars = 0;
+                                            my $first = '';
+
+                                            # Binary search forward for break point
+                                            while $more > 0 && $chars < $length {
+                                                $chars += $more;
+                                                $first  = $remainder.substr(0, $chars);
+                                                $width  = duospace-width-core($first, 0);
+                                                $more   = ($avail - $width) div 2;
+                                            }
+
+                                            # Might be able to fit more width-0 or
+                                            # width-1 spaces after initial binary search
+                                            while $avail > $width && $chars < $length {
+                                                # Try fitting one more space
+                                                my $try-text  =
+                                                    $remainder.substr(0, $chars + 1);
+                                                my $try-width =
+                                                    duospace-width-core($try-text, 0);
+
+                                                # If it worked, commit
+                                                if $avail >= $try-width {
+                                                    $width = $try-width;
+                                                    $first = $try-text;
+                                                    $chars++;
+                                                }
+                                            }
+
+                                            # Did we fit any chars into this partial?
+                                            my $first-length = $first.chars;
+                                            if $first-length {
+                                                # Managed to fit some, make a piece
+                                                my $piece = $span.new(:$string-span,
+                                                                      :$color,
+                                                                      text => $first);
+                                                $remainder = $remainder.substr($first-length);
+
+                                                if $width == $avail {
+                                                    finish-line($piece);
+                                                }
+                                                else {
+                                                    add-to-partial($piece, $width);
+                                                    $after-ws = False;
+                                                }
+                                            }
+                                            else {
+                                                # Couldn't fit any, which means
+                                                # there was only one cell left
+                                                # and the first space character
+                                                # is wide.  Close out this line
+                                                # and try again with the next one.
+                                                finish-line;
+                                            }
+                                        }
                                     }
                                 }
                             }
