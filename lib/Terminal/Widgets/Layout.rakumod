@@ -485,6 +485,30 @@ class Center is Node {
 }
 
 
+# Structural nodes to push content toward some direction
+
+#| A structural node to push content to the top of the available space
+class PushUp is Node {
+    method builder-name() { 'push-up' }
+}
+
+#| A structural node to push content to the bottom of the available space
+class PushDown is Node {
+    method builder-name() { 'push-down' }
+}
+
+#| A structural node to push content to the left edge of the available space
+class PushLeft is Node {
+    method builder-name() { 'push-left' }
+}
+
+#| A structural node to push content to the right edge of the available space
+class PushRight is Node {
+    method builder-name() { 'push-right' }
+}
+
+
+
 #| Helper class for building style/layout trees
 class Builder
  does Terminal::Widgets::WidgetRegistry {
@@ -579,6 +603,46 @@ class Builder
         }
     }
 
+    #| Helper method for building layout that pushes content up
+    method build-push-up(*@children, :%style, *%extra) {
+        with self {
+            .build-node(PushUp, :vertical,
+                        .node(|@children, :%style, |%extra),
+                        .node(),
+                       )
+        }
+    }
+
+    #| Helper method for building layout that pushes content down
+    method build-push-down(*@children, :%style, *%extra) {
+        with self {
+            .build-node(PushDown, :vertical,
+                        .node(),
+                        .node(|@children, :%style, |%extra),
+                       )
+        }
+    }
+
+    #| Helper method for building layout that pushes content left
+    method build-push-left(*@children, :%style, *%extra) {
+        with self {
+            .build-node(PushLeft,
+                        .node(|@children, :%style, |%extra),
+                        .node(),
+                       )
+        }
+    }
+
+    #| Helper method for building layout that pushes content right
+    method build-push-right(*@children, :%style, *%extra) {
+        with self {
+            .build-node(PushRight,
+                        .node(),
+                        .node(|@children, :%style, |%extra),
+                       )
+        }
+    }
+
     # NOTE: If a builder method isn't found below, FALLBACK will try to find
     #       a match in the WidgetRegistry before giving up.
 
@@ -593,10 +657,16 @@ class Builder
     # Nodes with required children
     method with-scrollbars(|c) { self.build-with-scrollbars( |c) }
 
-    # "Gravitational" nodes
+    # Centering nodes
     method hcenter(|c)       { self.build-hcenter(           |c) }
     method vcenter(|c)       { self.build-vcenter(           |c) }
     method center(|c)        { self.build-center(            |c) }
+
+    # "Gravitational" (content-pushing) nodes
+    method push-up(|c)       { self.build-push-up(           |c) }
+    method push-down(|c)     { self.build-push-down(         |c) }
+    method push-left(|c)     { self.build-push-left(         |c) }
+    method push-right(|c)    { self.build-push-right(        |c) }
 }
 
 
