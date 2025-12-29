@@ -184,17 +184,18 @@ does Terminal::Widgets::SpanBuffer {
     #| Wrap or fill hard lines for a given LineGroup id
     #| into wrapped lines as per $!wrap-style.wrap-mode
     method wrap-lines(UInt:D $id) {
-        my $hard   = %!hard-lines{$id};
-        my $mode   = $!wrap-style.wrap-mode;
-        my $squash = $!wrap-style.squash-mode;
+        my $hard      = %!hard-lines{$id};
+        my $mode      = $!wrap-style.wrap-mode;
+        my $squash    = $!wrap-style.squash-mode;
+        my $word-mode = $mode == WordWrap | WordFill;
 
         # Quick exit: Not filling, not needing to squash whitespace, and
         #             wrap-width is wide enough so that normal wrapping
         #             won't affect this LineGroup
         return $hard if $mode == NoWrap
-                     || (   $mode == GraphemeWrap
-                         || $mode == WordWrap && $squash == NoSquash)
-                     && $!wrap-width >= %!hard-line-width{$id};
+                     || $squash == NoSquash
+                        && ($mode == GraphemeWrap | WordWrap)
+                        && $!wrap-width >= %!hard-line-width{$id};
 
         # Determine prefix to use for second and later wrapped lines
         my @prefix     := $!wrap-style.rendered-prefix;
@@ -205,13 +206,14 @@ does Terminal::Widgets::SpanBuffer {
             @prefix    := [];
             $prefix-len = 0;
         }
+        my $max-wrapped = $!wrap-width - $prefix-len;
 
         # Wrapping state
         my @wrapped;                #= Fully wrapped lines
         my @partial;                #= Current partial line
         my $pos = 0;                #= Horizontal position within current line
         my $just-finished = False;  #= Just finished a line; only prefix in current
-        my $in-whitespace = True;   #= Previous segment was whitespace (or start of line)
+        my $after-ws      = True;   #= Previous segment was whitespace (or start of line)
 
         # Split a string into alternating whitespace/non-whitespace runs;
         # first whitespace and last non-whitespace runs MAY be empty strings.
@@ -256,7 +258,7 @@ does Terminal::Widgets::SpanBuffer {
             }
 
             $just-finished = True;
-            $in-whitespace = True;
+            $after-ws      = True;
         }
 
         # Helper sub to add to a partial line and move $pos
@@ -266,22 +268,27 @@ does Terminal::Widgets::SpanBuffer {
             $pos += $width;
         }
 
-        # Core span loop for Grapheme modes
-        my sub grapheme-span-loop($line) {
+        # Core span loop
+        my sub span-loop($line) {
             for @$line -> $span {
                 # Try to fit span within current partial line
                 my $width = $span.width;
                 my $next  = $pos + $width;
 
-                # Still more room in line, continue
-                if $next < $!wrap-width {
-                    add-to-partial($span, $width);
+                # Not squashing and span fits?  Add it in and continue,
+                # accounting for any trailing whitespace.
+                # This is the FAST PATH for a span.
+                if $squash == NoSquash && $next <= $!wrap-width {
+                    if $next == $!wrap-width {
+                        finish-line($span);
+                    }
+                    else {
+                        add-to-partial($span, $width);
+                        $after-ws = ?$span.text.trailing-whitespace;
+                    }
                 }
-                # Hit end of line exactly, push and start new line
-                elsif $next == $!wrap-width {
-                    finish-line($span);
-                }
-                # Need to split span at line end
+                # Squashing and/or need to split span at line end;
+                # switch to ws/non-ws runs mode (SLOW PATH).
                 else {
                     # Cache for creating span pieces (can't just clone
                     # because RenderSpan has lazily-updated private attrs)
@@ -289,302 +296,254 @@ does Terminal::Widgets::SpanBuffer {
                     my $color       = $span.color;
                     my $string-span = $span.string-span;
 
-                    # Check whether span is monospace or duospace
-                    # (monospace can use a faster splitting path)
-                    if $width == $text.chars && is-monospace-core($text, 0) {
-                        # Work through text of $span, chopping off
-                        # pieces that finish lines (last line may be
-                        # partial)
-                        while $text {
-                            my $avail  = $!wrap-width - $pos;
-                            my $length = $text.chars;
-                            my $first  = $text.substr(0, $avail);
-                            my $piece  = $span.new(:$string-span, :$color,
-                                                   text => $first);
-                            if $length >= $avail {
-                                finish-line($piece);
-                                $text = $text.substr($avail);
+                    # Check whether span is *entirely* monospace, to avoid
+                    # having to check for every piece
+                    my $all-mono    = $width == $text.chars
+                                   && is-monospace-core($text, 0);
+
+                    my  @runs := string-runs($text);
+                    for @runs -> $ws, $nws {
+                        # First half: Whitespace run
+                        if $ws {
+                            # XXXX: Handle zero-width, ideographic, and joining spaces
+
+                            # Squash modes: NoSquash, PartialSquash, FullSquash
+                            if $squash == NoSquash {
+                                my $avail = $!wrap-width - $pos;
+                                my $width = $all-mono
+                                             ?? $ws.chars
+                                             !! duospace-width-core($ws, 0);
+
+                                # Run fits, add it
+                                if $width <= $avail {
+                                    my $piece = $span.new(:$string-span, :$color,
+                                                          text => $ws);
+                                    $width < $avail ?? add-to-partial($piece, $width)
+                                                    !! finish-line($piece);
+                                }
+                                # Need to split a run of spaces across lines
+                                else {
+                                    # Work through the whitespace, chopping off
+                                    # pieces that finish lines (last line may be
+                                    # partial)
+                                    my $remainder = $ws;
+                                    while $remainder {
+                                        # There's only one Unicode whitespace char
+                                        # with width > 1: U+3000 IDEOGRAPHIC SPACE
+                                        # All the rest are 0 or 1.
+                                        my $avail = $!wrap-width - $pos;
+                                        my $chars = !$all-mono
+                                                 && $remainder.contains("\x3000")
+                                                 ?? $avail div 2 !! $avail;
+                                        my $first = $remainder.substr(0, $chars);
+                                           $width = $all-mono
+                                                    ?? $first.chars
+                                                    !! duospace-width-core($first, 0);
+
+                                        # XXXX: Adjust chars/first/width for
+                                        #       mixed-width spaces
+
+                                        my $piece = $span.new(:$string-span, :$color,
+                                                              text => $first);
+                                        $width < $avail
+                                            ?? add-to-partial($piece, $width)
+                                            !! finish-line($piece);
+
+                                        $after-ws  = True;
+                                        my $split  = $chars min $first.chars;
+                                        $remainder = $remainder.substr($split);
+                                    }
+                                }
                             }
-                            else {
-                                add-to-partial($piece, $first.chars);
-                                $text = '';
+                            elsif $squash == PartialSquash || !$after-ws {
+                                my $width = $all-mono
+                                             ?? $ws.chars
+                                             !! duospace-width-core($ws, 0);
+                                if $width {
+                                    # A single cell-width space must always fit
+                                    # (otherwise the previous line would have been
+                                    # finished already, resulting in a new partial
+                                    # that would have room).
+
+                                    # Determine whether the squash should be to a
+                                    # width-2 IDEOGRAPHIC SPACE, or just a normal
+                                    # width-1 SPACE character
+                                    my $avail = $!wrap-width - $pos;
+                                    my $wants-ideo = $avail >= 2 && $width >= 2
+                                                     && $ws.contains("\x3000");
+                                    my $space = $wants-ideo ?? "\x3000" !! ' ';
+                                    my $need  = $wants-ideo + 1;
+                                    my $piece = $span.new(:$string-span, :$color,
+                                                          text => $space);
+
+                                    $need < $avail ?? add-to-partial($piece, $need)
+                                                   !! finish-line($piece);
+                                }
                             }
+
+                            # Remember whitespace state for next span
+                            $after-ws = True;
                         }
-                    }
-                    else {
-                        # Duospace; need to account for wide chars and
-                        # mixed width spans
 
-                        # Work through text of $span, chopping off
-                        # pieces that finish lines (last line may be
-                        # partial)
-                        while $text {
-                            # duospace-width(-core) is O(n), and
-                            # splitting may require O(log n) search, so
-                            # runtime for each wrapped line is O(n log n),
-                            # where n is the wrap-width.  Since the
-                            # number of wrapped lines will be approx.
-                            # the original text length divided by the
-                            # wrap-width, the result is O(N log n),
-                            # where N is the original text length and n
-                            # remains the wrap-width.
+                        # Second half: NON-whitespace run
+                        if $nws {
+                            # Remember whitespace state for next span
+                            $after-ws = False;
 
-                            my $avail  = $!wrap-width - $pos;
-                            my $more   = $avail div 2;
-                            my $width  = 0;
-                            my $length = $text.chars;
+                            my $avail = $!wrap-width - $pos;
+                            my $width = $all-mono ?? $nws.chars
+                                                  !! duospace-width-core($nws, 0);
 
-                            # If this is guaranteed to be the last
-                            # piece because there's definitely enough
-                            # available space on the current partial
-                            # line, just directly add the final piece
-                            # and fall out to next span
-                            if $more >= $length {
-                                my $piece = $span.new(:$string-span,
-                                                      :$color, :$text);
-                                $width = duospace-width-core($text, 0);
-                                $text  = '';
-
-                                if $width == $avail {
+                            # Run fits, just add it
+                            if $width <= $avail {
+                                my $piece = $span.new(:$string-span, :$color,
+                                                      text => $nws);
+                                $width < $avail ?? add-to-partial($piece, $width)
+                                                !! finish-line($piece);
+                            }
+                            # We're in a word-oriented wrap mode, and this run will
+                            # fit on a line by itself, so finish current line and
+                            # add this piece to the next line
+                            elsif $word-mode && $width <= $max-wrapped {
+                                my $piece = $span.new(:$string-span, :$color,
+                                                      text => $nws);
+                                finish-line;
+                                if $width == $max-wrapped {
                                     finish-line($piece);
                                 }
                                 else {
                                     add-to-partial($piece, $width);
+                                    $after-ws = False;
                                 }
                             }
-                            # Otherwise we might have to split again,
-                            # and finding the split point is going to
-                            # require some work.
-                            else {
-                                my $chars = 0;
-                                my $first = '';
-
-                                # Enough characters for at least half
-                                # of unused cells will always fit even
-                                # if initial chars are all wide, or up
-                                # to twice that if they are mostly
-                                # narrow, so converge on correct break
-                                # using pseudo-binary search.
-                                while $more > 0 && $chars < $length {
-                                    $chars += $more;
-                                    $first  = $text.substr(0, $chars);
-                                    $width  = duospace-width-core($first, 0);
-                                    $more   = ($avail - $width) div 2;
-                                }
-
-                                # Might be able to fit one more narrow
-                                # character after initial binary search
-                                if $avail > $width && $chars < $length {
-                                    # Try fitting one more character
-                                    my $try-text  = $text.substr(0, $chars + 1);
-                                    my $try-width =
-                                        duospace-width-core($try-text, 0);
-
-                                    # If it worked, commit
-                                    if $avail >= $try-width {
-                                        $width = $try-width;
-                                        $first = $try-text;
-                                        $chars++;
-                                    }
-                                }
-
-                                # Did we fit any chars into this partial?
-                                my $first-length = $first.chars;
-                                if $first-length {
-                                    # Managed to fit some, make a piece
-                                    my $piece = $span.new(:$string-span, :$color,
-                                                          text => $first);
-                                    $text = $text.substr($first-length);
-
-                                    if $width == $avail {
+                            # Need to split a run of NON-whitespace (a "word")
+                            # across lines; check if it's monospace to use a
+                            # faster splitting path
+                            elsif $all-mono || is-monospace-core($nws, 0) {
+                                # Work through $nws, chopping off pieces that
+                                # finish lines (last line may be partial)
+                                my $remainder = $nws;
+                                while $remainder {
+                                    my $avail  = $!wrap-width - $pos;
+                                    my $length = $remainder.chars;
+                                    my $first  = $remainder.substr(0, $avail);
+                                    my $piece  = $span.new(:$string-span, :$color,
+                                                           text => $first);
+                                    if $length >= $avail {
                                         finish-line($piece);
+                                        $remainder = $remainder.substr($avail);
                                     }
                                     else {
-                                        add-to-partial($piece, $width);
+                                        add-to-partial($piece, $first.chars);
+                                        $remainder = '';
+                                        $after-ws  = False;
                                     }
                                 }
-                                else {
-                                    # Couldn't fit any, which means there
-                                    # was only one cell left and the first
-                                    # character is wide.  Close out this
-                                    # line and try again with the next one.
-                                    finish-line;
-                                }
                             }
-                        }
-                    }
-                }
-            }
-        }
-
-        # Core span loop for Word modes
-        my sub word-span-loop($line) {
-            for @$line -> $span {
-                # Cache for creating span pieces (can't just clone
-                # because RenderSpan has lazily-updated private attrs)
-                my $color       = $span.color;
-                my $string-span = $span.string-span;
-
-                my  @runs := string-runs($span.text);
-                for @runs -> $ws, $nws {
-                    # First half: Whitespace run
-                    if $ws {
-                        # XXXX: Handle zero-width, ideographic, and joining spaces
-
-                        # Squash modes: NoSquash, PartialSquash, FullSquash
-                        if $squash == NoSquash {
-                            my $avail = $!wrap-width - $pos;
-                            my $width = duospace-width-core($ws, 0);
-
-                            if $width < $avail {
-                                my $piece = $span.new(:$string-span, :$color,
-                                                      text => $ws);
-                                add-to-partial($piece, $width);
-                            }
-                            elsif $width == $avail {
-                                my $piece = $span.new(:$string-span, :$color,
-                                                      text => $ws);
-                                finish-line($piece);
-                            }
+                            # Need to split and run is duospace; account for wide
+                            # chars and mixed width spans in splitting process.
+                            # This is the SLOWEST PATH.
                             else {
-                                # Need to split a run of spaces across lines
+                                # Work through $nws, chopping off pieces that
+                                # finish lines (last line may be partial)
+                                my $remainder = $nws;
+                                while $remainder {
+                                    # duospace-width(-core) is O(n), and
+                                    # splitting may require O(log n) search, so
+                                    # runtime for each wrapped line is O(n log n),
+                                    # where n is the wrap-width.  Since the
+                                    # number of wrapped lines will be approx.
+                                    # the original text length divided by the
+                                    # wrap-width, the result is O(N log n),
+                                    # where N is the original text length and n
+                                    # remains the wrap-width.
 
-                                # Work through the whitespace, chopping off
-                                # pieces that finish lines (last line may be
-                                # partial)
-                                my $text = $ws;
-                                while $text {
-                                    # There's only one Unicode whitespace char
-                                    # with width > 1: U+3000 IDEOGRAPHIC SPACE
-                                    # All the rest are 0 or 1.
-                                    my $avail = $!wrap-width - $pos;
-                                    my $chars = $text.contains("\x3000")
-                                                 ?? $avail div 2
-                                                 !! $avail;
-                                    my $first = $text.substr(0, $chars);
-                                       $width = duospace-width-core($first, 0);
+                                    my $avail  = $!wrap-width - $pos;
+                                    my $more   = $avail div 2;
+                                    my $width  = 0;
+                                    my $length = $remainder.chars;
 
-                                    # XXXX: Adjust chars/first/width for
-                                    #       mixed-width spaces
+                                    # If this is guaranteed to be the last
+                                    # piece because there's definitely enough
+                                    # available space on the current partial
+                                    # line, just directly add the final piece
+                                    # and fall out to next run
+                                    if $more >= $length {
+                                        my $piece = $span.new(:$string-span,
+                                                              :$color, :$remainder);
+                                        $width = duospace-width-core($remainder, 0);
 
-                                    my $piece = $span.new(:$string-span, :$color,
-                                                          text => $first);
-                                    if $width == $avail {
-                                        finish-line($piece);
-                                    }
-                                    else {
-                                        add-to-partial($piece, $width);
-                                        $in-whitespace = True;
-                                    }
-
-                                    $text = $text.substr($chars);
-                                }
-                            }
-                        }
-                        elsif $squash == PartialSquash || !$in-whitespace {
-                            my $width = duospace-width-core($ws, 0);
-                            if $width {
-                                # A single cell-width space must always fit
-                                # (otherwise the previous line would have been
-                                # finished already, resulting in a new partial
-                                # that would have room).
-
-                                # Determine whether the squash should be to a
-                                # width-2 IDEOGRAPHIC SPACE, or just a normal
-                                # width-1 SPACE character
-                                my $avail = $!wrap-width - $pos;
-                                my $wants-ideo = $avail >= 2 && $width >= 2
-                                                 && $ws.contains("\x3000");
-                                my $text  = $wants-ideo ?? "\x3000" !! ' ';
-                                my $need  = $wants-ideo + 1;
-                                my $piece = $span.new(:$string-span, :$color,
-                                                      :$text);
-
-                                if $avail == $need {
-                                    finish-line($piece);
-                                }
-                                else {
-                                    add-to-partial($piece, $need);
-                                }
-                            }
-                        }
-
-                        # Remember whitespace state for next span
-                        $in-whitespace = True;
-                    }
-
-                    # Second half: NON-whitespace run
-                    if $nws {
-                        my $avail = $!wrap-width - $pos;
-                        my $width = duospace-width-core($nws, 0);
-
-                        if $width < $avail {
-                            my $piece = $span.new(:$string-span, :$color,
-                                                  text => $nws);
-                            add-to-partial($piece, $width);
-                            $in-whitespace = False;
-                        }
-                        elsif $width == $avail {
-                            my $piece = $span.new(:$string-span, :$color,
-                                                  text => $nws);
-                            finish-line($piece);
-                        }
-                        else {
-                            # Might need to split a run of NON-whitespace
-                            # (a "word") across lines
-
-                            # Will it fit on a line by itself?
-                            my $max = $!wrap-width - $prefix-len;
-                            if $max > $width {
-                                # Yes, use it to start a new partial line
-                                my $piece = $span.new(:$string-span, :$color,
-                                                      text => $nws);
-                                finish-line;
-                                add-to-partial($piece, $width);
-                                $in-whitespace = False;
-                            }
-                            elsif $max == $width {
-                                # Yes, put it on a line completely by itself
-                                my $piece = $span.new(:$string-span, :$color,
-                                                      text => $nws);
-                                finish-line;
-                                finish-line($piece);
-                            }
-                            else {
-                                # The "word" won't fit even on a line by
-                                # itself, so we need to split it somehow.
-                                # Resolve this segment by simulating grapheme
-                                # wrapping instead.
-
-                                # Check whether text is monospace or duospace
-                                # (monospace can use a faster splitting path)
-                                if $width == $nws.chars
-                                && is-monospace-core($nws, 0) {
-                                    # Work through text of $span, chopping off
-                                    # pieces that finish lines (last line may be
-                                    # partial)
-                                    my $text = $nws;
-                                    while $text {
-                                        my $avail  = $!wrap-width - $pos;
-                                        my $length = $text.chars;
-                                        my $first  = $text.substr(0, $avail);
-                                        my $piece  = $span.new(:$string-span, :$color,
-                                                               text => $first);
-                                        if $length >= $avail {
+                                        if $width == $avail {
                                             finish-line($piece);
-                                            $text = $text.substr($avail);
                                         }
                                         else {
-                                            add-to-partial($piece, $first.chars);
-                                            $in-whitespace = False;
-                                            $text = '';
+                                            add-to-partial($piece, $width);
+                                            $after-ws = False;
+                                        }
+
+                                        $remainder = '';
+                                    }
+                                    # Otherwise we might have to split again,
+                                    # and finding the split point is going to
+                                    # require some work.
+                                    else {
+                                        my $chars = 0;
+                                        my $first = '';
+
+                                        # Enough characters for at least half of
+                                        # unused cells will always fit even if
+                                        # initial chars are all wide, or up to
+                                        # twice that if they are mostly narrow,
+                                        # so converge on correct break using
+                                        # pseudo-binary search.
+                                        while $more > 0 && $chars < $length {
+                                            $chars += $more;
+                                            $first  = $remainder.substr(0, $chars);
+                                            $width  = duospace-width-core($first, 0);
+                                            $more   = ($avail - $width) div 2;
+                                        }
+
+                                        # Might be able to fit one more narrow
+                                        # character after initial binary search
+                                        if $avail > $width && $chars < $length {
+                                            # Try fitting one more character
+                                            my $try-text  =
+                                                $remainder.substr(0, $chars + 1);
+                                            my $try-width =
+                                                duospace-width-core($try-text, 0);
+
+                                            # If it worked, commit
+                                            if $avail >= $try-width {
+                                                $width = $try-width;
+                                                $first = $try-text;
+                                                $chars++;
+                                            }
+                                        }
+
+                                        # Did we fit any chars into this partial?
+                                        my $first-length = $first.chars;
+                                        if $first-length {
+                                            # Managed to fit some, make a piece
+                                            my $piece = $span.new(:$string-span, :$color,
+                                                                  text => $first);
+                                            $remainder = $remainder.substr($first-length);
+
+                                            if $width == $avail {
+                                                finish-line($piece);
+                                            }
+                                            else {
+                                                add-to-partial($piece, $width);
+                                                $after-ws = False;
+                                            }
+                                        }
+                                        else {
+                                            # Couldn't fit any, which means there
+                                            # was only one cell left and the first
+                                            # character is wide.  Close out this
+                                            # line and try again with the next one.
+                                            finish-line;
                                         }
                                     }
-                                }
-                                else {
-                                    # Duospace; need to account for wide chars and
-                                    # mixed width spans
-                                    !!! "XXXX: Really need to DRY this up"
                                 }
                             }
                         }
@@ -600,8 +559,8 @@ does Terminal::Widgets::SpanBuffer {
 
                 # For each hard line in the LineGroup ...
                 for @$hard -> $line {
-                    # Run the standard core span loop for Grapheme modes
-                    grapheme-span-loop($line);
+                    # Run the standard core span loop
+                    span-loop($line);
 
                     # Add last partial line if any, ignoring a prefix-only line.
                     # Next line will start with no wrap prefix again.
@@ -609,6 +568,7 @@ does Terminal::Widgets::SpanBuffer {
                         @wrapped.push(@partial);
                         @partial := [];
                         $pos      = 0;
+                        $after-ws = True;
                     }
                 }
 
@@ -620,16 +580,16 @@ does Terminal::Widgets::SpanBuffer {
 
                 # For each hard line in the LineGroup ...
                 for @$hard -> $line {
-                    # Run the standard core span loop for Word modes
-                    word-span-loop($line);
+                    # Run the standard core span loop
+                    span-loop($line);
 
                     # Add last partial line if any, ignoring a prefix-only line.
                     # Next line will start with no wrap prefix again.
                     unless $just-finished {
                         @wrapped.push(@partial);
-                        @partial      := [];
-                        $pos           = 0;
-                        $in-whitespace = True;
+                        @partial := [];
+                        $pos      = 0;
+                        $after-ws = True;
                     }
                 }
 
@@ -639,9 +599,8 @@ does Terminal::Widgets::SpanBuffer {
                 # Attempt to backfill all short lines (except the last) in
                 # order to create a mostly-rectangular block of graphemes
 
-                # Run the standard core span loop for Grapheme modes
-                # for each hard line in the LineGroup
-                grapheme-span-loop($_) for @$hard;
+                # Run the standard core span loop for each LineGroup hard line
+                span-loop($_) for @$hard;
 
                 # Add last partial line if any, ignoring a prefix-only line
                 @wrapped.push(@partial) unless $just-finished;
@@ -653,9 +612,8 @@ does Terminal::Widgets::SpanBuffer {
                 # words from later lines in order to create a more-rectangular
                 # block of word spans
 
-                # Run the standard core span loop for Word modes
-                # for each hard line in the LineGroup
-                word-span-loop($_) for @$hard;
+                # Run the standard core span loop for each LineGroup hard line
+                span-loop($_) for @$hard;
 
                 # Add last partial line if any, ignoring a prefix-only line
                 @wrapped.push(@partial) unless $just-finished;
