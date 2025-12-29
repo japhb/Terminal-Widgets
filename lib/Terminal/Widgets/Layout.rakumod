@@ -507,6 +507,27 @@ class PushRight is Node {
     method builder-name() { 'push-right' }
 }
 
+#| A structural node to push content to the top left corner of the available space
+class PushUpLeft is Node {
+    method builder-name() { 'push-up-left' }
+}
+
+#| A structural node to push content to the top right corner of the available space
+class PushUpRight is Node {
+    method builder-name() { 'push-up-right' }
+}
+
+#| A structural node to push content to the bottom left corner of the available space
+class PushDownLeft is Node {
+    method builder-name() { 'push-down-left' }
+}
+
+#| A structural node to push content to the bottom right corner of the available space
+class PushDownRight is Node {
+    method builder-name() { 'push-down-right' }
+}
+
+
 
 
 #| Helper class for building style/layout trees
@@ -643,30 +664,111 @@ class Builder
         }
     }
 
+    #| Helper method for building layout that pushes content up and left
+    #| (horizontal outer push, vertical inner push)
+    method build-push-up-left(*@children, :%style, *%extra) {
+        my %hstyle = %style.clone;
+        my %vstyle = %style.clone;
+        %hstyle<minimize-h>:delete;
+        %vstyle<minimize-w>:delete;
+
+        with self {
+            .build-node(PushUpLeft,
+                        .node(:vertical, style => %hstyle,
+                              .node(|@children, style => %vstyle, |%extra),
+                              .node(),
+                             ),
+                        .node(),
+                       )
+        }
+    }
+
+    #| Helper method for building layout that pushes content up and right
+    #| (horizontal outer push, vertical inner push)
+    method build-push-up-right(*@children, :%style, *%extra) {
+        my %hstyle = %style.clone;
+        my %vstyle = %style.clone;
+        %hstyle<minimize-h>:delete;
+        %vstyle<minimize-w>:delete;
+
+        with self {
+            .build-node(PushUpRight,
+                        .node(),
+                        .node(:vertical, style => %hstyle,
+                              .node(|@children, style => %vstyle, |%extra),
+                              .node(),
+                             ),
+                       )
+        }
+    }
+
+    #| Helper method for building layout that pushes content down and left
+    #| (horizontal outer push, vertical inner push)
+    method build-push-down-left(*@children, :%style, *%extra) {
+        my %hstyle = %style.clone;
+        my %vstyle = %style.clone;
+        %hstyle<minimize-h>:delete;
+        %vstyle<minimize-w>:delete;
+
+        with self {
+            .build-node(PushDownLeft,
+                        .node(:vertical, style => %hstyle,
+                              .node(),
+                              .node(|@children, style => %vstyle, |%extra),
+                             ),
+                        .node(),
+                       )
+        }
+    }
+
+    #| Helper method for building layout that pushes content down and right
+    #| (horizontal outer push, vertical inner push)
+    method build-push-down-right(*@children, :%style, *%extra) {
+        my %hstyle = %style.clone;
+        my %vstyle = %style.clone;
+        %hstyle<minimize-h>:delete;
+        %vstyle<minimize-w>:delete;
+
+        with self {
+            .build-node(PushDownRight,
+                        .node(),
+                        .node(:vertical, style => %hstyle,
+                              .node(),
+                              .node(|@children, style => %vstyle, |%extra),
+                             ),
+                       )
+        }
+    }
+
     # NOTE: If a builder method isn't found below, FALLBACK will try to find
     #       a match in the WidgetRegistry before giving up.
 
     # Misc leaf nodes (no children ever)
-    method leaf(|c)          { self.build-leaf(Leaf,         |c) }
-    method spacer(|c)        { self.build-leaf(Spacer,       |c) }
-    method divider(|c)       { self.build-leaf(Divider,      |c) }
+    method leaf(|c)            { self.build-leaf(Leaf,       |c) }
+    method spacer(|c)          { self.build-leaf(Spacer,     |c) }
+    method divider(|c)         { self.build-leaf(Divider,    |c) }
 
     # Nodes with optional children
-    method node(|c)          { self.build-node(Node,         |c) }
+    method node(|c)            { self.build-node(Node,       |c) }
 
     # Nodes with required children
     method with-scrollbars(|c) { self.build-with-scrollbars( |c) }
 
     # Centering nodes
-    method hcenter(|c)       { self.build-hcenter(           |c) }
-    method vcenter(|c)       { self.build-vcenter(           |c) }
-    method center(|c)        { self.build-center(            |c) }
+    method hcenter(|c)         { self.build-hcenter(         |c) }
+    method vcenter(|c)         { self.build-vcenter(         |c) }
+    method center(|c)          { self.build-center(          |c) }
 
     # "Gravitational" (content-pushing) nodes
-    method push-up(|c)       { self.build-push-up(           |c) }
-    method push-down(|c)     { self.build-push-down(         |c) }
-    method push-left(|c)     { self.build-push-left(         |c) }
-    method push-right(|c)    { self.build-push-right(        |c) }
+    method push-up(|c)         { self.build-push-up(         |c) }
+    method push-down(|c)       { self.build-push-down(       |c) }
+    method push-left(|c)       { self.build-push-left(       |c) }
+    method push-right(|c)      { self.build-push-right(      |c) }
+
+    method push-up-left(|c)    { self.build-push-up-left(    |c) }
+    method push-up-right(|c)   { self.build-push-up-right(   |c) }
+    method push-down-left(|c)  { self.build-push-down-left(  |c) }
+    method push-down-right(|c) { self.build-push-down-right( |c) }
 }
 
 
