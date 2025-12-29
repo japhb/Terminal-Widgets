@@ -60,13 +60,10 @@ class RichTextViewerDemo is TopLevel {
                                     prompt-string => 'Wrap Prefix >',
                                     process-input => { self.update-wrap-style:
                                                        wrapped-line-prefix => $_ }),
-                        .node(
-                            .spacer,
-                            .node(style => %( :minimize-w ),
-                                  .button(label => 'Quit',
-                                          process-input => { $.terminal.quit }),
-                                 ),
-                        ),
+                        .push-right(style => %( :minimize-w ),
+                                    .button(label => 'Quit',
+                                            process-input => { $.terminal.quit }),
+                                   ),
                        ),
                  ),
             .divider(line-style => 'light1', style => %(set-h => 1)),
