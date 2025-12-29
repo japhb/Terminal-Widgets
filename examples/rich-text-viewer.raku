@@ -11,12 +11,12 @@ class RichTextViewerDemo is TopLevel {
     has $!text = "    😂😂😂😂😂😂😂😂 Some not so short demo text.  This text is deliberately long, so one can test line wrapping without having to type in so much text first.  So here is some more to really hit home and be sure that we definitely have enough text to fill a line even on very wide screen displays and very small fonts.  We'll see if someone speaks up and says that this text is not long enough on their setup to test line wrapping.  Here are some more duowidth chars: 😂😂😂😂😂😂😂😂😂😂😂😂 \n0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
 
     has $!spans = span-tree(
-        string-span('  Span 1  ', color => 'on_red'),
+        string-span(' Span 1 ', color => 'on_red'),
         string-span('  Span 2  ', color => 'on_green'),
-        string-span('  Span 3  ', color => 'on_blue'),
-        string-span('  Span 4  ', color => 'on_yellow'),
-        string-span('  Span 5  ', color => 'on_cyan'),
-        string-span('  Span 6  ', color => 'on_magenta'),
+        string-span('   Span 3   ', color => 'on_blue'),
+        string-span('    Span 4    ', color => 'on_yellow'),
+        string-span('     Span 5     ', color => 'on_cyan'),
+        string-span('      Span 6      ', color => 'on_magenta'),
     );
 
     has $!list = string-span("\n\nHat,\n  scarf,   gloves,  \njacket, boots\n\n",
