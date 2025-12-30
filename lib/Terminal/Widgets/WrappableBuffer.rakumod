@@ -135,7 +135,8 @@ does Terminal::Widgets::SpanBuffer {
             if %!hard-lines{$id}:exists;
 
         # Split content into hard lines and cache result
-        my $lines = %!hard-lines{$id} = self.hard-lines($line-group.content);
+        my $content = TC::span-tree($line-group.content, line-group-id => $id);
+        my $lines = %!hard-lines{$id} = self.hard-lines($content);
 
         # Update total hard line count and max hard line width
         my $widest = $lines.map(*.map(*.width).sum).max;
@@ -154,7 +155,14 @@ does Terminal::Widgets::SpanBuffer {
     method hard-lines(TextContent:D $content) {
         my $as-tree = $content ~~ TC::SpanTree ?? $content !! TC::span-tree($content);
 
-        $as-tree.lines.map(*.map(*.render).eager).eager
+        # Break into lines, then make sure every StringSpan knows its hard line
+        # number within the line group before rendering to RenderSpans
+        $as-tree.lines.kv.map(-> $i, $line {
+                                  $line.map({
+                                      .attributes<lg-hard-line> = $i;
+                                      .render
+                                  }).eager
+                              }).eager
     }
 
     #| Remove a LineGroup from the buffer and update caches appropriately
