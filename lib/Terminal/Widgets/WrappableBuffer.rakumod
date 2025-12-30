@@ -411,12 +411,13 @@ does Terminal::Widgets::SpanBuffer {
                                                 my $try-width =
                                                     duospace-width-core($try-text, 0);
 
-                                                # If it worked, commit
-                                                if $avail >= $try-width {
-                                                    $width = $try-width;
-                                                    $first = $try-text;
-                                                    $chars++;
-                                                }
+                                                # Break out if too wide now
+                                                last unless $avail >= $try-width;
+
+                                                # It worked, commit
+                                                $width = $try-width;
+                                                $first = $try-text;
+                                                $chars++;
                                             }
 
                                             # Did we fit any chars into this partial?
@@ -562,8 +563,8 @@ does Terminal::Widgets::SpanBuffer {
                                     # line, just directly add the final piece
                                     # and fall out to next run
                                     if $more >= $length {
-                                        my $piece = $span.new(:$string-span,
-                                                              :$color, :$remainder);
+                                        my $piece = $span.new(:$string-span, :$color,
+                                                              text => $remainder);
                                         $width = duospace-width-core($remainder, 0);
 
                                         if $width == $avail {
@@ -606,12 +607,13 @@ does Terminal::Widgets::SpanBuffer {
                                             my $try-width =
                                                 duospace-width-core($try-text, 0);
 
-                                            # If it worked, commit
-                                            if $avail >= $try-width {
-                                                $width = $try-width;
-                                                $first = $try-text;
-                                                $chars++;
-                                            }
+                                            # Break out if too wide now
+                                            last unless $avail >= $try-width;
+
+                                            # It worked, commit
+                                            $width = $try-width;
+                                            $first = $try-text;
+                                            $chars++;
                                         }
 
                                         # Did we fit any chars into this partial?
