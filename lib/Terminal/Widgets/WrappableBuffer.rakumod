@@ -4,6 +4,7 @@ use nano;
 
 use Text::MiscUtils::Layout;
 
+use Terminal::Widgets::Events;
 use Terminal::Widgets::Terminal;
 use Terminal::Widgets::SpanBuffer;
 use Terminal::Widgets::TextContent;
@@ -66,6 +67,8 @@ role Terminal::Widgets::WrappableBuffer
 does Terminal::Widgets::SpanBuffer {
     has Terminal::Widgets::LineGroup:D @.line-groups;
     has Terminal::Widgets::WrapStyle:D $.wrap-style .= new(terminal => self.terminal);
+
+    has &.process-click;
 
     has UInt:D $!hard-line-max-width = 0;
     has UInt:D $!hard-line-count     = 0;
@@ -750,5 +753,52 @@ does Terminal::Widgets::SpanBuffer {
         self.debug-elapsed($t0);
 
         @found
+    }
+
+    #| Find the rendered line (array of RenderSpans) for a given Y-index
+    #| accounting for wrapping mode (or an undefined value if no such line
+    #| exists)
+    method rendered-line(UInt:D $y) {
+        self.span-line-chunk($y, 1)[0]
+    }
+
+    #| Convert from a buffer location to a render span (or Nil if not found)
+    method span-from-buffer-loc(UInt:D $x, UInt:D $y) {
+        # Find spans for a given line; if it doesn't exist, return Nil
+        my $line = self.rendered-line($y) // return Nil;
+
+        my $pos = 0;
+        for @$line -> $span {
+            my $next = $pos + $span.width;
+            return $span if $pos <= $x < $next;
+            $pos = $next;
+        }
+
+        # Location was past last span if any; try
+        # returning last span or Nil if none on this line
+        $line.elems ?? $line[*-1] !! Nil
+    }
+
+    #| Handle mouse events
+    multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
+                              $event where !*.mouse.pressed, AtTarget) {
+        # Take focus even if clicked on framing instead of content area
+        self.toplevel.focus-on(self);
+
+        # If enabled and within content area, determine clicked span and
+        # process click on it
+        if $.enabled {
+            my ($x, $y, $w, $h) = $event.relative-to-content-area(self);
+
+            if 0 <= $x < $w && 0 <= $y < $h {
+                my $cell = $.x-scroll + $x;
+                my $line = $.y-scroll + $y;
+                my $span = self.span-from-buffer-loc($cell, $line);
+                $_($span, $cell, $line) with &!process-click;
+            }
+        }
+
+        # Refresh even if outside content area because of focus state change
+        self.full-refresh;
     }
 }
