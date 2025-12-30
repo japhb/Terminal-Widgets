@@ -1,10 +1,15 @@
 # ABSTRACT: Demonstrate the rich text widget
 
+use Terminal::Capabilities;
+
 use Terminal::Widgets::Simple;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::TextContent;
 use Terminal::Widgets::WrappableBuffer;
 use Terminal::Widgets::Viewer::RichText;
+
+constant Uni1 = Terminal::Capabilities::SymbolSet::Uni1;
+
 
 #| A top level UI container based on Terminal::Widgets::Simple::TopLevel
 class RichTextViewerDemo is TopLevel {
@@ -90,6 +95,11 @@ class RichTextViewerDemo is TopLevel {
     }
 
     multi method handle-event(Terminal::Widgets::Events::LayoutBuilt:D, BubbleUp) {
+        with %.by-id<click-log> {
+            my $marker = $.terminal.caps.symbol-set >= Uni1 ?? '↳ ' !! '> ';
+            .set-wrap-style(.wrap-style.clone(wrap-mode => GraphemeWrap,
+                                              wrapped-line-prefix => $marker));
+        }
         with %.by-id<buffer> {
             if .empty {
                 .insert-line-group($!spans);
