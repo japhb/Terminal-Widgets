@@ -68,7 +68,7 @@ class RichTextViewerDemo is TopLevel {
                  ),
             .divider(line-style => 'light1', style => %(set-h => 1)),
             .node(
-                .with-scrollbars(
+                .with-scrollbars(style => %(:minimize-w),
                     .rich-text-viewer(id => 'buffer', style => %(set-w => 50),
                                       process-click => -> $line, $x, $y {
                                              my $click-log = %.by-id<click-log>;
