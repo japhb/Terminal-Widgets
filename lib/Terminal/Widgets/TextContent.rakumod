@@ -117,6 +117,11 @@ class InterpolantSpan does SemanticSpan {
     has       %.flags;
     has       %.attributes;
 
+    # Provide a path back after interpolation creates a StringSpan
+    submethod TWEAK() {
+        %!attributes<interpolant-span> = self;
+    }
+
     #| Interpolate a variable according to its local flags (e.g. formatting)
     #| and return a basic StringSpan instead.
     #  XXXX: Should this require just a *single* variable?  Or is there value
@@ -209,7 +214,8 @@ class MarkupString does SemanticText is export {
     method parse(--> SpanTree:D) {
         # XXXX: Hack returning a SpanTree with just a single StringSpan,
         #       completely ignoring markup and interpolants
-        SpanTree.new(children => (StringSpan.new(:$!string),))
+        SpanTree.new(children => (StringSpan.new(:$!string),),
+                     attributes => %(markup-string => self))
     }
 
     #| Disallow direct .Str without parsing
