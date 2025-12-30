@@ -108,8 +108,9 @@ class RichTextViewerDemo is TopLevel {
     multi method handle-event(Terminal::Widgets::Events::LayoutBuilt:D, BubbleUp) {
         with %.by-id<click-log> {
             my $marker = $.terminal.caps.symbol-set >= Uni1 ?? '↳ ' !! '> ';
+            my $wrapped-line-prefix = string-span($marker, color => 'faint');
             .set-wrap-style(.wrap-style.clone(wrap-mode => GraphemeWrap,
-                                              wrapped-line-prefix => $marker));
+                                              :$wrapped-line-prefix));
         }
         with %.by-id<buffer> {
             if .empty {
