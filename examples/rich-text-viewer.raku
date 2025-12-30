@@ -75,10 +75,19 @@ class RichTextViewerDemo is TopLevel {
             .node(
                 .with-scrollbars(style => %(:minimize-w),
                     .rich-text-viewer(id => 'buffer', style => %(set-w => 50),
-                                      process-click => -> $line, $x, $y {
-                                             my $click-log = %.by-id<click-log>;
-                                             $click-log.add-entry: "Click on line $line:$x,$y\n";
-                                             $click-log.refresh-for-scroll;
+                                      process-click => -> $span, $x, $y {
+                                          my $click-log = %.by-id<click-log>;
+                                          if $span {
+                                              my $drop = 'Terminal::Widgets::TextContent::';
+                                              my $raku = $span.raku.subst($drop, '', :g);
+                                              $click-log.add-entry:
+                                                  "Click @ $x,$y on span: $raku\n\n";
+                                          }
+                                          else {
+                                              $click-log.add-entry:
+                                                  "Click @ $x,$y (no matching span)\n\n";
+                                          }
+                                          $click-log.refresh-for-scroll;
                                          }),
                 ),
                 .with-scrollbars(.log-viewer(id => 'click-log')),
