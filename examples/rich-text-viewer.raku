@@ -109,7 +109,7 @@ class RichTextViewerDemo is TopLevel {
             $click-log.add-entry("Click @ $x,$y (no matching span)\n\n");
         }
         $click-log.refresh-for-scroll;
-     }
+    }
 
     method update-wrap-style(|c) {
         with %.by-id<buffer> {
