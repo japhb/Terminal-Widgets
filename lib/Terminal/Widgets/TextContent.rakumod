@@ -262,6 +262,49 @@ our sub markup-string(Str:D $string, Bool:D :$interpolatable = False) is export 
 }
 
 
+#| Trace back through span breadcrumbs to gather information about a span.
+#| Returns a hash of collected info, including pointers to each span type found.
+our sub span-info($span is copy) is export {
+    my %info = :$span;
+
+    if $span ~~ RenderSpan:D {
+        %info<render-span> = $span;
+
+        %info<color> = $span.color;
+        %info<text>  = $span.text;
+        %info<width> = $span.width;
+
+        $span = $span.string-span;
+    }
+
+    if $span ~~ StringSpan:D {
+        %info  = |%info, |$span.attributes,
+                 string => $span.string,
+                 string-span => $span;
+
+        my $is = $span.attributes<interpolant-span>;
+        $span  = $is if $is;
+    }
+
+    if $span ~~ InterpolantSpan:D {
+        %info<interpolant-span>    = $span;
+        %info<interpolation-flags> = $span.flags;
+        %info<var-name>            = $span.var-name;
+    }
+
+    my $ms = $span.attributes<markup-string>;
+    $span  = $ms if $ms;
+
+    if $span ~~ MarkupString:D {
+        %info<markup-string>  = $span;
+        %info<raw-markup>     = $span.string;
+        %info<interpolatable> = $span.interpolatable;
+    }
+
+    %info
+}
+
+
 #| Convert content step by step towards a list of RenderSpans
 class ContentRenderer {
     has %.vars;
