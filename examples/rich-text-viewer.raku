@@ -87,9 +87,23 @@ class RichTextViewerDemo is TopLevel {
     method process-click($span, $x, $y) {
         my $click-log = %.by-id<click-log>;
         if $span {
-            my $drop = 'Terminal::Widgets::TextContent::';
-            my $raku = $span.raku.subst($drop, '', :g);
-            $click-log.add-entry("Click @ $x,$y on span: $raku\n\n");
+            my $drop   = 'Terminal::Widgets::TextContent::';
+            my $entry  = "Click @ $x,$y on span:\n";
+            my %info  := span-info($span);
+            my $max    = %info.keys.map(*.chars).max;
+            my $wide   = $click-log.w > $max + 30;
+            my $format = $wide ?? "  %-{$max}s   %s\n" !! "%s: %s, ";
+
+            for span-info($span).sort({ .key.contains('span'), .key}) {
+                my $value = .value ~~ RenderSpan|SemanticText
+                             ?? .value.WHICH.Str
+                             !! .value.raku;
+
+                $entry ~= sprintf $format, .key,
+                                  $value.subst($drop, '', :g);
+            }
+
+            $click-log.add-entry($entry.subst(/', ' $/, '') ~ "\n");
         }
         else {
             $click-log.add-entry("Click @ $x,$y (no matching span)\n\n");
