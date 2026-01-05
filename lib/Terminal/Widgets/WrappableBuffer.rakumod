@@ -70,6 +70,8 @@ does Terminal::Widgets::SpanBuffer {
 
     has &.process-click;
 
+    has %.selected-span-info;
+
     has UInt:D $!hard-line-max-width = 0;
     has UInt:D $!hard-line-count     = 0;
     has UInt:D %!hard-line-width;
@@ -794,6 +796,26 @@ does Terminal::Widgets::SpanBuffer {
         $line.elems ?? $line[*-1] !! Nil
     }
 
+    #| Select a given span (and its hard line and line group); returns
+    #| True if the selection action caused a full refresh, or False if not.
+    method select-span($span --> Bool:D) {
+        # Cache span info for selected span
+        %!selected-span-info := span-info($span);
+
+        # No refresh occurred
+        False
+    }
+
+    #| Unselect and uncache any previously-selected span; returns
+    #| True if the selection action caused a full refresh, or False if not.
+    method unselect-span(--> Bool:D) {
+        # Empty span info cache
+        %!selected-span-info := {};
+
+        # No refresh occurred
+        False
+    }
+
     #| Handle mouse events
     multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
                               $event where !*.mouse.pressed, AtTarget) {
@@ -809,7 +831,12 @@ does Terminal::Widgets::SpanBuffer {
                 my $cell = $.x-scroll + $x;
                 my $line = $.y-scroll + $y;
                 my $span = self.span-from-buffer-loc($cell, $line);
+
+                my $refreshed = self.select-span($span);
                 $_($span, $cell, $line) with &!process-click;
+
+                # If selecting the span caused a refresh, skip the outer one
+                return if $refreshed;
             }
         }
 
