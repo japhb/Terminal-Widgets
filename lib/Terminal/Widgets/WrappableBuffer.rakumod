@@ -722,7 +722,7 @@ does Terminal::Widgets::SpanBuffer {
         }
     }
 
-    #| OPTIONAL OVERRIDE: Skip forward to first visible LineGroup
+    #| OPTIONAL OPTIMIZATION: Skip forward to first visible LineGroup
     method span-line-start(UInt:D $start) {
         # Default: No special skip, just start at the beginning of the buffer
         0, 0
