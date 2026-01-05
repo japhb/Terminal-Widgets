@@ -728,8 +728,16 @@ does Terminal::Widgets::SpanBuffer {
         0, 0
     }
 
-    #| Grab a chunk of laid-out span lines to feed to SpanBuffer.draw-frame
-    method span-line-chunk(UInt:D $start, UInt:D $wanted) {
+    #| OPTIONAL HOOK: Post-process the lines in a LineGroup before display
+    method post-process-line-group($lg-id, $first-line, $start-line, $last-line, @lines) {
+        # Default behavior: Just return the lines unchanged
+        @lines
+    }
+
+    #| Grab a chunk of laid-out span lines to feed to SpanBuffer.draw-frame,
+    #| post-processing any potentially-visible lines unless $skip-processing is True
+    method span-line-chunk(UInt:D $start, UInt:D $wanted,
+                           Bool:D :$skip-processing = False) {
         my $t0 = nano;
 
         # Phase 1: Jump forward to first visible LineGroup if possible
@@ -747,6 +755,11 @@ does Terminal::Widgets::SpanBuffer {
             $pos += $lines.elems;
             next if $start >= $pos;
 
+            $lines = self.post-process-line-group($id, $prev, $start,
+                                                  $start + $wanted - 1,
+                                                  $lines)
+                unless $skip-processing;
+
             @found.append($start > $prev ?? @$lines[($start - $prev)..*]
                                          !! @$lines);
             last if @found >= $wanted;
@@ -761,7 +774,7 @@ does Terminal::Widgets::SpanBuffer {
     #| accounting for wrapping mode (or an undefined value if no such line
     #| exists)
     method rendered-line(UInt:D $y) {
-        self.span-line-chunk($y, 1)[0]
+        self.span-line-chunk($y, 1, :skip-processing)[0]
     }
 
     #| Convert from a buffer location to a render span (or Nil if not found)
