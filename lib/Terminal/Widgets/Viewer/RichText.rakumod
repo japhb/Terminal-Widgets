@@ -82,7 +82,7 @@ class Terminal::Widgets::Viewer::RichText
                 if $!highlight-mode && $h-color {
                     my sub hl-spans(&should-highlight) {
                         # Process spans as needed
-                        my @line = @$line .map: {
+                        my @line = $line.map: {
                             should-highlight($_)
                             ?? .clone(color => color-merge(.color, $h-color))
                             !! $_
