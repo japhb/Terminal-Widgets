@@ -75,21 +75,49 @@ class Terminal::Widgets::Viewer::RichText
                 my $cur-line = $first-line + $pos;
                 last if $cur-line > $last-line;
 
-                my $line = @lines[$pos++];
-                my @line;
-                for @$line -> $span {
-                    if $span === %!selected-span-info<span> {
-                        my $color = color-merge($span.color, $h-color);
-                        @line.push($span.clone(:$color));
+                # Active line (array of RenderSpans), before processing
+                my $line = @lines[$pos];
+
+                # Highlight first if needed before marking cursor
+                if $!highlight-mode && $h-color {
+                    my sub hl-spans(&should-highlight) {
+                        # Process spans as needed
+                        my @line = @$line .map: {
+                            should-highlight($_)
+                            ?? .clone(color => color-merge(.color, $h-color))
+                            !! $_
+                        }
+
+                        # Replace plain line with processed version
+                        $line = @line;
                     }
-                    else {
-                        @line.push($span);
+
+                    given $!highlight-mode {
+                        when LineGroupHighlight {
+                            hl-spans({True});
+                        }
+                        when HardLineHighlight {
+                            hl-spans({ (my $ss = $^span.string-span) &&
+                                       (my $attrs = $ss.attributes) &&
+                                       $attrs<lg-hard-line> == $h-target });
+                        }
+                        when SoftLineHighlight { ... }
+                        when StringSpanHighlight {
+                            hl-spans(*.string-span === $h-target);
+                        }
+                        when RenderSpanHighlight {
+                            hl-spans(* === $h-target);
+                        }
+                        when GraphemeHighlight { ... }
+                        default { !!! "Unknown buffer highlight mode $_" }
                     }
                 }
 
-                @processed.push(@line);
+                @processed.push($line);
+                $pos++;
             }
 
+            # Return the processed lines
             @processed
         }
         else {
