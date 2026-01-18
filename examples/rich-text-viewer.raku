@@ -128,7 +128,7 @@ class RichTextViewerDemo is TopLevel {
         }
         with %.by-id<buffer> {
             if .empty {
-                .highlight-mode = RenderSpanHighlight;
+                .highlight-mode = SoftLineHighlight;
                 .insert-line-group($!spans);
                 .insert-line-group($!list);
                 .insert-line-group($!text);

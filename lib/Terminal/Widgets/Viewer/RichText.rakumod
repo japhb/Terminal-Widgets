@@ -27,7 +27,7 @@ my constant %span-prop-map =
     (GraphemeHighlight)   => '',  # NYI
     (RenderSpanHighlight) => 'render-span',
     (StringSpanHighlight) => 'string-span',
-    (SoftLineHighlight)   => '',  # NYI
+    (SoftLineHighlight)   => 'render-span',
     (HardLineHighlight)   => 'lg-hard-line',
     (LineGroupHighlight)  => 'line-group-id',
 
@@ -35,7 +35,7 @@ my constant %span-prop-map =
     (GraphemeCursor)      => '',  # NYI
     (RenderSpanCursor)    => 'render-span',
     (StringSpanCursor)    => 'string-span',
-    (SoftLineCursor)      => '',  # NYI
+    (SoftLineCursor)      => 'render-span',
     (HardLineCursor)      => 'lg-hard-line',
     (LineGroupCursor)     => 'line-group-id',
     ;
@@ -101,7 +101,9 @@ class Terminal::Widgets::Viewer::RichText
                                        (my $attrs = $ss.attributes) &&
                                        $attrs<lg-hard-line> == $h-target });
                         }
-                        when SoftLineHighlight { ... }
+                        when SoftLineHighlight {
+                            hl-spans({True}) if $line.first(* === $h-target);
+                        }
                         when StringSpanHighlight {
                             hl-spans(*.string-span === $h-target);
                         }
