@@ -1,5 +1,7 @@
 # ABSTRACT: General viewer for rich text content
 
+use Text::MiscUtils::Layout;
+
 use Terminal::Widgets::Utils::Color;
 use Terminal::Widgets::Layout;
 use Terminal::Widgets::WrappableBuffer;
@@ -24,7 +26,7 @@ enum Terminal::Widgets::CursorMode is export
 
 my constant %span-prop-map =
     (NoHighlight)         => '',
-    (GraphemeHighlight)   => '',  # NYI
+    (GraphemeHighlight)   => 'render-span',
     (RenderSpanHighlight) => 'render-span',
     (StringSpanHighlight) => 'string-span',
     (SoftLineHighlight)   => 'render-span',
@@ -32,7 +34,7 @@ my constant %span-prop-map =
     (LineGroupHighlight)  => 'line-group-id',
 
     (NoCursor)            => '',
-    (GraphemeCursor)      => '',  # NYI
+    (GraphemeCursor)      => 'render-span',
     (RenderSpanCursor)    => 'render-span',
     (StringSpanCursor)    => 'string-span',
     (SoftLineCursor)      => 'render-span',
@@ -110,7 +112,87 @@ class Terminal::Widgets::Viewer::RichText
                         when RenderSpanHighlight {
                             hl-spans(* === $h-target);
                         }
-                        when GraphemeHighlight { ... }
+                        when GraphemeHighlight {
+                            # This could require span-splitting, so use a
+                            # bespoke highlighting loop for this case
+
+                            my $start-x = 0;
+                            my @line;
+
+                            for @$line -> $span {
+                                my $width = $span.width;
+                                my $next  = $start-x + $width;
+
+                                # If within selected span ...
+                                if $span === $h-target && $.cursor-x < $next {
+                                    # Collect info for creating span pieces
+                                    my $text   = $span.text;
+                                    my $chars  = $text.chars;
+                                    my $color  = $span.color;
+                                    my $merged = color-merge($color, $h-color);
+
+                                    if $chars <= 1 {
+                                        # If at most one character in span,
+                                        # just highlight the whole span.
+                                        @line.push: $span.clone(color => $merged);
+                                    }
+                                    else {
+                                        # Otherwise, split span into before,
+                                        # highlit, after.  Don't bother with
+                                        # wrapping logic, that's already
+                                        # happened previously.
+
+                                        my $loc = $.cursor-x - $start-x;
+                                        my $is-mono = $width == $chars
+                                                   && is-monospace-core($text, 0);
+
+                                        # Correct $loc if duospace span
+                                        unless $is-mono {
+                                            my $x = 0;
+                                            my $l = 0;
+                                            while $x < $loc && $l < $chars {
+                                                my $c = substr($text, $l, 1);
+                                                $x += duospace-width-core($c, 0);
+                                                $l++;
+                                            }
+                                            $l-- if $x > $loc;
+                                            $loc = $l;
+                                        }
+
+                                        # Split into three pieces
+                                        my $before  = substr($text, 0, $loc);
+                                        my $highlit = substr($text, $loc, 1);
+                                        my $after   = substr($text, $loc + 1);
+
+                                        # Create new spans for each piece
+                                        my $string-span = $span.string-span;
+                                        if $before {
+                                            @line.push: $span.new(:$string-span,
+                                                                  :$color,
+                                                                  text => $before);
+                                        }
+                                        if $highlit {
+                                            @line.push: $span.new(:$string-span,
+                                                                  color => $merged,
+                                                                  text => $highlit);
+                                        }
+                                        if $after {
+                                            @line.push: $span.new(:$string-span,
+                                                                  :$color,
+                                                                  text => $after);
+                                        }
+                                    }
+                                }
+                                else {
+                                    @line.push($span);
+                                }
+
+                                $start-x = $next;
+                            }
+
+                            # Replace plain line with processed version
+                            $line = @line;
+                        }
                         default { !!! "Unknown buffer highlight mode $_" }
                     }
                 }
