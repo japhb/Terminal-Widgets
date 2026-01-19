@@ -67,13 +67,17 @@ class Terminal::Widgets::Viewer::RichText
                 # Active line (array of RenderSpans), before processing
                 my $line = @lines[$pos];
 
-                # Highlight first if needed before marking cursor
-                if $!highlight-mode && $h-color {
+                # Helper sub: Highlight with a given color based on
+                #             highlighting mode and current target
+                my sub highlight($mode, $color, $target) {
+                    return unless $mode && $color;
+
+                    # Helper sub: Highlight spans for which predicate returns True
                     my sub hl-spans(&should-highlight) {
                         # Process spans as needed
                         my @line = $line.map: {
                             should-highlight($_)
-                            ?? .clone(color => color-merge(.color, $h-color))
+                            ?? .clone(color => color-merge(.color, $color))
                             !! $_
                         }
 
@@ -81,23 +85,23 @@ class Terminal::Widgets::Viewer::RichText
                         $line = @line;
                     }
 
-                    given $!highlight-mode {
+                    given $mode {
                         when LineGroupHighlight {
                             hl-spans({True});
                         }
                         when HardLineHighlight {
                             hl-spans({ (my $ss = $^span.string-span) &&
                                        (my $attrs = $ss.attributes) &&
-                                       $attrs<lg-hard-line> == $h-target });
+                                       $attrs<lg-hard-line> == $target });
                         }
                         when SoftLineHighlight {
-                            hl-spans({True}) if $line.first(* === $h-target);
+                            hl-spans({True}) if $line.first(* === $target);
                         }
                         when StringSpanHighlight {
-                            hl-spans(*.string-span === $h-target);
+                            hl-spans(*.string-span === $target);
                         }
                         when RenderSpanHighlight {
-                            hl-spans(* === $h-target);
+                            hl-spans(* === $target);
                         }
                         when GraphemeHighlight {
                             # This could require span-splitting, so use a
@@ -111,7 +115,7 @@ class Terminal::Widgets::Viewer::RichText
                                 my $next  = $start-x + $width;
 
                                 # If within selected span ...
-                                if $span === $h-target && $.cursor-x < $next {
+                                if $span === $target && $.cursor-x < $next {
                                     # Collect info for creating span pieces
                                     my $text   = $span.text;
                                     my $chars  = $text.chars;
@@ -184,6 +188,11 @@ class Terminal::Widgets::Viewer::RichText
                     }
                 }
 
+                # Highlight first if needed before marking cursor
+                highlight($!highlight-mode, $h-color, $h-target);
+                highlight($!cursor-mode,    $c-color, $c-target);
+
+                # Push processed line and go to next
                 @processed.push($line);
                 $pos++;
             }
