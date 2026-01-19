@@ -71,6 +71,8 @@ does Terminal::Widgets::SpanBuffer {
     has &.process-click;
 
     has %.selected-span-info;
+    has $.cursor-x = 0;
+    has $.cursor-y = 0;
 
     has UInt:D $!hard-line-max-width = 0;
     has UInt:D $!hard-line-count     = 0;
@@ -828,12 +830,12 @@ does Terminal::Widgets::SpanBuffer {
             my ($x, $y, $w, $h) = $event.relative-to-content-area(self);
 
             if 0 <= $x < $w && 0 <= $y < $h {
-                my $cell = $.x-scroll + $x;
-                my $line = $.y-scroll + $y;
-                my $span = self.span-from-buffer-loc($cell, $line);
+                $!cursor-x = $.x-scroll + $x;
+                $!cursor-y = $.y-scroll + $y;
+                my $span   = self.span-from-buffer-loc($!cursor-x, $!cursor-y);
 
                 my $refreshed = self.select-span($span);
-                $_($span, $cell, $line) with &!process-click;
+                $_($span, $!cursor-x, $!cursor-y) with &!process-click;
 
                 # If selecting the span caused a refresh, skip the outer one
                 return if $refreshed;
