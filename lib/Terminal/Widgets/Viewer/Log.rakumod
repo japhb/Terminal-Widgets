@@ -61,6 +61,8 @@ class Terminal::Widgets::Viewer::Log
 
     #| Use the skip table to find a starting point to search for a given line
     method search-skip-table(UInt:D $line-number) {
+        return 0 unless @!skip-table;
+
         my $entry = $line-number +> 10 - 1;
 
         $entry <  0            ?? 0 !!
@@ -77,14 +79,11 @@ class Terminal::Widgets::Viewer::Log
 
     #| Skip forward nearer to first visible LineGroup
     method span-line-start(UInt:D $start) {
-        if @!line-groups {
-            my $i   = self.search-skip-table($start);
-            my $pos = %!start-line{@!line-groups[$i].id};
-            $i, $pos
-        }
-        else {
-            0, 0
-        }
+        my $i  = self.search-skip-table($start);
+        my $lg = @!line-groups[$i];
+
+        $lg ?? ($i, %!start-line{$lg.id})
+            !! (0, 0)
     }
 }
 
