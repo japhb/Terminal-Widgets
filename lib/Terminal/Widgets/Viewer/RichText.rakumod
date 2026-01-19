@@ -19,11 +19,6 @@ enum Terminal::Widgets::HighlightMode is export
     < NoHighlight GraphemeHighlight RenderSpanHighlight StringSpanHighlight
       SoftLineHighlight HardLineHighlight LineGroupHighlight >;
 
-#| Available cursor marking/handling modes, from narrowest to widest
-enum Terminal::Widgets::CursorMode is export
-    < NoCursor GraphemeCursor RenderSpanCursor StringSpanCursor
-      SoftLineCursor HardLineCursor LineGroupCursor >;
-
 my constant %span-prop-map =
     (NoHighlight)         => '',
     (GraphemeHighlight)   => 'render-span',
@@ -32,14 +27,6 @@ my constant %span-prop-map =
     (SoftLineHighlight)   => 'render-span',
     (HardLineHighlight)   => 'lg-hard-line',
     (LineGroupHighlight)  => 'line-group-id',
-
-    (NoCursor)            => '',
-    (GraphemeCursor)      => 'render-span',
-    (RenderSpanCursor)    => 'render-span',
-    (StringSpanCursor)    => 'string-span',
-    (SoftLineCursor)      => 'render-span',
-    (HardLineCursor)      => 'lg-hard-line',
-    (LineGroupCursor)     => 'line-group-id',
     ;
 
 
@@ -47,7 +34,7 @@ my constant %span-prop-map =
 class Terminal::Widgets::Viewer::RichText
  does Terminal::Widgets::WrappableBuffer {
     has Terminal::Widgets::HighlightMode:D $.highlight-mode is rw = NoHighlight;
-    has Terminal::Widgets::CursorMode:D    $.cursor-mode    is rw = NoCursor;
+    has Terminal::Widgets::HighlightMode:D $.cursor-mode    is rw = NoHighlight;
 
     method layout-class() { Terminal::Widgets::Layout::RichTextViewer }
 
