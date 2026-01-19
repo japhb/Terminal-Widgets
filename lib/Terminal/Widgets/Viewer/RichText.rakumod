@@ -104,6 +104,9 @@ class Terminal::Widgets::Viewer::RichText
                             hl-spans(* === $target);
                         }
                         when GraphemeHighlight {
+                            # Skip if not correct line
+                            return unless $cur-line == $.cursor-y;
+
                             # This could require span-splitting, so use a
                             # bespoke highlighting loop for this case
 
@@ -115,12 +118,12 @@ class Terminal::Widgets::Viewer::RichText
                                 my $next  = $start-x + $width;
 
                                 # If within selected span ...
-                                if $span === $target && $.cursor-x < $next {
+                                if $start-x <= $.cursor-x < $next {
                                     # Collect info for creating span pieces
                                     my $text   = $span.text;
                                     my $chars  = $text.chars;
-                                    my $color  = $span.color;
-                                    my $merged = color-merge($color, $h-color);
+                                    my $span-c = $span.color;
+                                    my $merged = color-merge($span-c, $color);
 
                                     if $chars <= 1 {
                                         # If at most one character in span,
@@ -159,7 +162,7 @@ class Terminal::Widgets::Viewer::RichText
                                         my $string-span = $span.string-span;
                                         if $before {
                                             @line.push: $span.new(:$string-span,
-                                                                  :$color,
+                                                                  color => $span-c,
                                                                   text => $before);
                                         }
                                         if $highlit {
@@ -169,7 +172,7 @@ class Terminal::Widgets::Viewer::RichText
                                         }
                                         if $after {
                                             @line.push: $span.new(:$string-span,
-                                                                  :$color,
+                                                                  color => $span-c,
                                                                   text => $after);
                                         }
                                     }
