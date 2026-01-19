@@ -47,8 +47,8 @@ class Terminal::Widgets::Viewer::RichText
         if $should-process && $lg-id == $selected-id {
             # Prepare to colorize cursor and highlight region
             my $colorset  = $.terminal.colorset;
-            my $c-color   = $!cursor-mode    ?? $colorset.cursor    !! '';
-            my $h-color   = $!highlight-mode ?? $colorset.highlight !! '';
+            my $c-color   = $colorset.cursor;
+            my $h-color   = $colorset.highlight;
             my $c-target  = %!selected-span-info{%span-prop-map{$!cursor-mode}};
             my $h-target  = %!selected-span-info{%span-prop-map{$!highlight-mode}};
 
