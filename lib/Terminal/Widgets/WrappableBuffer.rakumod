@@ -809,6 +809,42 @@ does Terminal::Widgets::SpanBuffer {
         $line.elems ?? $line[*-1] !! Nil
     }
 
+    #| Determine if x-location in a line is the second cell of a wide character
+    # XXXX: This feels cacheable.  Perhaps a bitmap with 1's for second cells?
+    method is-second-cell(UInt:D $x, UInt:D $y) {
+        # Find spans for a given line; if it doesn't exist, return False
+        my $line = self.rendered-line($y) // return False;
+
+        my $pos = 0;
+        for @$line -> $span {
+            my $width = $span.width;
+            my $next  = $pos + $width;
+
+            # Found the right span, now look for proper cell
+            if $pos <= $x < $next {
+                # Monospace spans don't have wide chars, so no second cells
+                my $text  = $span.text;
+                my $chars = $text.chars;
+                return False if $width == $chars && is-monospace-core($text, 0);
+
+                # Duospace; march through span one character at a time
+                for $text.comb {
+                    my $w = duospace-width-core($_, 0);
+                    return True if $w > 1 && $x == $pos + 1;
+                    $pos += $w;
+                }
+
+                # Past end of span; return False
+                return False
+            }
+
+            $pos = $next;
+        }
+
+        # Fell off the end of the line?  It's clearly not a second cell.
+        False
+    }
+
     #| Select a given span (and its hard line and line group); returns
     #| True if the selection action caused a full refresh, or False if not.
     method select-span($span --> Bool:D) {
@@ -832,6 +868,9 @@ does Terminal::Widgets::SpanBuffer {
     #| Move cursor one character previous, which may result in wrapping to the
     #| previous line, and ensure the cursor remains visible
     multi method cursor-char-prev() {
+        # In a second cell and moving left?  Bump left before continuing.
+        --$!cursor-x if self.is-second-cell($!cursor-x, $!cursor-y);
+
         --$!cursor-x;
         if $!cursor-x < 0 {
             if $!cursor-y {
@@ -866,6 +905,9 @@ does Terminal::Widgets::SpanBuffer {
                 $!cursor-x = $eol;
             }
         }
+
+        # Moved right into a second cell?  Move right a second time.
+        ++$!cursor-x if self.is-second-cell($!cursor-x, $!cursor-y);
 
         self.ensure-x-span-visible($!cursor-x, $!cursor-x);
         my $span = self.span-from-buffer-loc($!cursor-x, $!cursor-y);
