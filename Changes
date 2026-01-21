@@ -1,6 +1,27 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Bug Fixes]
+  - Fix a wide-terminal bug in rich-text-viewer example layout
+  - Fix various subtle line-wrapping bugs
+  - Fix skip table edge cases in Viewer::Log
+  - Harden WrappableBuffer.select-span by merging in unselect-span
+
+  [Examples]
+  - Demo new TextContent, WrappableBuffer, and Viewer::RichText features in
+    rich-text-viewer example
+  - Improve readability and consistency of rich-text-viewer example code
+
+  [Functionality]
+  - Track various span attributes through rendering and wrapping processes
+  - Add span-info() helper to gather span info through rendering breadcrumbs
+  - Cache span-info() whenever selecting a span in WrappableBuffer
+  - Process mouse and keyboard input in WrappableBuffer
+  - Track WrappableBuffer cursor location as well as selected span
+  - Add a hook in WrappableBuffer for post-processing rendered lines before display
+  - Add general span and cursor highlighting in Viewer::RichText
+  - Add end-of-line helper in WrappableBuffer for finding x-pos after last span
+
 
 0.2.6  2025-12-28T23:52:30-08:00
   [Bug Fixes]
