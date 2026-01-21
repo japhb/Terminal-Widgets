@@ -829,6 +829,103 @@ does Terminal::Widgets::SpanBuffer {
         False
     }
 
+    #| Move cursor one character previous, which may result in wrapping to the
+    #| previous line, and ensure the cursor remains visible
+    multi method cursor-char-prev() {
+        --$!cursor-x;
+        if $!cursor-x < 0 {
+            if $!cursor-y {
+                # Went past left edge, move to end of previous line
+                $!cursor-x = self.end-of-line(--$!cursor-y);
+                self.ensure-y-span-visible($!cursor-y, $!cursor-y);
+            }
+            else {
+                # No previous line to move to, just stop at left edge
+                $!cursor-x = 0;
+            }
+        }
+
+        self.ensure-x-span-visible($!cursor-x, $!cursor-x);
+        my $span = self.span-from-buffer-loc($!cursor-x, $!cursor-y);
+        my $refreshed = self.select-span($span);
+        self.full-refresh unless $refreshed;
+    }
+
+    #| Move cursor to next character, which may result in wrapping to the
+    #| next line, and ensure the cursor remains visible
+    multi method cursor-char-next() {
+        my $eol = self.end-of-line($!cursor-y);
+        if ++$!cursor-x > $eol {
+            if $!cursor-y < $.y-max {
+                $!cursor-x = 0;
+                $!cursor-y++;
+                self.ensure-y-span-visible($!cursor-y, $!cursor-y);
+            }
+            else {
+                # No next line to move to, just stop at right edge
+                $!cursor-x = $eol;
+            }
+        }
+
+        self.ensure-x-span-visible($!cursor-x, $!cursor-x);
+        my $span = self.span-from-buffer-loc($!cursor-x, $!cursor-y);
+        my $refreshed = self.select-span($span);
+        self.full-refresh unless $refreshed;
+    }
+
+    #| Move cursor to previous line and ensure the cursor remains visible
+    multi method cursor-line-prev() {
+        if $!cursor-y {
+            $!cursor-y--;
+            self.ensure-y-span-visible($!cursor-y, $!cursor-y);
+
+            my $x = $!cursor-x min self.end-of-line($!cursor-y);
+            self.ensure-x-span-visible($x, $x);
+
+            my $span = self.span-from-buffer-loc($!cursor-x, $!cursor-y);
+            my $refreshed = self.select-span($span);
+            self.full-refresh unless $refreshed;
+        }
+    }
+
+    #| Move cursor to next line and ensure the cursor remains visible
+    multi method cursor-line-next() {
+        if $!cursor-y < $.y-max {
+            $!cursor-y++;
+            self.ensure-y-span-visible($!cursor-y, $!cursor-y);
+
+            my $x = $!cursor-x min self.end-of-line($!cursor-y);
+            self.ensure-x-span-visible($x, $x);
+
+            my $span = self.span-from-buffer-loc($!cursor-x, $!cursor-y);
+            my $refreshed = self.select-span($span);
+            self.full-refresh unless $refreshed;
+        }
+    }
+
+    #| Handle keyboard events
+    multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D
+                              $event where *.key.defined, AtTarget) {
+        my constant %keymap =
+            CursorLeft  => 'char-prev',
+            CursorRight => 'char-next',
+            CursorUp    => 'line-prev',
+            CursorDown  => 'line-next',
+            Ctrl-I      => 'focus-next',    # Tab
+            ShiftTab    => 'focus-prev',    # Shift-Tab is weird and special
+            ;
+
+        my $keyname = $event.keyname;
+        with %keymap{$keyname} {
+            when 'char-prev'  { self.cursor-char-prev }
+            when 'char-next'  { self.cursor-char-next }
+            when 'line-prev'  { self.cursor-line-prev }
+            when 'line-next'  { self.cursor-line-next }
+            when 'focus-next' { self.focus-next }
+            when 'focus-prev' { self.focus-prev }
+        }
+    }
+
     #| Handle mouse events
     multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
                               $event where !*.mouse.pressed, AtTarget) {
