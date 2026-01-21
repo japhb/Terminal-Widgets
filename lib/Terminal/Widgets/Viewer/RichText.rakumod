@@ -3,6 +3,7 @@
 use Text::MiscUtils::Layout;
 
 use Terminal::Widgets::Utils::Color;
+use Terminal::Widgets::TextContent;
 use Terminal::Widgets::Layout;
 use Terminal::Widgets::WrappableBuffer;
 
@@ -110,15 +111,17 @@ class Terminal::Widgets::Viewer::RichText
                             # This could require span-splitting, so use a
                             # bespoke highlighting loop for this case
 
-                            my $start-x = 0;
+                            my $cursor-x = $.cursor-x;
+                            my $start-x  = 0;
                             my @line;
 
+                            # Look for cursor within line spans
                             for @$line -> $span {
                                 my $width = $span.width;
                                 my $next  = $start-x + $width;
 
                                 # If within selected span ...
-                                if $start-x <= $.cursor-x < $next {
+                                if $start-x <= $cursor-x < $next {
                                     # Collect info for creating span pieces
                                     my $text   = $span.text;
                                     my $chars  = $text.chars;
@@ -136,7 +139,7 @@ class Terminal::Widgets::Viewer::RichText
                                         # wrapping logic, that's already
                                         # happened previously.
 
-                                        my $loc = $.cursor-x - $start-x;
+                                        my $loc = $cursor-x - $start-x;
                                         my $is-mono = $width == $chars
                                                    && is-monospace-core($text, 0);
 
@@ -182,6 +185,13 @@ class Terminal::Widgets::Viewer::RichText
                                 }
 
                                 $start-x = $next;
+                            }
+
+                            # Ran out of spans before hitting cursor; just add
+                            # a blank cursor-colored RenderSpan to indicate
+                            # cursor was past end.
+                            if $cursor-x >= $start-x {
+                                @line.push: render-span(' ', $color);
                             }
 
                             # Replace plain line with processed version
