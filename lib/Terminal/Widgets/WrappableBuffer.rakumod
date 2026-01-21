@@ -777,8 +777,19 @@ does Terminal::Widgets::SpanBuffer {
     #| Find the rendered line (array of RenderSpans) for a given Y-index
     #| accounting for wrapping mode (or an undefined value if no such line
     #| exists)
+    # XXXX: Both end-of-line and span-from-buffer-loc call rendered-line, and
+    #       they are often used together; may be able to avoid duplicate calls
     method rendered-line(UInt:D $y) {
         self.span-line-chunk($y, 1, :skip-processing)[0]
+    }
+
+    #| Calculate x-location of end of (possibly wrapped) line, or 0 if not found
+    method end-of-line(UInt:D $y) {
+        # Find spans for a given line; if it doesn't exist, return 0
+        my $line = self.rendered-line($y) // return 0;
+
+        # Sum duospace widths of all spans on line
+        $line.map(*.width).sum
     }
 
     #| Convert from a buffer location to a render span (or Nil if not found)
