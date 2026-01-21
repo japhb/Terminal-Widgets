@@ -778,7 +778,8 @@ does Terminal::Widgets::SpanBuffer {
     #| accounting for wrapping mode (or an undefined value if no such line
     #| exists)
     # XXXX: Both end-of-line and span-from-buffer-loc call rendered-line, and
-    #       they are often used together; may be able to avoid duplicate calls
+    #       they are often used together; may be able to avoid duplicate calls.
+    #       Use multi's for callers, which take either y or line?
     method rendered-line(UInt:D $y) {
         self.span-line-chunk($y, 1, :skip-processing)[0]
     }
