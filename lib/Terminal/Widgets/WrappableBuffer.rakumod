@@ -850,17 +850,7 @@ does Terminal::Widgets::SpanBuffer {
     #| True if the selection action caused a full refresh, or False if not.
     method select-span($span --> Bool:D) {
         # Cache span info for selected span
-        %!selected-span-info := span-info($span);
-
-        # No refresh occurred
-        False
-    }
-
-    #| Unselect and uncache any previously-selected span; returns
-    #| True if the selection action caused a full refresh, or False if not.
-    method unselect-span(--> Bool:D) {
-        # Empty span info cache
-        %!selected-span-info := {};
+        %!selected-span-info := $span ?? span-info($span) !! {};
 
         # No refresh occurred
         False
