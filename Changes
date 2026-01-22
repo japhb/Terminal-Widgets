@@ -1,6 +1,8 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+
+0.3.0  2026-01-22T14:26:06-08:00
   [BREAKING CHANGES]
   - 0.3.0 DROPS/REPLACES SEVERAL DEPRECATED MODULES! (and their examples)
 
