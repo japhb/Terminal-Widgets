@@ -1,6 +1,21 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [BREAKING CHANGES]
+  - 0.3.0 DROPS/REPLACES SEVERAL DEPRECATED MODULES! (and their examples)
+
+    REPLACEMENTS:
+    * SpanStyle                   => TextContent
+    * SpanWrappingAndHighlighting => WrappableBuffer
+    * RichText                    => Viewer::RichText
+    * TreeView                    => Viewer::Tree
+    * rich-text.raku              => rich-text-viewer.raku
+    * tree-view.raku              => tree-viewer.raku
+
+    If you are currently using any of the dropped modules, either switch to
+    using their replacements, or lock your T-W dependency to version 0.2.7,
+    the last release containing these dropped files.
+
 
 0.2.7  2026-01-21T09:34:43-08:00
   [Bug Fixes]

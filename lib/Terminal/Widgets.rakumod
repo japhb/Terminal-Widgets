@@ -28,7 +28,7 @@ It is B<CERTAIN> that many things will be changing in the near future,
 although finally a few things seem like they aren't terrible and might stick
 around for a while.
 
-B<<<This is not version C<0.2.x> because I'm modest, it's because it really is
+B<<<This is not version C<0.3.x> because I'm modest, it's because it really is
 that early!>>>
 
 Not completely scared off yet?  Come visit C<#mugs> on C<libera.chat> IRC and
@@ -42,7 +42,7 @@ Geoffrey Broadwell <gjb@sonic.net>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2019, 2022-2025 Geoffrey Broadwell
+Copyright 2019, 2022-2026 Geoffrey Broadwell
 
 This library is free software; you can redistribute it and/or modify it under
 the Artistic License 2.0.
