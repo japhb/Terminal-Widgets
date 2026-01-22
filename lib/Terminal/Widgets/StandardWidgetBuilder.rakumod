@@ -18,6 +18,7 @@ use Terminal::Widgets::Input::Text;
 use Terminal::Widgets::Viewer::Log;
 use Terminal::Widgets::Viewer::Tree;
 use Terminal::Widgets::Viewer::DirTree;
+use Terminal::Widgets::Viewer::RichText;
 
 use Terminal::Widgets::Viz::SmokeChart;
 
