@@ -6,8 +6,6 @@ use Terminal::Widgets::Layout;
 # Load all core widget types so they self-register
 use Terminal::Widgets::Widget;
 use Terminal::Widgets::PlainText;
-use Terminal::Widgets::RichText;
-use Terminal::Widgets::TreeView;
 use Terminal::Widgets::ScrollBar;
 
 use Terminal::Widgets::Input::Menu;
