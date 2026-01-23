@@ -236,6 +236,9 @@ class Node does Dynamic {
     }
 
     multi method compute-layout(Node:D:) {
+        my $debug = $*DEBUG;
+        note "Before layout computation:\n" ~ self.gist ~ "\n" if $debug >= 2;
+
         # Do initial DWIM computations
         my ($style,
             $min-w, $set-w, $max-w,
@@ -243,10 +246,12 @@ class Node does Dynamic {
 
         # Assign *partially* computed style to allow children to introspect this node
         $!computed = $style;
-        return unless @.children;
+        note "Initial compute:\n" ~ self.gist ~ "\n" if $debug >= 2;
 
         # Compute all children based on partial info so far
+        return unless @.children;
         .compute-layout for @.children;
+        note "After children computed:\n" ~ self.gist ~ "\n" if $debug >= 2;
 
         # Cache box model corrections for our ContentBox
         my $cwc = $!computed.width-correction( ContentBox);
@@ -376,6 +381,8 @@ class Node does Dynamic {
         # Assign final computed style
         $!computed .= clone(:$min-w, :$set-w, :$max-w,
                             :$min-h, :$set-h, :$max-h);
+
+        note "Final layout:\n" ~ self.gist ~ "\n" if $debug >= 2;
 
         self
     }
