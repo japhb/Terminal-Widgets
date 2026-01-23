@@ -645,19 +645,21 @@ class Builder
 
     #| Helper method for building layout that pushes content up
     method build-push-up(*@children, :%style, *%extra) {
+        my %outer-style = width-styles(%style);
         with self {
-            .build-node(PushUp, :vertical,
+            .build-node(PushUp, :vertical, style => %outer-style,
                         .node(|@children, :%style, |%extra),
-                        .node(),
+                        .spacer(style => %outer-style),
                        )
         }
     }
 
     #| Helper method for building layout that pushes content down
     method build-push-down(*@children, :%style, *%extra) {
+        my %outer-style = width-styles(%style);
         with self {
-            .build-node(PushDown, :vertical,
-                        .node(),
+            .build-node(PushDown, :vertical, style => %outer-style,
+                        .spacer(style => %outer-style),
                         .node(|@children, :%style, |%extra),
                        )
         }
@@ -665,19 +667,21 @@ class Builder
 
     #| Helper method for building layout that pushes content left
     method build-push-left(*@children, :%style, *%extra) {
+        my %outer-style = height-styles(%style);
         with self {
-            .build-node(PushLeft,
+            .build-node(PushLeft, style => %outer-style,
                         .node(|@children, :%style, |%extra),
-                        .node(),
+                        .spacer(style => %outer-style),
                        )
         }
     }
 
     #| Helper method for building layout that pushes content right
     method build-push-right(*@children, :%style, *%extra) {
+        my %outer-style = height-styles(%style);
         with self {
-            .build-node(PushRight,
-                        .node(),
+            .build-node(PushRight, style => %outer-style,
+                        .spacer(style => %outer-style),
                         .node(|@children, :%style, |%extra),
                        )
         }
