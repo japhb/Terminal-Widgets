@@ -542,6 +542,18 @@ class Builder
  does Terminal::Widgets::WidgetRegistry {
     has $.context is required;
 
+    # Helper to make a new style hash containing only width-related styles
+    my sub width-styles(%style) {
+        my %w-styles = < min-w set-w max-w minimize-w share-w >.map:
+                       { $_ => %style{$_} if %style{$_}:exists }
+    }
+
+    # Helper to make a new style hash containing only height-related styles
+    my sub height-styles(%style) {
+        my %h-styles = < min-h set-h max-h minimize-h share-h >.map:
+                       { $_ => %style{$_} if %style{$_}:exists }
+    }
+
     #| Use Widget registry to automatically find builders
     method FALLBACK(Str:D $name, |c) {
         die "Unable to find a layout class for builder method $name.raku()"
