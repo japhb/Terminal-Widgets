@@ -47,7 +47,7 @@ is Terminal::Widgets::Widget {
         my $is-block = @!marks[* - 1] eq '█';
 
         for @data.kv -> $x, $value {
-            my $level = floor ($levels - 1) * ($value - $min) / $range;
+            my $level = floor .5 + ($levels - 1) * ($value - $min) / $range;
             my $mark  = @!marks[$level % @!marks];
             my $y     = $bottom - ($level div @!marks);
 
