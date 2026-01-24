@@ -8,7 +8,7 @@ use Terminal::Widgets::Events;
 class SparklineUI is TopLevel {
     method initial-layout($builder, $width, $height) {
         with $builder {
-            .push-left(:vertical, style => %( :minimize-h ),
+            .push-left(:vertical, style => %( :minimize-w, :minimize-h ),
                 .push-right(style => %( :minimize-h ),
                             .sparkline(id => 'small',
                                        style => %(set-h => 1, set-w => 5,
