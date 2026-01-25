@@ -699,9 +699,9 @@ class Builder
             .build-node(PushUpLeft,
                         .node(:vertical, style => %hstyle,
                               .node(|@children, style => %vstyle, |%extra),
-                              .node(),
+                              .spacer,
                              ),
-                        .node(),
+                        .spacer,
                        )
         }
     }
@@ -716,10 +716,10 @@ class Builder
 
         with self {
             .build-node(PushUpRight,
-                        .node(),
+                        .spacer,
                         .node(:vertical, style => %hstyle,
                               .node(|@children, style => %vstyle, |%extra),
-                              .node(),
+                              .spacer,
                              ),
                        )
         }
@@ -736,10 +736,10 @@ class Builder
         with self {
             .build-node(PushDownLeft,
                         .node(:vertical, style => %hstyle,
-                              .node(),
+                              .spacer,
                               .node(|@children, style => %vstyle, |%extra),
                              ),
-                        .node(),
+                        .spacer,
                        )
         }
     }
@@ -754,9 +754,9 @@ class Builder
 
         with self {
             .build-node(PushDownRight,
-                        .node(),
+                        .spacer,
                         .node(:vertical, style => %hstyle,
-                              .node(),
+                              .spacer,
                               .node(|@children, style => %vstyle, |%extra),
                              ),
                        )
