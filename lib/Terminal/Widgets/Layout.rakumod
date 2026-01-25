@@ -602,22 +602,24 @@ class Builder
 
     #| Helper method for building horizontal centering layout
     method build-hcenter(*@children, :%style, *%extra) {
+        my %outer-style = height-styles(%style);
         with self {
-            .build-node(HCenter,
-                        .node(),
+            .build-node(HCenter, style => %outer-style,
+                        .spacer(style => %outer-style),
                         .node(|@children, :%style, |%extra),
-                        .node(),
+                        .spacer(style => %outer-style),
                        )
         }
     }
 
     #| Helper method for building vertical centering layout
     method build-vcenter(*@children, :%style, *%extra) {
+        my %outer-style = width-styles(%style);
         with self {
-            .build-node(VCenter, :vertical,
-                        .node(),
+            .build-node(VCenter, :vertical, style => %outer-style,
+                        .spacer(style => %outer-style),
                         .node(|@children, :%style, |%extra),
-                        .node(),
+                        .spacer(style => %outer-style),
                        )
         }
     }
@@ -632,13 +634,13 @@ class Builder
 
         with self {
             .build-node(Center,
-                        .node(),
+                        .spacer(style => %( :minimize-h )),
                         .node(:vertical, style => %hstyle,
-                              .node(),
+                              .spacer(style => %( :minimize-w )),
                               .node(|@children, style => %vstyle, |%extra),
-                              .node(),
+                              .spacer(style => %( :minimize-w )),
                              ),
-                        .node(),
+                        .spacer(style => %( :minimize-h )),
                        )
         }
     }
