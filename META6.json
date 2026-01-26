@@ -8,7 +8,7 @@
   "depends": [
     "Color::DirColors:auth<zef:japhb>:ver<0.0.3+>",
     "Terminal::ANSIColor:ver<0.14+>:auth<zef:raku-community-modules>",
-    "Terminal::Capabilities:auth<zef:japhb>:ver<0.0.14+>",
+    "Terminal::Capabilities:auth<zef:japhb>:ver<0.0.15+>",
     "Terminal::LineEditor:auth<zef:japhb>:ver<0.0.23+>",
     "Terminal::Print:auth<zef:terminal-printers>:ver<0.977+>",
     "Text::MiscUtils:auth<zef:japhb>:ver<0.0.11+>",
