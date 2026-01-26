@@ -26,9 +26,9 @@ is Terminal::Widgets::Widget {
         constant @ASCII  = < _ , . - + ^ ' ` >;
         constant @Latin1 = < _ , . - · ° ` ¯ >;
         constant @Uni1   = < ▁ ▂ ▃ ▄ ▅ ▆ ▇ █ >;
-        constant @Full   = < ▁ 🭻 🭺 🭹 🭸 🭷 🭶 ▔ >;
+        constant @Uni13  = < ▁ 🭻 🭺 🭹 🭸 🭷 🭶 ▔ >;
 
-        constant %marks  = :@ASCII, :@Latin1, :@Uni1, :@Full;
+        constant %marks  = :@ASCII, :@Latin1, :@Uni1, :@Uni13;
 
         $caps.best-symbol-choice(%marks)
     }
