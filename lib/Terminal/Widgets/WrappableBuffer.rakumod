@@ -172,6 +172,20 @@ does Terminal::Widgets::SpanBuffer {
                               }).eager
     }
 
+    #| Clear all contents, caches, and selections from the buffer
+    method clear() {
+        @!line-groups         = Empty;
+        %!selected-span-info  = Empty;
+        %!hard-line-width     = Empty;
+        %!hard-lines          = Empty;
+        %!wrapped-lines       = Empty;
+
+        $!cursor-x            = 0;
+        $!cursor-y            = 0;
+        $!hard-line-max-width = 0;
+        $!hard-line-count     = 0;
+    }
+
     #| Remove a LineGroup from the buffer and update caches appropriately
     multi method remove-line-group(Terminal::Widgets::LineGroup:D $line-group) {
         self.remove-line-group($line-group.id)
