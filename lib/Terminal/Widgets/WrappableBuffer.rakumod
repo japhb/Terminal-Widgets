@@ -146,7 +146,7 @@ does Terminal::Widgets::SpanBuffer {
         my $lines = %!hard-lines{$id} = self.hard-lines($content);
 
         # Update total hard line count and max hard line width
-        my $widest = $lines.map(*.map(*.width).sum).max;
+        my $widest = $lines.map(*.map(*.width).sum).max max 0;
         %!hard-line-width{$id} = $widest;
         $!hard-line-max-width  = $widest if $widest > $!hard-line-max-width;
         $!hard-line-count     += $lines.elems;
@@ -182,6 +182,7 @@ does Terminal::Widgets::SpanBuffer {
         # Find location of LineGroup with this $id within buffer
         my $pos = @!line-groups.grep(*.id == $id, :k) //
             die "LineGroup id #$id does not exist in this self.gist-name()";
+        $pos = $pos[0];
 
         # Remove LineGroup from buffer, reduce hard-line-count, and delete
         # hard-lines/wrapped-lines cache entries
@@ -192,7 +193,7 @@ does Terminal::Widgets::SpanBuffer {
 
         # Update hard-line-max-width if this entry was the widest
         my $hl-width = %!hard-line-width{$id}:delete;
-        $!hard-line-max-width = %!hard-line-width.values.max // 0
+        $!hard-line-max-width = (%!hard-line-width.values.max // 0) max 0
             if $hl-width == $!hard-line-max-width;
     }
 
