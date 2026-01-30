@@ -146,7 +146,7 @@ does Terminal::Widgets::SpanBuffer {
         my $lines = %!hard-lines{$id} = self.hard-lines($content);
 
         # Update total hard line count and max hard line width
-        my $widest = $lines.map(*.map(*.width).sum).max;
+        my $widest = $lines.map(*.map(*.width).sum).max max 0;
         %!hard-line-width{$id} = $widest;
         $!hard-line-max-width  = $widest if $widest > $!hard-line-max-width;
         $!hard-line-count     += $lines.elems;
