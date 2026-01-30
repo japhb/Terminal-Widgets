@@ -193,7 +193,7 @@ does Terminal::Widgets::SpanBuffer {
 
         # Update hard-line-max-width if this entry was the widest
         my $hl-width = %!hard-line-width{$id}:delete;
-        $!hard-line-max-width = %!hard-line-width.values.max // 0
+        $!hard-line-max-width = (%!hard-line-width.values.max // 0) max 0
             if $hl-width == $!hard-line-max-width;
     }
 
