@@ -180,9 +180,8 @@ does Terminal::Widgets::SpanBuffer {
     #| Remove a LineGroup by id and update caches appropriately
     multi method remove-line-group(UInt:D $id) {
         # Find location of LineGroup with this $id within buffer
-        my $pos = @!line-groups.grep(*.id == $id, :k) //
+        my $pos = @!line-groups.first(*.id == $id, :k) //
             die "LineGroup id #$id does not exist in this self.gist-name()";
-        $pos = $pos[0];
 
         # Remove LineGroup from buffer, reduce hard-line-count, and delete
         # hard-lines/wrapped-lines cache entries
