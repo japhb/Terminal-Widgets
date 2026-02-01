@@ -58,6 +58,14 @@ class RichTextViewerDemo is TopLevel {
                         .radio-button(|squash-args(NoSquash), state => True),
                         .radio-button(|squash-args(PartialSquash)),
                         .radio-button(|squash-args(FullSquash)),
+                        .checkbox(style => %(margin-width => [1, 0, 0, 0]),
+                                  label => 'Cross-line Cursor Wrap',
+                                  id    => 'cross-line-cursor',
+                                  state => True,
+                                  process-input => {
+                                      self.update-wrap-style:
+                                          wrap-cursor-between-lines => .state;
+                                  }),
                        ),
                   .node(:vertical,
                         .text-input(style => %( margin-width => [0, 0, 3, 0] ),
