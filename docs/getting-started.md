@@ -344,3 +344,19 @@ layouts for small or large terminal windows.  This isn't needed when simply
 *resizing* the same basic layout -- the builder's layout constraint solver does
 that automatically -- but could for example instead be used to switch between
 overview and detailed screen layouts based on available terminal real estate.
+
+---
+
+For example, `Widget` does the `WidgetRegistry` role and provides a `register`
+helper method, which introspects various subclass declarations to set up a
+proper call to `self.register-widget` with all the right arguments.  But you
+don't have to care about how any of that works.  You just have to know that
+when you're creating a new widget type, if you follow the boilerplate in the
+[Adding New Widget Types](adding-new-widgets.md) doc, and put a simple
+`register` call at the end of your implementation file like this:
+
+```raku
+Terminal::Widgets::Your::Classname.register;
+```
+
+... your new widget type can then be used just like any builtin type would be.
