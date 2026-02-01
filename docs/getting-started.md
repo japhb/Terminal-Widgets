@@ -131,7 +131,56 @@ to the user by starting `Terminal`'s primary input/event reactor.
 
 ## Event Handling
 
-**XXXX: HERE**
+T-W event handling is similar to web browser event handling.  Events such as
+`KeyboardEvent`, `MouseEvent`, `TakeFocus`, or `LayoutBuilt` are injected into
+the currently visible `TopLevel`, which trickles each event down to its
+children recursively until reaching the event's target (if there is one) or the
+leaves of the widget tree, where it begins a journey of bubbling back up to the
+TopLevel.
+
+Thus there are three phases to an event's journey that widgets can act on:
+
+  * `TrickleDown`
+  * `AtTarget`
+  * `BubbleUp`
+
+This allows any widget to choose to handle an event either before or after its
+children, or only when it is the event target, simply by choosing which phase
+to listen to.
+
+In order to better control which widgets should receive a particular event,
+there are several event classes:
+
+  * `GlobalEvent`         - Sent to every widget
+  * `TargetedEvent`       - Sent to one particular widget, ignored by others
+  * `LocalizedEvent`      - Sent to widgets overlapping a particular X,Y location
+  * `FocusFollowingEvent` - Sent to only the focused widget and its parents
+
+Here's how the standard event types fit into those categories:
+
+  * `GlobalEvent`         - `LayoutBuilt`
+  * `TargetedEvent`       - `TakeFocus`
+  * `LocalizedEvent`      - `MouseEvent`
+  * `FocusFollowingEvent` - `KeyboardEvent`
+
+The base `Widget` class does the `EventHandling` role, which allows a widget
+to handle some subset of events by adding a `multi method handle-event` with
+sufficiently precise arguments.  Here's an example of a mouse event handler
+shared among several of the `Input` widget types:
+
+```raku
+    #| Handle basic mouse click event
+    multi method handle-event(Terminal::Widgets::Events::MouseEvent:D
+                              $event where !*.mouse.pressed, AtTarget) {
+        # Always focus on mouse click, but only perform click action if enabled
+        self.toplevel.focus-on(self);
+        self.click if $.enabled;
+    }
+```
+
+Note how the multi method parameters specify only `MouseEvent`s where the
+mouse button is being released (the end of a click), and only when the event
+has reached its target (phase `AtTarget`).
 
 
 ## Basic Widget Structure
