@@ -41,6 +41,8 @@ enum Terminal::Widgets::WhitespaceSquashMode is export
 class Terminal::Widgets::WrapStyle {
     has Terminal::Widgets::Terminal:D $.terminal is required;
 
+    has Bool:D $.wrap-cursor-between-lines = True;
+
     has Terminal::Widgets::WrapMode:D             $.wrap-mode   = NoWrap;
     has Terminal::Widgets::WhitespaceSquashMode:D $.squash-mode = NoSquash;
 
@@ -880,13 +882,14 @@ does Terminal::Widgets::Focusable {
 
         --$!cursor-x;
         if $!cursor-x < 0 {
-            if $!cursor-y {
+            if $!cursor-y && $!wrap-style.wrap-cursor-between-lines {
                 # Went past left edge, move to end of previous line
                 $!cursor-x = self.end-of-line(--$!cursor-y);
                 self.ensure-y-span-visible($!cursor-y, $!cursor-y);
             }
             else {
-                # No previous line to move to, just stop at left edge
+                # No previous line to move to, or cross-line wrapping
+                # prohibited, so just stop at left edge
                 $!cursor-x = 0;
             }
         }
@@ -902,13 +905,14 @@ does Terminal::Widgets::Focusable {
     multi method cursor-char-next() {
         my $eol = self.end-of-line($!cursor-y);
         if ++$!cursor-x > $eol {
-            if $!cursor-y < $.y-max {
+            if $!cursor-y < $.y-max && $!wrap-style.wrap-cursor-between-lines {
                 $!cursor-x = 0;
                 $!cursor-y++;
                 self.ensure-y-span-visible($!cursor-y, $!cursor-y);
             }
             else {
-                # No next line to move to, just stop at right edge
+                # No next line to move to, or cross-line wrapping
+                # prohibited, so just stop at right edge
                 $!cursor-x = $eol;
             }
         }
