@@ -256,6 +256,55 @@ Here's the widget box model again, with coordinates added:
 
 ## Drawing Sequence
 
+
+## Widget Builtin Roles
+
+In order to provide many common behaviors and utility methods, the base
+`Widget` class is fairly extensive and does numerous roles.  Most of these
+you won't have to think about when building your own apps and custom widget
+classes, except maybe to use provided helpers and standard boilerplate; they
+mostly Just Work.
+
+Here's the list for the curious:
+
+  * `Terminal::Print::Widget`       - Use T-P's low-level cells, grid, and compositor
+  * `Terminal::Print::Animated`     - Allow timestamp-aware full-hierarchy redraws
+  * `Terminal::Print::BoxDrawing`   - Draw borders using various line styles
+  * `Terminal::Widgets::Common`     - Provide common debugging and profiling helpers
+  * `Terminal::Widgets::Themable`   - Control color and attributes via semantic states
+  * `Terminal::Widgets::DirtyAreas` - Support dirty-area compositing optimization
+  * `Terminal::Widgets::WidgetRegistry`        - Register new widget types on load
+  * `Terminal::Widgets::Events::EventHandling` - See previous section
+
+Note that the first three of those are from `Terminal::Print`, which T-W is
+based on and interoperable with.
+
+
+## Debugging and Profiling
+
+Because of the highly-interconnected nature of T-W objects, it can be confusing
+to log, debug, trace, or profile a T-W app's execution; `dd` or `.raku` on any
+widget are likely to end up dumping many pages of output.  To make this easier,
+the `Common` role and `Widget` class together provide a number of helper methods:
+
+  * `gist`             - Avoids recursive dumping and summarizes key attributes
+  * `gist-name`        - Class name shortened for readability
+  * `gist-flags`       - Used by `gist` to report special flags on the widget
+  * `gist-dirty-areas` - Used by `gist` to summarize the widget's dirty areas
+
+  * `debug`         - Cache of `$*DEBUG` verbosity at time of object creation
+  * `debug-grid`    - Return an optionally framed snapshot of a single widget
+  * `debug-elapsed` - Write a debug note for elapsed time during an operation
+
+  * `toplevel`      - Chase parent links to find widget's TopLevel
+  * `terminal`      - Find this widget's controlling Terminal (via `toplevel`)
+  * `default-focus` - Find descendent widget that should get focus by default
+
+  * `first-widget`  - FIRST matching widget in subtree, starting at `self`
+  * `last-widget`   - LAST matching widget in subtree, ending with `self`
+  * `next-widget`   - Next matching widget AFTER `self` in full tree
+  * `prev-widget`   - Previous matching widget BEFORE `self` in full tree
+
 ## TopLevel Widgets
 
 ## The Application Object
