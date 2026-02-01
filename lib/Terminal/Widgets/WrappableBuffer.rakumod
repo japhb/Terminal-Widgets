@@ -7,6 +7,7 @@ use Text::MiscUtils::Layout;
 use Terminal::Widgets::Events;
 use Terminal::Widgets::Terminal;
 use Terminal::Widgets::SpanBuffer;
+use Terminal::Widgets::Focusable;
 use Terminal::Widgets::TextContent;
 
 constant TC = Terminal::Widgets::TextContent;
@@ -64,7 +65,8 @@ class Terminal::Widgets::WrapStyle {
 
 #| A SpanBuffer extension handling line wraps and fills
 role Terminal::Widgets::WrappableBuffer
-does Terminal::Widgets::SpanBuffer {
+does Terminal::Widgets::SpanBuffer
+does Terminal::Widgets::Focusable {
     has Terminal::Widgets::LineGroup:D @.line-groups;
     has Terminal::Widgets::WrapStyle:D $.wrap-style .= new(terminal => self.terminal);
 
