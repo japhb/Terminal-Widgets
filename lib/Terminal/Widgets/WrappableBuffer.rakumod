@@ -905,7 +905,8 @@ does Terminal::Widgets::Focusable {
     multi method cursor-char-next() {
         my $eol = self.end-of-line($!cursor-y);
         if ++$!cursor-x > $eol {
-            if $!cursor-y < $.y-max && $!wrap-style.wrap-cursor-between-lines {
+            if $!cursor-y < $.y-max - 1
+            && $!wrap-style.wrap-cursor-between-lines {
                 $!cursor-x = 0;
                 $!cursor-y++;
                 self.ensure-y-span-visible($!cursor-y, $!cursor-y);
@@ -943,7 +944,7 @@ does Terminal::Widgets::Focusable {
 
     #| Move cursor to next line and ensure the cursor remains visible
     multi method cursor-line-next() {
-        if $!cursor-y < $.y-max {
+        if $!cursor-y < $.y-max - 1 {
             $!cursor-y++;
             self.ensure-y-span-visible($!cursor-y, $!cursor-y);
 
