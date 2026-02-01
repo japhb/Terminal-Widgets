@@ -183,11 +183,80 @@ mouse button is being released (the end of a click), and only when the event
 has reached its target (phase `AtTarget`).
 
 
-## Basic Widget Structure
+## Widget Layout and the Box Model
+
+Widgets are laid out in a hierarchy of X-Y grids, each laying flat within a
+stack of Z-planes.  Even without any Z-offset, child widgets are assumed to be
+infinitesimally closer to the viewer than their parent so that the painting
+and compositing orders are well-defined:
+
+```
+┌PARENT─────────────────────────────┐
+│ ┌CHILD─────────┐ ┌CHILD─────────┐ │
+│ │ ┌GRANDCHILD┐ │ │ ┌GRANDCHILD┐ │ │
+│ │ └──────────┘ │ │ └──────────┘ │ │
+│ │ ┌GRANDCHILD┐ │ │ ┌GRANDCHILD┐ │ │
+│ │ └──────────┘ │ │ └──────────┘ │ │
+│ └──────────────┘ └──────────────┘ │
+└───────────────────────────────────┘
+```
+
+Within each widget, T-W uses a similar layout to the CSS box model.  The active
+*content-area* sits in the middle and is surrounded by three types of *framing*
+-- from innermost to outermost, the *padding*, *border*, and *margin*:
+
+```
+┌WIDGET────────────────────────────┐
+│              margin              │
+│                                  │
+│    ╔═════════border═════════╗    │
+│ m  ║                        ║  m │
+│ a  ║         padding        ║  a │
+│ r  ║  p ┌──────────────┐ p  ║  r │
+│ g  ║  a │ Content Area │ a  ║  g │
+│ i  ║  d └──────────────┘ d  ║  i │
+│ n  ║         padding        ║  n │
+│    ║                        ║    │
+│    ╚═════════border═════════╝    │
+│                                  │
+│              margin              │
+└──────────────────────────────────┘
+```
+
+The upper left corner within a widget grid is at x=0,y=0,z=0, but may be offset
+by arbitrary integer offsets from its parent (and through the chain of parents,
+the entire TopLevel screen).  Positive values are to the RIGHT, DOWN, and
+CLOSER to the viewer.
+
+Here's the widget box model again, with coordinates added:
+
+```
+    │
+    │ +y
+    ▼
+───▶┌WIDGET────────────────────────────┐╶╮
+ +x │(0,0)         margin              │ │
+    │                                  │ │
+    │    ╔═════════border═════════╗    │ │
+    │ m  ║                        ║  m │ │
+    │ a  ║         padding        ║  a │ │
+    │ r  ║  p ┌──────────────┐ p  ║  r │ │
+    │ g  ║  a │ Content Area │ a  ║  g │ ├ h (height)
+    │ i  ║  d └──────────────┘ d  ║  i │ │
+    │ n  ║         padding        ║  n │ │
+    │    ║                        ║    │ │
+    │    ╚═════════border═════════╝    │ │
+    │                                  │ │
+    │              margin     (w-1,h-1)│ │
+    └──────────────────────────────────┘╶╯
+    ╰────────────────┬─────────────────╯
+                     w (width)
+```
+
+
+## Drawing Sequence
 
 ## TopLevel Widgets
-
-## Layout and the Box Model
 
 ## The Application Object
 
