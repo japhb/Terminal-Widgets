@@ -876,7 +876,7 @@ does Terminal::Widgets::Focusable {
 
     #| Move cursor one character previous, which may result in wrapping to the
     #| previous line, and ensure the cursor remains visible
-    multi method cursor-char-prev() {
+    method cursor-char-prev() {
         # In a second cell and moving left?  Bump left before continuing.
         --$!cursor-x if self.is-second-cell($!cursor-x, $!cursor-y);
 
@@ -902,7 +902,7 @@ does Terminal::Widgets::Focusable {
 
     #| Move cursor to next character, which may result in wrapping to the
     #| next line, and ensure the cursor remains visible
-    multi method cursor-char-next() {
+    method cursor-char-next() {
         my $eol = self.end-of-line($!cursor-y);
         if ++$!cursor-x > $eol {
             if $!cursor-y < $.y-max - 1
@@ -928,7 +928,7 @@ does Terminal::Widgets::Focusable {
     }
 
     #| Move cursor to previous line and ensure the cursor remains visible
-    multi method cursor-line-prev() {
+    method cursor-line-prev() {
         if $!cursor-y {
             $!cursor-y--;
             self.ensure-y-span-visible($!cursor-y, $!cursor-y);
@@ -943,7 +943,7 @@ does Terminal::Widgets::Focusable {
     }
 
     #| Move cursor to next line and ensure the cursor remains visible
-    multi method cursor-line-next() {
+    method cursor-line-next() {
         if $!cursor-y < $.y-max - 1 {
             $!cursor-y++;
             self.ensure-y-span-visible($!cursor-y, $!cursor-y);
