@@ -14,7 +14,10 @@ role Terminal::Widgets::Scrollable {
     has Bool:D $!scrolled = False;
     has %.scrollbars is SetHash;
 
-    method refresh-for-scroll(Bool:D :$force = False) {
+    #| Refresh all linked scrollbars and then self, iff a pending scroll
+    #| action is waiting, or $force is True.  Returns a Bool indicating
+    #| whether the refresh was actually required.
+    method refresh-for-scroll(Bool:D :$force = False --> Bool:D) {
         if $!scrolled || $force {
             note "🆕 Starting refresh-for-scroll of: {self.gist-name}" if $.debug;
             my $t0 = nano;
@@ -24,7 +27,9 @@ role Terminal::Widgets::Scrollable {
             $!scrolled = False;
 
             self.debug-elapsed($t0);
+            True
         }
+        else { False }
     }
 
     method set-x-max(UInt:D $x-max) {
