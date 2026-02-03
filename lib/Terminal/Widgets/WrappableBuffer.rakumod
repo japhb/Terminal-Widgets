@@ -795,29 +795,32 @@ does Terminal::Widgets::Focusable {
     #| Find the rendered line (array of RenderSpans) for a given Y-index
     #| accounting for wrapping mode (or an undefined value if no such line
     #| exists)
-    # XXXX: Both end-of-line and span-from-buffer-loc call rendered-line, and
-    #       they are often used together; may be able to avoid duplicate calls.
-    #       Use multi's for callers, which take either y or line?
     method rendered-line(UInt:D $y) {
         self.span-line-chunk($y, 1, :skip-processing)[0]
     }
 
-    #| Calculate x-location of end of (possibly wrapped) line, or 0 if not found
-    method end-of-line(UInt:D $y) {
-        # Find spans for a given line; if it doesn't exist, return 0
+    #| Calculate x-location of end of (possibly wrapped) line, or 0 if empty or
+    #| not found
+    multi method end-of-line(UInt:D $y) {
         my $line = self.rendered-line($y) // return 0;
+        self.end-of-line($line)
+    }
 
-        # Sum duospace widths of all spans on line
-        $line.map(*.width).sum
+    #| Calculate x-location of end of (possibly wrapped) line, or 0 if empty
+    multi method end-of-line(@spans) {
+        @spans.map(*.width).sum
     }
 
     #| Convert from a buffer location to a render span (or Nil if not found)
-    method span-from-buffer-loc(UInt:D $x, UInt:D $y) {
-        # Find spans for a given line; if it doesn't exist, return Nil
+    multi method span-from-buffer-loc(UInt:D $x, UInt:D $y) {
         my $line = self.rendered-line($y) // return Nil;
+        self.span-from-buffer-loc($line, $x)
+    }
 
+    #| Convert from a buffer location to a render span (or Nil if line has no spans)
+    multi method span-from-buffer-loc(@spans, UInt:D $x) {
         my $pos = 0;
-        for @$line -> $span {
+        for @spans -> $span {
             my $next = $pos + $span.width;
             return $span if $pos <= $x < $next;
             $pos = $next;
@@ -825,17 +828,20 @@ does Terminal::Widgets::Focusable {
 
         # Location was past last span if any; try
         # returning last span or Nil if none on this line
-        $line.elems ?? $line[*-1] !! Nil
+        @spans.elems ?? @spans[*-1] !! Nil
+    }
+
+    #| Determine if x-location in a line is the second cell of a wide character
+    multi method is-second-cell(UInt:D $x, UInt:D $y) {
+        my $line = self.rendered-line($y) // return False;
+        self.is-second-cell($line, $x)
     }
 
     #| Determine if x-location in a line is the second cell of a wide character
     # XXXX: This feels cacheable.  Perhaps a bitmap with 1's for second cells?
-    method is-second-cell(UInt:D $x, UInt:D $y) {
-        # Find spans for a given line; if it doesn't exist, return False
-        my $line = self.rendered-line($y) // return False;
-
+    multi method is-second-cell(@spans, UInt:D $x) {
         my $pos = 0;
-        for @$line -> $span {
+        for @spans -> $span {
             my $width = $span.width;
             my $next  = $pos + $width;
 
