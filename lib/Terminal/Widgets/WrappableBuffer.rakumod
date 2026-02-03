@@ -870,14 +870,32 @@ does Terminal::Widgets::Focusable {
         False
     }
 
-    #| Select a given span (and its hard line and line group); returns
-    #| True if the selection action caused a full refresh, or False if not.
+    #| Select a given span (and its hard line and line group)
     method select-span($span --> Bool:D) {
         # Cache span info for selected span
         %!selected-span-info := $span ?? span-info($span) !! {};
+    }
 
-        # No refresh occurred
-        False
+    #| Set cursor position to particular X,Y coordinates, selecting the span
+    #| under the new cursor location as usual.  If Y is beyond the last line,
+    #| it will be reduced to that line.  Then if X is beyond the last cell of
+    #| the line, it will be reduced to the end.  (Neither X nor Y can go
+    #| negative; they will stay in the UInt range.)
+    method set-cursor-pos(UInt:D $x, UInt:D $y) {
+        $!cursor-y = $y min $.y-max;
+        my $line   = self.rendered-line($!cursor-y);
+        $!cursor-x = $x min self.end-of-line($line);
+
+        self.ensure-x-span-visible($!cursor-x, $!cursor-x);
+        self.ensure-y-span-visible($!cursor-y, $!cursor-y);
+
+        my $span = self.span-from-buffer-loc($line, $!cursor-x);
+        self.select-span($span)
+
+        # Make sure *at least* a full content refresh happens,
+        # and also a scrollbar update if the scrolling was
+        # shifted by the ensure-x/y-span-visible calls above
+        self.full-refresh unless self.refresh-for-scroll;
     }
 
     #| Move cursor one character previous, which may result in wrapping to the
