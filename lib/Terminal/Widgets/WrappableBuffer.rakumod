@@ -48,17 +48,17 @@ class Terminal::Widgets::WrapStyle {
 
     has TextContent:D $.wrapped-line-prefix = '';
 
-    has @.rendered-prefix is built(False);
-    has $.prefix-length   is built(False);
+    has @.rendered-wrap-prefix is built(False);
+    has $.wrap-prefix-length   is built(False);
 
-    # Ensure render-prefix is called on any new or clone
-    submethod TWEAK {  self.render-prefix }
-    method clone { callsame.render-prefix }
+    # Ensure render-wrap-prefix is called on any new or clone
+    submethod TWEAK {  self.render-wrap-prefix }
+    method clone { callsame.render-wrap-prefix }
 
-    method render-prefix() {
-        my $renderer      = $!terminal.locale.renderer;
-        @!rendered-prefix = $renderer.render($!wrapped-line-prefix);
-        $!prefix-length   = @!rendered-prefix.map(*.width).sum;
+    method render-wrap-prefix() {
+        my $renderer           = $!terminal.locale.renderer;
+        @!rendered-wrap-prefix = $renderer.render($!wrapped-line-prefix);
+        $!wrap-prefix-length   = @!rendered-wrap-prefix.map(*.width).sum;
 
         self
     }
@@ -231,8 +231,8 @@ does Terminal::Widgets::Focusable {
                         && $!wrap-width >= %!hard-line-width{$id};
 
         # Determine prefix to use for second and later wrapped lines
-        my @prefix     := $!wrap-style.rendered-prefix;
-        my $prefix-len  = $!wrap-style.prefix-length;
+        my @prefix     := $!wrap-style.rendered-wrap-prefix;
+        my $prefix-len  = $!wrap-style.wrap-prefix-length;
         if $prefix-len >= $!wrap-width {
             # Wrapped line prefix would fill entire wrap-width by itself;
             # fall back to ignoring prefix to fit actual content instead
