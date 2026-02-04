@@ -871,7 +871,7 @@ does Terminal::Widgets::Focusable {
     }
 
     #| Select a given span (and its hard line and line group)
-    method select-span($span --> Bool:D) {
+    method select-span($span) {
         # Cache span info for selected span
         %!selected-span-info := $span ?? span-info($span) !! {};
     }
