@@ -890,12 +890,15 @@ does Terminal::Widgets::Focusable {
         self.ensure-y-span-visible($!cursor-y, $!cursor-y);
 
         my $span = self.span-from-buffer-loc($line, $!cursor-x);
-        self.select-span($span)
+        self.select-span($span);
 
         # Make sure *at least* a full content refresh happens,
         # and also a scrollbar update if the scrolling was
         # shifted by the ensure-x/y-span-visible calls above
         self.full-refresh unless self.refresh-for-scroll;
+
+        # Return the selected span for use by callers
+        $span
     }
 
     #| Move cursor one character previous, which may result in wrapping to the
