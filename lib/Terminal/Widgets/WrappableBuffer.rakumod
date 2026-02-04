@@ -78,14 +78,14 @@ does Terminal::Widgets::Focusable {
     has $.cursor-x = 0;
     has $.cursor-y = 0;
 
-    has UInt:D $!hard-line-max-width = 0;
-    has UInt:D $!hard-line-count     = 0;
-    has UInt:D %!hard-line-width;
-    has        %!hard-lines;
+    has UInt:D $.hard-line-max-width is built(False) = 0;
+    has UInt:D $.hard-line-count     is built(False) = 0;
+    has UInt:D %.hard-line-width     is built(False);
+    has        %.hard-lines          is built(False);
 
     has UInt:D $.reserved-width = 0;
-    has UInt:D $!wrap-width     = self.available-wrap-width;
-    has        %!wrapped-lines;
+    has UInt:D $.wrap-width     is built(False) = self.available-wrap-width;
+    has        %.wrapped-lines  is built(False);
 
     #| Set wrap-style, then clear wrap caches and fix horizontal scroll width
     method set-wrap-style(Terminal::Widgets::WrapStyle:D $new-style) {
