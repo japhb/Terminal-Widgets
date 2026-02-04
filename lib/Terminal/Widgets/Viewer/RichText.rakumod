@@ -36,6 +36,7 @@ class Terminal::Widgets::Viewer::RichText
  does Terminal::Widgets::WrappableBuffer {
     has Terminal::Widgets::HighlightMode:D $.highlight-mode is rw = NoHighlight;
     has Terminal::Widgets::HighlightMode:D $.cursor-mode    is rw = NoHighlight;
+    has Bool:D $.highlight-lines-to-content-edge            is rw = False;
 
     method layout-class() { Terminal::Widgets::Layout::RichTextViewer }
 
@@ -75,11 +76,26 @@ class Terminal::Widgets::Viewer::RichText
 
                     # Helper sub: Highlight spans for which predicate returns True
                     my sub hl-spans(&should-highlight) {
+                        # Track of whether highlighting happened on this line
+                        my $did-hl = False;
+
                         # Process spans as needed
                         my @line = $line.map: {
-                            should-highlight($_)
-                            ?? .clone(color => color-merge(.color, $color))
-                            !! $_
+                            my $hl    = should-highlight($_);
+                            $did-hl ||= $hl;
+                            $hl ?? .clone(color => color-merge(.color, $color))
+                                !! $_
+                        }
+
+                        # If highlighting happened, and highlight should be
+                        # extended to edge of content area, do so
+                        if $did-hl && $mode >= SoftLineHighlight
+                                   && $!highlight-lines-to-content-edge {
+                            my $len  = @line.map(*.width).sum;
+                            my $fill = $.x-max - $len;
+                            if $fill > 0 {
+                                @line.push: render-span(' ' x $fill, $color);
+                            }
                         }
 
                         # Replace plain line with processed version
