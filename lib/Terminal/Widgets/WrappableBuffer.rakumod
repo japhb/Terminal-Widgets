@@ -904,83 +904,76 @@ does Terminal::Widgets::Focusable {
     #| Move cursor one character previous, which may result in wrapping to the
     #| previous line, and ensure the cursor remains visible
     method cursor-char-prev() {
-        # In a second cell and moving left?  Bump left before continuing.
-        --$!cursor-x if self.is-second-cell($!cursor-x, $!cursor-y);
+        my $x = $!cursor-x;
+        my $y = $!cursor-y;
 
-        --$!cursor-x;
-        if $!cursor-x < 0 {
-            if $!cursor-y && $!wrap-style.wrap-cursor-between-lines {
+        # In a second cell and moving left?  Bump left before continuing.
+        --$x if self.is-second-cell($x, $y);
+
+        if --$x < 0 {
+            if $y && $!wrap-style.wrap-cursor-between-lines {
                 # Went past left edge, move to end of previous line
-                $!cursor-x = self.end-of-line(--$!cursor-y);
-                self.ensure-y-span-visible($!cursor-y, $!cursor-y);
+                $x = self.end-of-line(--$y);
             }
             else {
                 # No previous line to move to, or cross-line wrapping
                 # prohibited, so just stop at left edge
-                $!cursor-x = 0;
+                $x = 0;
             }
         }
 
-        self.ensure-x-span-visible($!cursor-x, $!cursor-x);
-        my $span = self.span-from-buffer-loc($!cursor-x, $!cursor-y);
-        my $refreshed = self.select-span($span);
-        self.full-refresh unless $refreshed;
+        self.set-cursor-pos($x, $y);
     }
 
     #| Move cursor to next character, which may result in wrapping to the
     #| next line, and ensure the cursor remains visible
     method cursor-char-next() {
-        my $eol = self.end-of-line($!cursor-y);
-        if ++$!cursor-x > $eol {
-            if $!cursor-y < $.y-max - 1
-            && $!wrap-style.wrap-cursor-between-lines {
-                $!cursor-x = 0;
-                $!cursor-y++;
-                self.ensure-y-span-visible($!cursor-y, $!cursor-y);
+        my $x = $!cursor-x;
+        my $y = $!cursor-y;
+
+        my $eol = self.end-of-line($y);
+        if ++$x > $eol {
+            if $y < $.y-max - 1 && $!wrap-style.wrap-cursor-between-lines {
+                # Went past right edge, move to start of next line
+                $x = 0;
+                $y++;
             }
             else {
                 # No next line to move to, or cross-line wrapping
                 # prohibited, so just stop at right edge
-                $!cursor-x = $eol;
+                $x = $eol;
             }
         }
 
         # Moved right into a second cell?  Move right a second time.
-        ++$!cursor-x if self.is-second-cell($!cursor-x, $!cursor-y);
+        ++$x if self.is-second-cell($x, $y);
 
-        self.ensure-x-span-visible($!cursor-x, $!cursor-x);
-        my $span = self.span-from-buffer-loc($!cursor-x, $!cursor-y);
-        my $refreshed = self.select-span($span);
-        self.full-refresh unless $refreshed;
+        self.set-cursor-pos($x, $y);
     }
 
     #| Move cursor to previous line and ensure the cursor remains visible
     method cursor-line-prev() {
         if $!cursor-y {
-            $!cursor-y--;
-            self.ensure-y-span-visible($!cursor-y, $!cursor-y);
-
-            my $x = $!cursor-x min self.end-of-line($!cursor-y);
-            self.ensure-x-span-visible($x, $x);
-
-            my $span = self.span-from-buffer-loc($!cursor-x, $!cursor-y);
-            my $refreshed = self.select-span($span);
-            self.full-refresh unless $refreshed;
+            # set-cursor-pos may change $!cursor-x if the previous line is
+            # shorter, but we want to keep it the same so moving across many
+            # lines of ragged length makes intuitive sense, so save and restore
+            my $orig-x = $!cursor-x;
+            my $span   = self.set-cursor-pos($!cursor-x, $!cursor-y - 1);
+            $!cursor-x = $orig-x;
+            $span
         }
     }
 
     #| Move cursor to next line and ensure the cursor remains visible
     method cursor-line-next() {
         if $!cursor-y < $.y-max - 1 {
-            $!cursor-y++;
-            self.ensure-y-span-visible($!cursor-y, $!cursor-y);
-
-            my $x = $!cursor-x min self.end-of-line($!cursor-y);
-            self.ensure-x-span-visible($x, $x);
-
-            my $span = self.span-from-buffer-loc($!cursor-x, $!cursor-y);
-            my $refreshed = self.select-span($span);
-            self.full-refresh unless $refreshed;
+            # set-cursor-pos may change $!cursor-x if the next line is shorter,
+            # but we want to keep it the same so moving across many lines of
+            # ragged length makes intuitive sense, so save and restore
+            my $orig-x = $!cursor-x;
+            my $span   = self.set-cursor-pos($!cursor-x, $!cursor-y + 1);
+            $!cursor-x = $orig-x;
+            $span
         }
     }
 
@@ -1019,15 +1012,13 @@ does Terminal::Widgets::Focusable {
             my ($x, $y, $w, $h) = $event.relative-to-content-area(self);
 
             if 0 <= $x < $w && 0 <= $y < $h {
-                $!cursor-x = $.x-scroll + $x;
-                $!cursor-y = $.y-scroll + $y;
-                my $span   = self.span-from-buffer-loc($!cursor-x, $!cursor-y);
+                my $span = self.set-cursor-pos($.x-scroll + $x,
+                                               $.y-scroll + $y);
 
-                my $refreshed = self.select-span($span);
                 $_($span, $!cursor-x, $!cursor-y) with &!process-click;
 
-                # If selecting the span caused a refresh, skip the outer one
-                return if $refreshed;
+                # set-cursor-pos already did a refresh; skip the outer one
+                return;
             }
         }
 
