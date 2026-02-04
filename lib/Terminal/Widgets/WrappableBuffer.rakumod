@@ -83,7 +83,8 @@ does Terminal::Widgets::Focusable {
     has UInt:D %!hard-line-width;
     has        %!hard-lines;
 
-    has UInt:D $!wrap-width = self.content-width;
+    has UInt:D $.reserved-width = 0;
+    has UInt:D $!wrap-width     = self.available-wrap-width;
     has        %!wrapped-lines;
 
     #| Set wrap-style, then clear wrap caches and fix horizontal scroll width
@@ -97,9 +98,15 @@ does Terminal::Widgets::Focusable {
         }
     }
 
+    #| Calculate actual wrap-width, which may be less than content-width if
+    #| some additional space is reserved for line numbers and/or markers
+    method available-wrap-width(--> UInt:D) {
+        0 max self.content-width - $.reserved-width;
+    }
+
     #| Check that wrap width has not changed; otherwise, clear wrap caches
     method check-wrap-width() {
-        my $width  = self.content-width;
+        my $width  = self.available-wrap-width;
         if $width != $!wrap-width {
             $!wrap-width    = $width;
             %!wrapped-lines = Empty;
