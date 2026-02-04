@@ -183,7 +183,9 @@ does Terminal::Widgets::Focusable {
                               }).eager
     }
 
-    #| Clear all contents, caches, and selections from the buffer
+    #| Clear all contents, caches, and selections from the buffer; you'll probably
+    #| want to refresh after this, but it's assumed there will be more done after
+    #| the clear, so to avoid a flash of empty content, it's not done here.
     method clear() {
         @!line-groups         = Empty;
         %!selected-span-info  = Empty;
