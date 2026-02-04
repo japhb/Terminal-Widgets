@@ -58,13 +58,19 @@ class RichTextViewerDemo is TopLevel {
                         .radio-button(|squash-args(NoSquash), state => True),
                         .radio-button(|squash-args(PartialSquash)),
                         .radio-button(|squash-args(FullSquash)),
-                        .checkbox(style => %(margin-width => [1, 0, 0, 0]),
-                                  label => 'Cross-line Cursor Wrap',
+                        .checkbox(label => 'Cross-line Cursor Wrap',
                                   id    => 'cross-line-cursor',
                                   state => True,
                                   process-input => {
                                       self.update-wrap-style:
                                           wrap-cursor-between-lines => .state;
+                                  }),
+                        .checkbox(label => 'Highlight to Edge',
+                                  id    => 'highlight-to-edge',
+                                  state => False,
+                                  process-input => {
+                                      self.update-highlight-style:
+                                          highlight-lines-to-content-edge => .state;
                                   }),
                        ),
                   .node(:vertical,
@@ -124,6 +130,15 @@ class RichTextViewerDemo is TopLevel {
             .set-wrap-style(.wrap-style.clone: |c);
             .update-scroll-maxes;
             .refresh-for-scroll(:force);
+        }
+    }
+
+    method update-highlight-style(*%settings) {
+        with %.by-id<buffer> {
+            my $hl-to-edge = %settings<highlight-lines-to-content-edge>;
+            .highlight-lines-to-content-edge = $hl-to-edge if $hl-to-edge.defined;
+
+            .full-refresh;
         }
     }
 
