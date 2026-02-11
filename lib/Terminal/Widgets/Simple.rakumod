@@ -1,11 +1,12 @@
 # ABSTRACT: Core module to load all widget types and simplified classes/roles
 
+# Load and register standard widget types
+use Terminal::Widgets::Simple::StandardWidgets;
 
 # Load classes to be re-exported
 use Terminal::Widgets::Form;
 use Terminal::Widgets::Simple::App;
 use Terminal::Widgets::Simple::TopLevel;
-
 
 # Re-export classes under shorter names
 constant Form     is export = Terminal::Widgets::Form;

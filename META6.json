@@ -48,6 +48,7 @@
     "Terminal::Widgets::Scrollable": "lib/Terminal/Widgets/Scrollable.rakumod",
     "Terminal::Widgets::Simple": "lib/Terminal/Widgets/Simple.rakumod",
     "Terminal::Widgets::Simple::App": "lib/Terminal/Widgets/Simple/App.rakumod",
+    "Terminal::Widgets::Simple::StandardWidgets": "lib/Terminal/Widgets/Simple/StandardWidgets.rakumod",
     "Terminal::Widgets::Simple::TopLevel": "lib/Terminal/Widgets/Simple/TopLevel.rakumod",
     "Terminal::Widgets::SpanBuffer": "lib/Terminal/Widgets/SpanBuffer.rakumod",
     "Terminal::Widgets::StandardWidgetBuilder": "lib/Terminal/Widgets/StandardWidgetBuilder.rakumod",

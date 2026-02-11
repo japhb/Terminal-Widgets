@@ -63,6 +63,7 @@ use Terminal::Widgets::Viz::Sparkline;
 use Terminal::Widgets::Viz::SmokeChart;
 
 use Terminal::Widgets::StandardWidgetBuilder;
+use Terminal::Widgets::Simple::StandardWidgets;
 use Terminal::Widgets::Simple::TopLevel;
 use Terminal::Widgets::Simple::App;
 use Terminal::Widgets::Simple;

@@ -10,10 +10,11 @@ constant MarginBox = Terminal::Widgets::Layout::BoxModel::MarginBox;
 constant Node      = Terminal::Widgets::Layout::Node;
 
 
-#| Easy-to-use TopLevel Widget class, with simplified layout hooks for subclasses
+#| Easy-to-use TopLevel Widget class, with standard build semantics and
+#| simplified layout hooks for subclasses
 class Terminal::Widgets::Simple::TopLevel
-   is Terminal::Widgets::StandardWidgetBuilder
- does Terminal::Widgets::TopLevel {
+ does Terminal::Widgets::TopLevel
+ does Terminal::Widgets::StandardWidgetBuilder {
     has Terminal::Widgets::Layout::Builder:U $.layout-builder-class;
 
     ### Stubbed hooks for subclass
