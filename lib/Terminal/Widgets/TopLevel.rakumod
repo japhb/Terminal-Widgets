@@ -9,18 +9,18 @@ use Terminal::Widgets::Widget;
 
 #| A top-level full-screen widget with modal access to its controlling terminal
 role Terminal::Widgets::TopLevel
-  is Terminal::Widgets::Widget
-does Terminal::Widgets::Layout::WidgetBuilding {
+  is Terminal::Widgets::Widget {
     has         $.terminal is required;
     has Str     $.title;
     has Array:D %.named-group;
 
-    has Terminal::Widgets::Widget $.focused-widget;
+    has Terminal::Widgets::Widget:D %.by-id;
+    has Terminal::Widgets::Widget   $.focused-widget;
 
 
     ### Required overrides
 
-    #| Lay out main subwidgets (and dividers/frames, if any)
+    #| Lay out and build main subwidgets (and dividers/frames, if any)
     method build-layout() { ... }
 
 
@@ -38,6 +38,20 @@ does Terminal::Widgets::Layout::WidgetBuilding {
         if $show-time {
             self.debug-elapsed($t0, desc => 'Event #' ~ $event.id ~ ' processed');
             note '' unless $event ~~ Terminal::Widgets::Events::TakeFocus;
+        }
+    }
+
+    #| Throw an exception if a widget with a given id is already known
+    method !ensure-new-id($id) {
+        die 'This ' ~ self.gist-name ~ ' already contains a widget with id ' ~ $id.raku
+            if %!by-id{$id}:exists;
+    }
+
+    #| Cache the id for a particular widget, erroring if duplicated
+    method cache-widget-id($widget) {
+        if $widget.id -> $id {
+            self!ensure-new-id($id);
+            %!by-id{$id} = $widget;
         }
     }
 
