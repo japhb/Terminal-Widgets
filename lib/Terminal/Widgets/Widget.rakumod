@@ -275,14 +275,15 @@ class Terminal::Widgets::Widget
 
     #| Fully refresh this widget and optionally force a print
     method full-refresh(Bool:D :$print = True) {
-        note "🆕 Starting full-refresh of: {self.gist-name}" if $!debug;
+        my $gist-name = self.gist-name;
+        note '🆕 Starting full-refresh of: ' ~ $gist-name if $!debug;
         my $t0 = nano;
 
         self.clear-frame;
         self.draw-frame;
         self.composite(:$print);
 
-        self.debug-elapsed($t0, desc => self.gist-name ~ '.full-refresh');
+        self.debug-elapsed($t0, desc => $gist-name ~ '.full-refresh');
     }
 
     #| Clear the frame and set it all-dirty (so it requires composite)
