@@ -621,16 +621,20 @@ class Terminal::Widgets::Widget
                 note '⎙  Printing to content area: ' ~ $.gist if $!debug;
                 note self.debug-grid.indent(3) if $!debug >= 2;
 
+                my $t0 = nano;
                 $.parent.print-to-content-area(self, $_) for @merged;
+                self.debug-elapsed($t0, desc => 'Composite via print-to-content-area');
             }
             else {
                 note '🗐  Copying to content area and dirtying parent: ' ~ $.gist if $!debug;
                 note self.debug-grid.indent(3) if $!debug >= 2;
 
+                my $t0 = nano;
                 for @merged {
                     my ($x, $y, $w, $h) = $.parent.copy-to-content-area(self, $_);
                     $.parent.add-dirty-rect($x, $y, $w, $h);
                 }
+                self.debug-elapsed($t0, desc => 'Composite via copy-to-content-area');
             }
 
             if $!debug >= 3 {
@@ -642,13 +646,17 @@ class Terminal::Widgets::Widget
             note '!  FOLLOWING OLD COMPOSITE PATH FOR ' ~ self.gist-name ~ ' WITH PARENT ' ~ $.parent.^name if $!debug;
             note self.debug-grid.indent(3) if $!debug >= 2;
 
+            my $t0 = nano;
+
             # XXXX: HACK, just assumes entire composed area is dirty
             $.parent.add-dirty-rect($.x, $.y, $.w, $.h) if self.parent-dirtyable;
 
             # Invalidate T::P::Grid::grid-string cache
             $.grid.change-cell(0, 0, $.grid.grid[0][0]);
 
-            nextsame;
+            callsame;
+
+            self.debug-elapsed($t0, desc => 'Composite via Terminal-Print');
         }
     }
 }
