@@ -595,8 +595,12 @@ class Terminal::Widgets::Widget
 
     #| Union all dirty areas, update parent's dirty list if needed, and composite
     method composite(|) {
+        # Heuristic: If the parent is dirty, assume asked to re-composite fully
+        #            to fix parent even if *this* widget has no dirty areas.
         my @dirty  := self.snapshot-dirty-areas;
-        my @merged := self.merge-dirty-areas(@dirty);
+        my @merged := self.parent-dirtyable && $.parent.is-dirty
+                        ?? ((0, 0, $.w, $.h),)
+                        !! self.merge-dirty-areas(@dirty);
 
         if $!debug >= 2 {
             note '-> Compositing ' ~ self.gist-name ~ ':';
