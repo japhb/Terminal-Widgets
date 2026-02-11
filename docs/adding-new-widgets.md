@@ -186,7 +186,7 @@ module is loaded, so that it can be transparently used as normal.
 
 If you're working in a Terminal-Widgets fork (rather than a new repo) then
 add a `use` statement for your new widget module in the proper order in
-`StandardWidgetBuilder.rakumod`.  This will ensure that the widget is loaded
+`Simple/StandardWidgets.rakumod`.  This will ensure that the widget is loaded
 and registered when using the Terminal::Widget::Simple API.
 
 Re-run `mi6 test` at this point to make sure your additions so far don't have

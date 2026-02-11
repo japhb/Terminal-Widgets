@@ -51,7 +51,6 @@
     "Terminal::Widgets::Simple::StandardWidgets": "lib/Terminal/Widgets/Simple/StandardWidgets.rakumod",
     "Terminal::Widgets::Simple::TopLevel": "lib/Terminal/Widgets/Simple/TopLevel.rakumod",
     "Terminal::Widgets::SpanBuffer": "lib/Terminal/Widgets/SpanBuffer.rakumod",
-    "Terminal::Widgets::StandardWidgetBuilder": "lib/Terminal/Widgets/StandardWidgetBuilder.rakumod",
     "Terminal::Widgets::Terminal": "lib/Terminal/Widgets/Terminal.rakumod",
     "Terminal::Widgets::TextContent": "lib/Terminal/Widgets/TextContent.rakumod",
     "Terminal::Widgets::Themable": "lib/Terminal/Widgets/Themable.rakumod",

@@ -47,7 +47,7 @@ class Terminal::Widgets::Widget
     #| OVERRIDE IN SUBCLASSES: Set the layout-class for this Widget type
     method layout-class() { Terminal::Widgets::Layout::Widget }
 
-    #| Register a Widget subclass for Layout and StandardWidgetBuilder
+    #| Register a Widget subclass for Layout and Simple::TopLevel
     method register() {
         my $moniker      = self.gist-name;
         my $widget-class = self.WHAT;
