@@ -598,29 +598,44 @@ class Terminal::Widgets::Widget
         my @dirty  := self.snapshot-dirty-areas;
         my @merged := self.merge-dirty-areas(@dirty);
 
-        note 'Compositing:' if $!debug >= 2;
-        note Backtrace.new.Str.subst(/' at ' \S+/, '', :g) if $!debug >= 3;
+        if $!debug >= 2 {
+            note '-> Compositing ' ~ self.gist-name ~ ':';
+
+            if $!debug >= 3 {
+                note '   Merged dirty areas: ' ~ @merged.map(*.gist).join(' ');
+
+                if $!debug >= 4 {
+                    note '   Backtrace:';
+                    note Backtrace.new.Str.subst(/' at ' \S+/, '', :g).indent(5);
+                }
+            }
+        }
 
         if $.parent ~~ Terminal::Widgets::Widget:D {
             if $.parent.is-current-toplevel && $.parent.grid === $*TERMINAL.current-grid {
                 note '⎙  Printing to content area: ' ~ $.gist if $!debug;
-                note self.debug-grid if $!debug >= 2;
+                note self.debug-grid.indent(3) if $!debug >= 2;
 
                 $.parent.print-to-content-area(self, $_) for @merged;
             }
             else {
                 note '🗐  Copying to content area and dirtying parent: ' ~ $.gist if $!debug;
-                note self.debug-grid if $!debug >= 2;
+                note self.debug-grid.indent(3) if $!debug >= 2;
 
                 for @merged {
                     my ($x, $y, $w, $h) = $.parent.copy-to-content-area(self, $_);
                     $.parent.add-dirty-rect($x, $y, $w, $h);
                 }
             }
+
+            if $!debug >= 3 {
+                note '=> Composite result:';
+                note $.parent.debug-grid.indent(3);
+            }
         }
         else {
             note '!  FOLLOWING OLD COMPOSITE PATH FOR ' ~ self.gist-name ~ ' WITH PARENT ' ~ $.parent.^name if $!debug;
-            note self.debug-grid if $!debug >= 2;
+            note self.debug-grid.indent(3) if $!debug >= 2;
 
             # XXXX: HACK, just assumes entire composed area is dirty
             $.parent.add-dirty-rect($.x, $.y, $.w, $.h) if self.parent-dirtyable;
