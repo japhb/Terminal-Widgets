@@ -535,8 +535,6 @@ class PushDownRight is Node {
 }
 
 
-
-
 #| Helper class for building style/layout trees
 class Builder
  does Terminal::Widgets::WidgetRegistry {
