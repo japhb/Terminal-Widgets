@@ -1,5 +1,7 @@
 # ABSTRACT: Simplified widgets: basic toplevel
 
+use nano;
+
 use Terminal::Widgets::StandardWidgetBuilder;
 use Terminal::Widgets::TopLevel;
 
@@ -40,20 +42,28 @@ class Terminal::Widgets::Simple::TopLevel
 
     #| Lay out main subwidgets (and dividers/frames, if any)
     method build-layout() {
+        note '-> Building TopLevel layout:' if $.debug;
+
         # Build layout dynamically based on layout constraints from layout-model
+        my $t0 = nano;
         my $is-rebuild  = ?$.layout;
         my $layout-root = self.compute-layout;
         self.set-layout($layout-root);
 
-        # Debug: describe computed layout BEFORE build and coord recalc
-        # note $layout-root.gist;
-
         # Actually build widgets and recalculate coordinate offsets recursively
+        my $t1 = nano;
         self.build-children($layout-root, self);
+        my $t2 = nano;
         self.recalc-coord-offsets($.x, $.y, $.z);
+        my $t3 = nano;
 
-        # Debug: describe computed layout AFTER build and coord recalc
-        # note $layout-root.gist;
+        if $.debug {
+            self.debug-elapsed($t0, $t1, desc => '1:compute-layout');
+            self.debug-elapsed($t1, $t2, desc => '2:build-children');
+            self.debug-elapsed($t2, $t3, desc => '3:recalc-coord-offsets');
+            self.debug-elapsed($t0, $t3);
+            note $layout-root.gist.indent(3).subst('   ', '=> ');
+        }
 
         # Return is-rebuild for subclasses
         $is-rebuild
