@@ -90,7 +90,9 @@ That leaves three remaining fundamental T-P concurrency issues to address:
 As a first step, the individual cells within a grid are represented using
 immutable objects: either plain Raku strings (when **no** SGR attributes apply
 to the cell) or `Cell` objects (when the cell **has** SGR attributes).  The
-only "update" operation on a cell is replacement of it.
+only "update" operation on a cell is replacement of it.  This also means that
+`Cell` objects can be cached and reused, which can be important for performance
+in some cases.
 
 Next, T-P separates the concepts of grid *modification* (replacing cells in the
 grid array) and grid *compositing* (copying grid contents to another widget or
