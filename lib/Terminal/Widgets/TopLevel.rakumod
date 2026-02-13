@@ -1,4 +1,4 @@
-# ABSTRACT: A top-level (full-screen) widget
+# ABSTRACT: A toplevel (full-screen) widget
 
 use nano;
 
@@ -7,7 +7,7 @@ use Terminal::Widgets::Layout;
 use Terminal::Widgets::Widget;
 
 
-#| A top-level full-screen widget with modal access to its controlling terminal
+#| A full-screen widget with modal access to its controlling terminal
 role Terminal::Widgets::TopLevel
   is Terminal::Widgets::Widget {
     has         $.terminal is required;

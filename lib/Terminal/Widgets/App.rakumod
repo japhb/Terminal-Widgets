@@ -88,11 +88,12 @@ class Terminal::Widgets::App {
         }
     }
 
-    #| Create a new top-level widget of a given class, add it to the known
-    #| top-level widgets, and return it.
-    method add-top-level(Str:D $moniker,
-                         Terminal::Widgets::TopLevel:U :$class,
-                         Terminal::Widgets::Terminal:D :$terminal, |c) {
+    #| Create a new toplevel widget of a given class, add it to the known
+    #| toplevel widgets, and return it.
+    method add-top-level(|c) { self.add-toplevel(|c) }  # XXXX: DEPRECATED OLD NAME
+    method add-toplevel(Str:D $moniker,
+                        Terminal::Widgets::TopLevel:U :$class,
+                        Terminal::Widgets::Terminal:D :$terminal, |c) {
         my $w        = $terminal.w;
         my $h        = $terminal.h;
         my $colorset = $terminal.colorset;

@@ -113,8 +113,8 @@ class Terminal::Widgets::Simple::App is Terminal::Widgets::App {
                                          |(:vt100-boxes($_) with $vt100-boxes));
         $!terminal-added-instant = now;
 
-        my $toplevel = self.add-top-level($toplevel-moniker,
-                                          :$class, :$terminal, |c);
+        my $toplevel = self.add-toplevel($toplevel-moniker,
+                                         :$class, :$terminal, |c);
         $terminal.initialize;
         $!terminal-initialized-instant = now;
 
