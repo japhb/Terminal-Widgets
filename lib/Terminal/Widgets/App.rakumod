@@ -10,8 +10,9 @@ use Terminal::Widgets::Terminal;
 
 #| A singleton TUI app object, managing Terminal and TopLevel objects
 class Terminal::Widgets::App {
-    has %!terminal;
-    has %!top-level;
+    has Lock:D $!state-lock .= new;
+    has        %!terminal;
+    has        %!toplevel;
 
     #| Create a new Terminal container for a given named tty, add the new
     #| container to internal data structures, and return it.
@@ -46,10 +47,16 @@ class Terminal::Widgets::App {
             $caps = Terminal::Capabilities.new(|%caps);
         }
 
-        %!terminal{$moniker}
+        # Create the terminal object outside the lock, assign it inside
+        my $terminal
         = Terminal::Widgets::Terminal.new(:$input, :$output, :$caps, :app(self),
                                           |(:%ui-prefs if %ui-prefs),
                                           |(:$locale if $locale));
+        $!state-lock.protect: {
+            die 'Terminal with moniker ' ~ $moniker.raku ~ ' already added to App'
+                if %!terminal{$moniker};
+            %!terminal{$moniker} = $terminal;
+        }
     }
 
     #| add-terminal by IO::Path tty object on POSIX
@@ -89,17 +96,23 @@ class Terminal::Widgets::App {
         my $w        = $terminal.w;
         my $h        = $terminal.h;
         my $colorset = $terminal.colorset;
-
-        %!top-level{$moniker} = $class.new(:$terminal, :$colorset,
-                                           :$w, :$h, :x(0), :y(0), |c);
+        my $toplevel = $class.new(:$terminal, :$colorset,
+                                   :$w, :$h, :x(0), :y(0), |c);
+        $!state-lock.protect: {
+            # XXXX: No protection against re-add because currently no method
+            #       to dispose of toplevels
+            %!toplevel{$moniker} = $toplevel;
+        }
     }
 
     # XXXX: Need to be able to dispose of toplevels as well
 
     #| Shutdown and remove a terminal by terminal moniker
     multi method remove-terminal(Str:D $moniker) {
-        my $terminal = %!terminal{$moniker}:delete
-             or die 'Terminal moniker ' ~ $moniker.raku ~ ' not found';
+        my $terminal = $!state-lock.protect: {
+            %!terminal{$moniker}:delete
+                or die 'Terminal moniker ' ~ $moniker.raku ~ ' not found';
+        }
 
         # XXXX: Disconnect/destroy matching toplevels?
 
@@ -108,8 +121,10 @@ class Terminal::Widgets::App {
 
     #| Shutdown and remove a terminal by terminal object
     multi method remove-terminal(Terminal::Widgets::Terminal:D $terminal) {
-        my $moniker = %!terminal.pairs.first(*.value === $terminal).key
-            or die 'Terminal object not known to app';
+        my $moniker = $!state-lock.protect: {
+            %!terminal.pairs.first(*.value === $terminal).key
+                or die 'Terminal object not known to app';
+        }
         self.remove-terminal($moniker);
     }
 }
