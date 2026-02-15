@@ -69,14 +69,16 @@ class Terminal::Widgets::Terminal
     #| Enter raw input mode, enable mouse events, and start per-terminal
     #| event reactor ready to pass events to toplevels
     method start {
-        note "Terminal entering raw mode" if $!debug;
+        note '🗔  Terminal entering raw mode' if $!debug;
         self.enter-raw-mode;
         self.set-mouse-event-mode(MouseNormalEvents);
 
-        note "Terminal reactor starting up" if $!debug;
+        note '🗔  Main terminal reactor starting up' if $!debug;
         react {
-            # Handle events from the control channel
+            # Handle messages from the control channel
             whenever $.control {
+                note '🗔  Terminal control message received: ' ~ .raku if $!debug;
+
                 # Handle window size change synchronously, since we have to
                 # query the VT emulator for the new size info
                 when 'refresh-terminal-size' { await self.refresh-terminal-size }
@@ -89,7 +91,7 @@ class Terminal::Widgets::Terminal
             }
 
             # Send the window resize request to the control channel
-            # and let the signal handler finish
+            # and let the signal handler finish immediately
             whenever signal(SIGWINCH) {
                 $.control.send: 'refresh-terminal-size';
             }
@@ -110,16 +112,17 @@ class Terminal::Widgets::Terminal
                             ?? Terminal::Widgets::Events::MouseEvent.new(mouse => $_)
                             !! Terminal::Widgets::Events::KeyboardEvent.new(key => $_);
 
-                # Send the high-level event to the current toplevel for processing
+                # Send the high-level event to the current toplevel for
+                # processing, or drop the event if no toplevel exists
                 .process-event($event) with $.current-toplevel;
             }
 
             # Let watchers know the terminal reactor has started
-            note "Terminal reactor started\n" if $!debug;
+            note '🗔  Main terminal reactor started' ~ $?NL if $!debug;
             $!started-vow.keep(True);
         }
 
-        note "Terminal reactor shutting down" if $!debug;
+        note '🗔  Main terminal reactor shutting down' if $!debug;
         self!shutdown;
     }
 
@@ -127,7 +130,7 @@ class Terminal::Widgets::Terminal
     #| resizing/redrawing the current toplevel widget if any; returns a
     #| Promise that will be kept when the resize completes.
     method refresh-terminal-size() {
-        # XXXX: Cannot use locking I/O methods on $.input here, such as .t or
+        # NOTE: Cannot use locking I/O methods on $.input here, such as .t or
         #       .native-descriptor; they will deadlock inside MoarVM with the
         #       pending $.input.read in RawTerminalInput.start-parser.
         die 'Cannot detect terminal size on closed or non-TTY I/O handles'
@@ -148,7 +151,7 @@ class Terminal::Widgets::Terminal
     #| terminal has resized or toplevel has been changed)
     method resize-toplevel() {
         with $.current-toplevel {
-            note "⚙️  Processing resize-toplevel request" if $!debug;
+            note '⚙️  Processing resize-toplevel request' if $!debug;
             my $t0 = nano;
 
             my $is-current-grid = .grid === $!terminal-print.current-grid;
@@ -218,18 +221,26 @@ class Terminal::Widgets::Terminal
     #  XXXX: Protect from multi-call
     #  XXXX: Call on crash (in END?)
     method quit() {
+        note '🗔  Terminal quit requested' if $!debug;
+
         if $.has-started {
-            self.set-done;            # Stop input parser reactor
-            $.control.send: 'done';   # Stop main event reactor (triggering shutdown)
+            note '🗔  Notifying input parser reactor to stop'  if $!debug;
+            self.set-done;
+            note '🗔  Notifying main terminal reactor to stop' if $!debug;
+            $.control.send: 'done';  # (triggers !shutdown when processed)
+            note '🗔  Terminal reactors notified'              if $!debug;
         }
         else {
-            self!shutdown;            # Nothing to stop; just go straight to shutdown
+            # No reactors to stop; just go straight to shutdown
+            self!shutdown;
         }
     }
 
     #| Gracefully shutdown this terminal; users should use .quit() instead
     #| so that the per-terminal reactors are exited *first*
     method !shutdown() {
+        note '🗔  Starting final terminal shutdown' if $!debug;
+
         # Forget current toplevel window
         self.set-toplevel(Nil);
 
@@ -246,5 +257,7 @@ class Terminal::Widgets::Terminal
 
         # Let watchers know the terminal has fully shut down
         $!shutdown-vow.keep(True);
+
+        note '🗔  Final terminal shutdown complete' if $!debug;
     }
 }
