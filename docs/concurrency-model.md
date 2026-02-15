@@ -149,4 +149,173 @@ the stack, Terminal::ANSIParser and Terminal::API, via the `enter-raw-mode`,
 
 ## Terminal::Widgets Itself
 
+Several pieces of T-W require concurrency control.  Some modules pass the
+concurrency control burden to their callers.  Others automatically manage
+external sources of concurrency, or even introduce their own concurrency.
+
+
+### Caller-Managed Modules
+
+These modules could be sensitive to concurrency hazards, but require their
+callers or derived classes to explicitly manage the concurrency for them.
+
+
+#### App
+
+The base App class is a singleton, and its *semantic* state could in theory be
+corrupted by poorly-managed simultaneous access; the programmer must take care
+not to do this when using the App class directly.
+
+However, App's internal *data structures* -- collections of current Terminal
+and TopLevel objects -- are lock-protected so they at least stay internally
+consistent.
+
+Moreover, programmers will almost never use or derive from the base App class
+directly, instead using the Simple::App subclass, which both generates and
+manages concurrency as needed.
+
+
+### Concurrency-Safe Roles
+
+These roles do not introduce any new concurrency of their own, but have state
+that could easily be corrupted by concurrent calls.  Certain corruption modes
+may not actually be reachable in the *current* T-W codebase, but it is likely
+that new features and optimizations will over time expose more of these
+hazards.
+
+Thus each of these roles ensure safety by providing their own protection
+mechanisms internally.  This not only aids future-proofing but maintains the
+ability to easily reason about their behavior.
+
+
+#### WidgetRegistry: Internal Locking
+
+The widget registry is a global singleton which may be accessed from nearly
+anywhere and during many phases of operation, including at module load time.
+
+WidgetRegistry thus protects its data by making the global state module-private
+and always accessing it while holding a singleton mutex lock.  This locking
+is internal to the role and callers do not need to deal with it.
+
+
+#### DirtyAreas: Internal Locking
+
+The DirtyAreas protocol is a conversation between a parent widget and its
+children, and calls to manage dirty areas for a given widget can happen
+concurrently.  For instance, Terminal::Print supports fanning out redraws to
+child widgets in parallel, though T-W doesn't use this optimization yet.
+
+To keep this easy to reason about and avoid possible state corruption,
+DirtyAreas does internal mutex locking as with WidgetRegistry.
+
+
+#### Progress::Tracker: Supplies
+
+The Progress::Tracker role explicitly supports async updates from multiple
+concurrent callers, as it is expected that users will commonly want to track
+the progress of backgrounded or parallelized workloads.
+
+To manage this concurrency, Progress::Tracker funnels updates through an
+internal Supplier/Supply pair which serialize the actual update operations.
+
+
+### Concurrency Sources
+
+These modules introduce additional concurrency sources; some is handled
+internally or by API contract, and other pieces require care from the
+programmer.
+
+
+#### Simple::App
+
+Simple::App operates almost exclusively during the app's startup phase, giving
+up control to a newly-initialized Terminal object when it finishes.  It follows
+a few simple concurrency control rules:
+
+  1. Startup execution begins and ends on the same (usually main) thread
+  2. Any short-lived spawned tasks will be independent and `await`ed before
+     startup completes
+  3. Any long-lived tasks (beyond startup) will be `start`ed in the background
+     and not affect startup otherwise
+
+Simple::App's methods call numerous hooks that subclasses can override for
+custom or more advanced behavior.  The subclass programmer is then responsible
+for following the above rules directly, or adding their own concurrency
+controls that prevent violation of those rules.
+
+Startup begins with the `bootup` method, which internally calls the `boot-init`
+subclass hook.  Even if the subclass's `boot-init` creates background tasks, it
+should still return back to `bootup` in the same thread it was called from, in
+accordance with rule 1.
+
+Next, a controlling Terminal object representing the user's terminal emulator
+is added, usually with autodetected capabilities.  If the app wants to boot
+directly into a normal UI screen, a TopLevel object is created for this as
+well.
+
+`$terminal.initialize` is then called, which initializes the terminal's
+*alternate screen* where the TUI will be drawn, and starts the T-LE input token
+decoder as a background reactor task.  This follows rule 3 and has no other
+effect on startup.
+
+If the app wants a transitional loading screen, it creates a concurrency-safe
+Progress::Tracker and hands it off to the `loading-promises` subclass hook,
+which as the name implies returns a list of completion Promises to await for
+the short-lived loading-time tasks.  Each time a task completes, it is expected
+to update the Progress::Tracker; the loading screen itself sets the progress
+complete when all the loading promises have been `await`ed.  In compliance with
+rule 2, none of the tasks should affect each other or modify shared state
+without (additional) explicit concurrency control.
+
+Finally, Simple::App either returns the Terminal object to the calling program
+for final tweaks, or in the case of `boot-to-screen` just directly hands control
+to the Terminal's reactor by calling `$terminal.start`.
+
+
+#### Terminal
+
+The Terminal object orchestrates overall execution throughout most of the app's
+lifetime, mostly through the three reactor tasks it spawns:
+
+  1. T-LE input token decoder: Started in the background by `initialize`
+  2. T-LE input stream parser: Started in the background by `enter-raw-mode`
+  3. Primary terminal reactor: Run on the main thread in `start`
+
+As mentioned [earlier](#terminal-lineeditor-supplies), T-LE manages all its own
+concurrency hazards, with final output being a concurrency-safe Supply of
+decoded tokens.
+
+The primary terminal reactor listens to the following:
+
+  1. 'control' Channel:      Safely handles ops that require exclusive control
+  2. 'async-events' Channel: Forwards high-level Events to the current toplevel
+  3. 'sync-events' Supply:   Same as #2, except synchronous
+  4. T-LE 'decoded' Supply:  Same as #3, after wrapping into high-level Events
+  5. OS signals (SIGWINCH):  Converted to control channel messages so signal
+                             handler can return immediately
+
+As with all Raku `react` blocks, there is automatic mutual exclusion between
+the `whenever` listeners -- none can be entered while one is already active.
+This is the most important serializer in a T-W app and of course a boon for
+reasoning about overall behavior, but could be a source of poor responsiveness
+if items queue for too long before dispatch.
+
+
+## Event Model
+
+When the Terminal reactor receives or generates a high-level Event, it calls
+`$.current-toplevel.process-event($event)` to hand it off to the currently
+visible TopLevel UI for processing.  Note that as a normal method call within a
+`whenever` block, this processing happens in the reactor's current thread and
+thus BLOCKS TERMINAL PROCESSING until it completes (or explicitly pushes
+further work to the background).
+
+Events are usually generated automatically by wrapping keyboard or mouse inputs
+coming from the T-LE input token decoder.  The programmer can also directly
+inject Events to be processed by calling `$terminal.send-event($event)`,
+optionally adding the `:async` flag to have them sent through an async Channel
+rather than synchronously as is the default.  Whichever option is chosen, the
+event processing will still be mutually excluded from other Events by the main
+terminal `react` block.
+
 XXXX: HERE
