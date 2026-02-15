@@ -27,6 +27,11 @@ class Terminal::Widgets::Terminal
     has Terminal::Widgets::ColorSet:D     $.colorset = self.default-theme-variant;
     has                                   %.ui-prefs;
 
+    has Channel:D              $.control       .= new;
+    has Channel:D              $!async-events  .= new;
+    has Supplier::Preserving:D $!sync-supplier .= new;
+    has Supply:D               $!sync-events    = $!sync-supplier.Supply;
+
     has Promise:D $.has-initialized .= new;
     has Promise:D $.has-started     .= new;
     has Promise:D $.has-shutdown    .= new;
@@ -34,7 +39,6 @@ class Terminal::Widgets::Terminal
     has           $!started-vow      = $!has-started.vow;
     has           $!shutdown-vow     = $!has-shutdown.vow;
 
-    has Channel:D $.control         .= new;
     has Bool:D    $.terminal-focused = True;
     has UInt:D    $.w = 0;
     has UInt:D    $.h = 0;
@@ -64,6 +68,17 @@ class Terminal::Widgets::Terminal
         $!terminal-print.initialize-screen;
         self.start-decoder;
         $!initialized-vow.keep(True);
+    }
+
+    #| Send an event to be processed by the widget tree, via Channel if $async
+    #| or via Supply otherwise
+    method send-event(Terminal::Widgets::Events::Event:D $event,
+                      Bool:D :$async = False) {
+        note '🗔  Sending ' ~ ($async ?? 'async ' !! 'synchronous ')
+             ~ $event.gist-name ~ ' event' if $!debug;
+
+        $async ?? $!async-events.send($event)
+               !! $!sync-supplier.emit($event);
     }
 
     #| Enter raw input mode, enable mouse events, and start per-terminal
@@ -96,7 +111,27 @@ class Terminal::Widgets::Terminal
                 $.control.send: 'refresh-terminal-size';
             }
 
-            # Keyboard and mouse events
+            # Handle ASYNC high-level Events from the async-events channel
+            whenever $!async-events -> $event {
+                # Send the high-level event to the current toplevel for
+                # processing, or drop the event if no toplevel exists
+                .process-event($event) with $.current-toplevel;
+            }
+
+            # Handle SYNCHRONOUS high-level Events from the sync-events supply
+            whenever $!sync-events -> $event {
+                # Send the high-level event to the current toplevel for
+                # processing, or drop the event if no toplevel exists
+                .process-event($event) with $.current-toplevel;
+            }
+
+            # Wrap low-level keyboard/mouse events and process synchronously
+            #
+            # NOTE: This processing must be synchronous so that the app can
+            #       quit in response to user input *before* the input reader
+            #       blocks again waiting for another byte.  The primary symptom
+            #       of this is appearing to hang on shutdown, and only fully
+            #       exiting after the user presses <Enter>.
             whenever $.decoded {
                 # End terminal event processing if input ended
                 done unless .defined;
