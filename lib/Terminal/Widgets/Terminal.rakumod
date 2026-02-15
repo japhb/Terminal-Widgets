@@ -133,8 +133,12 @@ class Terminal::Widgets::Terminal
         # NOTE: Cannot use locking I/O methods on $.input here, such as .t or
         #       .native-descriptor; they will deadlock inside MoarVM with the
         #       pending $.input.read in RawTerminalInput.start-parser.
+        #
+        #       Thankfully, enter-raw-mode sets $!saved-fd only if $.input.t,
+        #       and leave-raw-mode clears it, so we have a reliable test.
+
         die 'Cannot detect terminal size on closed or non-TTY I/O handles'
-            unless $.input.opened && $.output.t;
+            unless $.input.opened && $!saved-fd.defined && $.output.t;
 
         self.detect-terminal-size.then: {
             my $size = .result;
@@ -179,7 +183,7 @@ class Terminal::Widgets::Terminal
     method set-toplevel($new-toplevel) {
         # XXXX: Tell previous toplevel to disconnect from terminal?
 
-        if $new-toplevel -> $!current-toplevel {
+        if $!current-toplevel = $new-toplevel {
             self.set-window-title($_) with $!current-toplevel.title;
             self.resize-toplevel if $!w && $!h;
         }
@@ -244,16 +248,25 @@ class Terminal::Widgets::Terminal
         # Forget current toplevel window
         self.set-toplevel(Nil);
 
+        # Clean up terminal mode settings
+        self.set-bracketed-paste-mode(PasteNoBrackets) if $.output.opened;
+        self.set-mouse-event-mode(MouseNoEvents)       if $.output.opened;
+
+        # Check if handles need to be explicitly closed BEFORE leaving raw mode
+        # because the input descriptor needs to be checked via $!saved-fd to
+        # avoid blocking further progress, and leaving raw mode will clear it.
+        my $close-input  =  $.input.opened && ($!saved-fd // 0) > 2;
+        my $close-output = $.output.opened && $.output.native-descriptor > 2;
+
         # Clean up terminal raw I/O state
-        self.set-mouse-event-mode(MouseNoEvents) if $.output.opened;
-        self.leave-raw-mode(:!nl)                if  $.input.opened;
+        self.leave-raw-mode(:!nl) if $.input.opened;
 
         # Shutdown Terminal::Print instance (returning to normal screen buffer)
         $!terminal-print.shutdown-screen;
 
         # Close non-standard handles
-        $.input.close  if  $.input.opened &&  $.input.native-descriptor > 2;
-        $.output.close if $.output.opened && $.output.native-descriptor > 2;
+        $.output.close if $close-output;
+        $.input.close  if $close-input;
 
         # Let watchers know the terminal has fully shut down
         $!shutdown-vow.keep(True);
