@@ -69,8 +69,8 @@ sub MAIN() {
 }
 ```
 
-Using Terminal::Widgets::Simple defines and imports classes that handle all of
-the basic TUI behaviors, including `App` (representing the application
+Using `Terminal::Widgets::Simple` defines and imports classes that handle all
+of the basic TUI behaviors, including `App` (representing the application
 lifecycle) and `TopLevel` (representing a full-window UI).  The `App` startup
 process will eventually call our `initial-layout` method (more on this in the
 next section) to define the widget layout constraints, and that's where most of
@@ -182,19 +182,22 @@ Note how the multi method parameters specify only `MouseEvent`s where the
 mouse button is being released (the end of a click), and only when the event
 has reached its target (phase `AtTarget`).
 
-As a concrete case, the `hello-world` program above has a `Quit` button.  The
-standard `Input::Button` class has builtin `handle-event` multi methods for
-both keyboard and mouse inputs.  When an Event of either type is sent from
-the Terminal reactor to the current TopLevel, that Event will trickle down
-through the widget hierarchy until it reaches its target widget.
 
-If the current focus (for a KeyboardEvent) or the current mouse cursor location
-(for a MouseEvent) target the quit button, the appropriate `handle-event`
-method will be called, which in turn will call the `process-input` block that
-was specified in the layout.
+### Event Handling in `hello-world`
+
+As a concrete case, the `hello-world` program above has a Quit button.  The
+standard `Input::Button` class has builtin `handle-event` multi methods for
+both keyboard and mouse inputs.  When an `Event` of either type is sent from
+the `Terminal` reactor to the current `TopLevel`, that `Event` will trickle
+down through the widget hierarchy until it reaches its target widget.
+
+If the current focus (for a `KeyboardEvent`) or the current mouse cursor
+location (for a `MouseEvent`) target the Quit button, the appropriate
+`handle-event` method will be called, which in turn will call the
+`process-input` block that was specified in the layout.
 
 In this particular case, our `process-input` finds the current controlling
-Terminal object and requests that it quit and shutdown, eventually exiting
+`Terminal` object and requests that it quit and shutdown, eventually exiting
 the program completely.
 
 
@@ -240,7 +243,7 @@ Within each widget, T-W uses a similar layout to the CSS box model.  The active
 
 The upper left corner within a widget grid is at x=0,y=0,z=0, but may be offset
 by arbitrary integer offsets from its parent (and through the chain of parents,
-the entire TopLevel screen).  Positive values are to the RIGHT, DOWN, and
+the entire `TopLevel` screen).  Positive values are to the RIGHT, DOWN, and
 CLOSER to the viewer.
 
 Here's the widget box model again, with coordinates added:
@@ -383,8 +386,8 @@ Here's the list for the curious:
   * `Terminal::Widgets::WidgetRegistry`        - Register new widget types on load
   * `Terminal::Widgets::Events::EventHandling` - See previous section
 
-Note that the first three of those are from `Terminal::Print`, which T-W is
-based on and interoperable with.
+Note that the first three of those are from Terminal::Print ('T-P'), which T-W
+is based on and interoperable with.
 
 
 ## Debugging and Profiling
@@ -403,8 +406,8 @@ the `Common` role and `Widget` class together provide a number of helper methods
   * `debug-grid`    - Return an optionally framed snapshot of a single widget
   * `debug-elapsed` - Write a debug note for elapsed time during an operation
 
-  * `toplevel`      - Chase parent links to find widget's TopLevel
-  * `terminal`      - Find this widget's controlling Terminal (via `toplevel`)
+  * `toplevel`      - Chase parent links to find widget's `TopLevel`
+  * `terminal`      - Find this widget's controlling `Terminal` (via `toplevel`)
   * `default-focus` - Find descendent widget that should get focus by default
 
   * `first-widget`  - FIRST matching widget in subtree, starting at `self`
