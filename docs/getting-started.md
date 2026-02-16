@@ -82,9 +82,9 @@ simple `plain-text` message and a 'Quit' `button` that when clicked will tell
 the terminal event reactor to quit (thus exiting the program as a whole).
 
 For your convenience the above program has been saved in the
-[hello-world example](../examples/hello-world.raku); go ahead and run this to
-see what the result looks like.  You can mouse-click the Quit button or even
-just press Enter to quit, since the first active input is automatically
+[first hello-world example](../examples/hello-world-1.raku); go ahead and run
+this to see what the result looks like.  You can mouse-click the Quit button
+or even just press Enter to quit, since the first active input is automatically
 focused for you.
 
 
@@ -182,6 +182,21 @@ Note how the multi method parameters specify only `MouseEvent`s where the
 mouse button is being released (the end of a click), and only when the event
 has reached its target (phase `AtTarget`).
 
+As a concrete case, the `hello-world` program above has a `Quit` button.  The
+standard `Input::Button` class has builtin `handle-event` multi methods for
+both keyboard and mouse inputs.  When an Event of either type is sent from
+the Terminal reactor to the current TopLevel, that Event will trickle down
+through the widget hierarchy until it reaches its target widget.
+
+If the current focus (for a KeyboardEvent) or the current mouse cursor location
+(for a MouseEvent) target the quit button, the appropriate `handle-event`
+method will be called, which in turn will call the `process-input` block that
+was specified in the layout.
+
+In this particular case, our `process-input` finds the current controlling
+Terminal object and requests that it quit and shutdown, eventually exiting
+the program completely.
+
 
 ## Widget Layout and the Box Model
 
@@ -251,6 +266,98 @@ Here's the widget box model again, with coordinates added:
     └──────────────────────────────────┘╶╯
     ╰────────────────┬─────────────────╯
                      w (width)
+```
+
+Let's add some framing to our `hello-world` widgets by replacing the original
+layout constraint request:
+
+```raku
+.center(:vertical, style => %(:minimize-h, :minimize-w),
+         .plain-text(text => 'Hello, World!', color => 'bold',
+                     style => %(border-width  => 1,
+                                margin-width  => (0,0,1,0),
+                                padding-width => (0,1,2,3))),
+         .button(label => 'Quit',
+                 style => %(border-width => 1),
+                 process-input => { $.terminal.quit }),
+        )
+```
+
+When a framing width is specified as a single value, it is applied on all four
+sides of the widget equally.  If it is specified as multiple values, they apply
+to the top, right, bottom, and left sides respectively.
+
+This version has been saved in the
+[second hello-world example](../examples/hello-world-2.raku).
+Here's the result when you run it:
+
+```
+╒═══════Hello═══════╕
+│╔═════════════════╗│
+│║   Hello, World! ║│
+│║                 ║│
+│║                 ║│
+│╚═════════════════╝│
+│                   │
+│╔═════════════════╗│
+│║Quit             ║│
+│╚═════════════════╝│
+└───────────────────┘
+```
+
+Both widgets have a width-1 border all the way around, and they are separated
+by the width-1 bottom margin of the plain-text widget.  The content of the
+top widget has padding that differs on each side: none on the top, 1 space on
+the right, 2 spaces on the bottom, and 3 spaces on the left.
+
+There are a couple interesting things to note about the Quit button:
+
+  1. The `⌈⌋` button corner markers disappeared automatically.
+  2. The button has been laid out to be as wide as the plain-text widget.
+
+The first of these is default button behavior in order to avoid placing
+button corner markers inside of border corners (which looks rather odd).
+
+The second is because our layout has requested only that the `center` node be
+minimized, not the individual layout nodes within it.  By default widgets
+stacked vertically (`:vertical`) are given the same layout width, and widgets
+stacked horizontally (the default) are given the same layout height.
+
+In this case that looks a bit odd, so we can change the layout request to
+push the button into the left portion of the area reserved for it:
+
+```raku
+.center(:vertical, style => %(:minimize-h, :minimize-w),
+         .plain-text(text => 'Hello, World!', color => 'bold',
+                     style => %(border-width  => 1,
+                                margin-width  => (0,0,1,0),
+                                padding-width => (0,1,2,3))),
+         .push-left(style => %(:minimize-w),
+                    .button(label => 'Quit',
+                            style => %(border-width => 1),
+                            process-input => { $.terminal.quit })),
+        )
+```
+
+Here we've requested a new `push-left` node with `minimize-w` set, meaning
+that the button within it will be pushed to the left and shrunk horizontally
+as much as possible.
+
+This is now the [third hello-world example](../examples/hello-world-3.raku).
+Here's the new result:
+
+```
+╒═══════Hello═══════╕
+│╔═════════════════╗│
+│║   Hello, World! ║│
+│║                 ║│
+│║                 ║│
+│╚═════════════════╝│
+│                   │
+│╔════╗             │
+│║Quit║             │
+│╚════╝             │
+└───────────────────┘
 ```
 
 
