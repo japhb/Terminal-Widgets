@@ -287,10 +287,10 @@ decoded tokens.
 
 The primary terminal reactor listens to the following:
 
-  1. 'control' Channel:      Safely handles ops that require exclusive control
-  2. 'async-events' Channel: Forwards high-level Events to the current toplevel
-  3. 'sync-events' Supply:   Same as #2, except synchronous
-  4. T-LE 'decoded' Supply:  Same as #3, after wrapping into high-level Events
+  1. `control` Channel:      Safely handles ops that require exclusive control
+  2. `async-events` Channel: Forwards high-level Events to the current toplevel
+  3. `sync-events` Supply:   Same as #2, except synchronous
+  4. T-LE `decoded` Supply:  Same as #3, after wrapping into high-level Events
   5. OS signals (SIGWINCH):  Converted to control channel messages so signal
                              handler can return immediately
 
