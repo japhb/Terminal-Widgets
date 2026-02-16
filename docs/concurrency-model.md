@@ -30,7 +30,7 @@ Terminal::Widgets is built on a stack of lower-level Raku modules.  Here's an
 overview of the concurrency status of each:
 
     MODULE                 | CONCURRENCY  | PURPOSE
-    -----------------------|--------------|--------
+    ---------------------- | ------------ | -------------------------------------
     Terminal::LineEditor   | Supplies     | Raw terminal input
     Terminal::Print        | Grid Locking | Screen grid output
     Terminal::API          | -managed-    | OS-level terminal mode controls
@@ -69,7 +69,7 @@ directly into their own preferred concurrency model and is how T-LE uses T-AP
 safely.
 
 
-### Terminal::Print: Grid Locking
+### Terminal::Print: *Grid Locking*
 
 Terminal::Print is used to provide the screen grid abstraction that T-W depends
 on, and in fact a T-W `Widget` is also a T-P `Widget`.  However, T-W doesn't
@@ -125,7 +125,7 @@ after the routine completes.  T-W uses `with-grid-lock` in a few critical-path
 cases.
 
 
-### Terminal::LineEditor: Supplies
+### Terminal::LineEditor: *Supplies*
 
 Terminal::LineEditor::RawTerminalIO runs two key background tasks:
 
@@ -188,7 +188,7 @@ mechanisms internally.  This not only aids future-proofing but maintains the
 ability to easily reason about their behavior.
 
 
-#### WidgetRegistry: Internal Locking
+#### WidgetRegistry: *Internal Locking*
 
 The widget registry is a global singleton which may be accessed from nearly
 anywhere and during many phases of operation, including at module load time.
@@ -198,7 +198,7 @@ and always accessing it while holding a singleton mutex lock.  This locking
 is internal to the role and callers do not need to deal with it.
 
 
-#### DirtyAreas: Internal Locking
+#### DirtyAreas: *Internal Locking*
 
 The DirtyAreas protocol is a conversation between a parent widget and its
 children, and calls to manage dirty areas for a given widget can happen
@@ -209,7 +209,7 @@ To keep this easy to reason about and avoid possible state corruption,
 DirtyAreas does internal mutex locking as with WidgetRegistry.
 
 
-#### Progress::Tracker: Supplies
+#### Progress::Tracker: *Supplies*
 
 The Progress::Tracker role explicitly supports async updates from multiple
 concurrent callers, as it is expected that users will commonly want to track
@@ -281,7 +281,7 @@ lifetime, mostly through the three reactor tasks it spawns:
   2. T-LE input stream parser: Started in the background by `enter-raw-mode`
   3. Primary terminal reactor: Run on the main thread in `start`
 
-As mentioned [earlier](#terminal-lineeditor-supplies), T-LE manages all its own
+As mentioned [earlier](#terminallineeditor-supplies), T-LE manages all its own
 concurrency hazards, with final output being a concurrency-safe Supply of
 decoded tokens.
 
