@@ -303,6 +303,12 @@ if items queue for too long before dispatch.
 
 ## Event Model
 
+This section covers the guts of the event model; for a gentler intro, see the
+[Event Handling section of the Getting Started doc](getting-started.md#event-handling).
+
+
+### Event Mutex
+
 When the Terminal reactor receives or generates a high-level Event, it calls
 `$.current-toplevel.process-event($event)` to hand it off to the currently
 visible TopLevel UI for processing.  Note that as a normal method call within a
@@ -318,4 +324,31 @@ rather than synchronously as is the default.  Whichever option is chosen, the
 event processing will still be mutually excluded from other Events by the main
 terminal `react` block.
 
-XXXX: HERE
+
+### `process-event`
+
+However the high-level Event object is generated or received, the terminal will
+pass it off to the current toplevel's `EventHandling.process-event` method,
+which initiates a three-phase cascade for each Event:
+
+  1. `TrickleDown`: Event flows from root towards leaves, looking for targets
+  2. `AtTarget`:    Target(s) found, event is processed
+  3. `BubbleUp`:    Event flows back up towards root of tree
+
+During each of these phases, as the Event reaches each Widget, `process-event`
+calls three hook methods:
+
+  1. `pre-process-event`:  Update phase or squelch event as needed
+  2. `handle-event`:       Use multi-dispatch to handle each event variant
+  3. `post-process-event`: Continue trickle-down or bubble-up with next widget(s)
+
+During the `BubbleUp` phase, the Event moves to the current widget's parent
+only if that parent has NOT already received the same Event from a different
+child.
+
+Each Event is routed according to its major type:
+
+  * `GlobalEvent`         - Down to every child, back up to every parent
+  * `TargetedEvent`       - Down to every child, but only up from target
+  * `LocalizedEvent`      - Down/up via widgets overlapping a particular X,Y
+  * `FocusFollowingEvent` - Down/up via widgets along the focus path
