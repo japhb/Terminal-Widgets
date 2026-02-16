@@ -29,15 +29,15 @@ safety.
 Terminal::Widgets is built on a stack of lower-level Raku modules.  Here's an
 overview of the concurrency status of each:
 
-    MODULE                 | CONCURRENCY  | PURPOSE
-    ---------------------- | ------------ | -------------------------------------
-    Terminal::LineEditor   | Supplies     | Raw terminal input
-    Terminal::Print        | Grid Locking | Screen grid output
-    Terminal::API          | -managed-    | OS-level terminal mode controls
-    Terminal::ANSIParser   | -managed-    | Parses ANSI/VT input codepoint stream
-    Terminal::Capabilities | -none-       | Determines terminal/font capabilities
-    Terminal::ANSIColor    | -none-       | Encodes/decodes ANSI SGR escapes
-    Text::MiscUtils        | -none-       | Calculates duospace widths
+MODULE                 | CONCURRENCY  | PURPOSE
+---------------------- | ------------ | -------------------------------------
+Terminal::LineEditor   | Supplies     | Raw terminal input
+Terminal::Print        | Grid Locking | Screen grid output
+Terminal::API          | -managed-    | OS-level terminal mode controls
+Terminal::ANSIParser   | -managed-    | Parses ANSI/VT input codepoint stream
+Terminal::Capabilities | -none-       | Determines terminal/font capabilities
+Terminal::ANSIColor    | -none-       | Encodes/decodes ANSI SGR escapes
+Text::MiscUtils        | -none-       | Calculates duospace widths
 
 
 ### Concurrency `-none-`
