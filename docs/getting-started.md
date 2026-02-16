@@ -412,7 +412,10 @@ the `Common` role and `Widget` class together provide a number of helper methods
   * `next-widget`   - Next matching widget AFTER `self` in full tree
   * `prev-widget`   - Previous matching widget BEFORE `self` in full tree
 
+
 ## TopLevel Widgets
+
+## Standard Widget Classes
 
 ## The Application Object
 
@@ -433,12 +436,11 @@ suggestions:
 * [Configuration and User Preferences](preferences.md) - Environment variables
   and terminal instance attributes used to configure the user's T-W experience
 
-* [The Text Content Model](content-model.md) - Deeper details about the
-  RenderSpan content model and the associated string conversion pipeline
+* [Text Content Model](content-model.md) - Deeper details about the RenderSpan
+  content model and the associated string conversion pipeline
 
-* [The Concurrency Model](concurrency-model.md) - Deeper details on how
-  concurrency is generated and managed by T-W, including startup and event
-  handling
+* [Concurrency Model](concurrency-model.md) - Deeper details on how concurrency
+  is generated and managed by T-W, including startup and event handling
 
 * [Adding New Widget Types](adding-new-widgets.md) - A guide to creating your
   own custom widgets to supplement the premade widget collection
