@@ -329,6 +329,10 @@ suggestions:
 * [The Text Content Model](content-model.md) - Deeper details about the
   RenderSpan content model and the associated string conversion pipeline
 
+* [The Concurrency Model](concurrency-model.md) - Deeper details on how
+  concurrency is generated and managed by T-W, including startup and event
+  handling
+
 * [Adding New Widget Types](adding-new-widgets.md) - A guide to creating your
   own custom widgets to supplement the premade widget collection
 
