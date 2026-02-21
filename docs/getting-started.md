@@ -366,6 +366,90 @@ Here's the new result:
 
 ## Drawing Sequence
 
+### Overall Refresh Sequence
+
+To fully refresh its contents, a widget goes through a simple sequence:
+
+  1. `clear-frame`
+  2. `draw-frame`
+  3. `composite`
+
+Each of these has several sub-steps; `clear-frame` is the simplest:
+
+  1. Clear widget's underlying grid
+  2. Mark the entire widget dirty, so the widget will composite later
+
+We'll get back to `draw-frame` in a moment, since it varies considerably for
+different widgets.  For now let's take a look at the final step (`composite`),
+which copies the widget's newly drawn content to its parent and/or the terminal
+screen.  Most of its complexity comes from optimizing for several different
+possible paths:
+
+  1. Snapshot this widget's current dirty areas (and implicitly clear them)
+  2. Depending on the widget's `parent`:
+     * If `parent` is the current T-W toplevel:
+       * `parent.print-to-content-area`
+     * If `parent` is a non-toplevel T-W widget:
+       * `parent.copy-to-content-area`
+       * `parent.add-dirty-rect`
+     * Otherwise (`parent` is probably the T-P screen):
+       * `parent.add-dirty-rect` if parent understands the DirtyAreas protocol
+       * Invalidate the underlying T-P grid-string cache
+       * Hand off to the underlying T-P `composite` method (AKA the "old path")
+
+
+### Drawing Leaf Widgets
+
+The complexity of `draw-frame` depends on whether the widget has any children;
+if none (meaning the widget is a leaf node), it's just two steps:
+
+  1. `draw-framing`
+  2. `draw-content`
+
+Of course, those unroll a bit; `draw-framing` breaks down as follows:
+
+  1. Check the widget's computed layout to see which framing has been requested
+  2. `draw-margin`  (if requested)
+  3. `draw-border`  (if requested)
+  4. `draw-padding` (if requested)
+
+`draw-content` is specific to each widget type (the version in the `Widget`
+base class is just a stub that does nothing).
+
+Summarizing, here's the full refresh sequence for a leaf widget:
+
+  1. `clear-frame`
+     * Clear underlying grid
+     * Mark widget all-dirty
+  2. `draw-frame`
+     * `draw-framing`
+       * Check requested framing
+       * `draw-margin`
+       * `draw-border`
+       * `draw-padding`
+     * `draw-content` **(unique per widget type)**
+  3. `composite`
+     * Snapshot current dirty areas
+     * Ask `parent` to do one of:
+       * `print-to-content-area`
+       * `copy-to-content-area` + `add-dirty-rect`
+       * `add-dirty-rect` + invalidate T-P cache + T-P `composite`
+
+
+### Drawing Parent Widgets
+
+The major difference for parent widgets (those with children) is that
+`draw-frame` now has to account for the Z-ordering of those children relative
+to itself:
+
+  1. Sort children by Z order, back to front
+  2. For each child *behind* the parent widget (Z <= 0):
+     * `composite` the child onto the parent widget's grid
+     * Add a dirty rect for the child's area (if it didn't do so itself)
+  3. `draw-framing` for the parent widget itself *(same as for leaf)*
+  4. `draw-content` for the parent widget itself *(same as for leaf)*
+  5. Repeat step 2 for each child *in front of* the parent widget (Z > 0)
+
 
 ## Widget Builtin Roles
 
