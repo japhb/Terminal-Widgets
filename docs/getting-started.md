@@ -393,7 +393,7 @@ possible paths:
        * `parent.copy-to-content-area`
        * `parent.add-dirty-rect`
      * Otherwise (`parent` is probably the T-P screen):
-       * `parent.add-dirty-rect` if parent understands the DirtyAreas protocol
+       * `parent.add-dirty-rect` if parent understands the `DirtyAreas` protocol
        * Invalidate the underlying T-P grid-string cache
        * Hand off to the underlying T-P `composite` method (AKA the "old path")
 
@@ -413,8 +413,8 @@ Of course, those unroll a bit; `draw-framing` breaks down as follows:
   3. `draw-border`  (if requested)
   4. `draw-padding` (if requested)
 
-`draw-content` is specific to each widget type (the version in the `Widget`
-base class is just a stub that does nothing).
+`draw-content` is specific to each widget type; the version in the `Widget`
+base class is just a stub that does nothing.
 
 Summarizing, here's the full refresh sequence for a leaf widget:
 
@@ -468,7 +468,7 @@ Here's the list for the curious:
   * `Terminal::Widgets::Themable`   - Control color and attributes via semantic states
   * `Terminal::Widgets::DirtyAreas` - Support dirty-area compositing optimization
   * `Terminal::Widgets::WidgetRegistry`        - Register new widget types on load
-  * `Terminal::Widgets::Events::EventHandling` - See previous section
+  * `Terminal::Widgets::Events::EventHandling` - See [Event Handling](#event-handling) section
 
 Note that the first three of those are from Terminal::Print ('T-P'), which T-W
 is based on and interoperable with.
