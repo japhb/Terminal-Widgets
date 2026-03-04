@@ -403,8 +403,10 @@ class Terminal::Widgets::Viewer::Tree
                 my $clicked-line = $.y-scroll + $y;
                 my $node = self.line-to-display-node($clicked-line);
 
-                self.select-node($node);
-                self.toggle-node-expanded($node);
+                with $node {
+                    self.select-node($_);
+                    self.toggle-node-expanded($_);
+                }
 
                 # Skip final full-refresh, since toggle-node-expanded will
                 # already do a refresh-for-scroll, which does a full-refresh
