@@ -3,13 +3,15 @@
 use Terminal::Capabilities;
 use Terminal::Capabilities::Autodetect;
 
+use Terminal::Widgets::Common;
 use Terminal::Widgets::I18N::Locale;
 use Terminal::Widgets::TopLevel;
 use Terminal::Widgets::Terminal;
 
 
 #| A singleton TUI app object, managing Terminal and TopLevel objects
-class Terminal::Widgets::App {
+class Terminal::Widgets::App
+ does Terminal::Widgets::Common {
     has Lock:D $!state-lock .= new;
     has        %!terminal;
     has        %!toplevel;
