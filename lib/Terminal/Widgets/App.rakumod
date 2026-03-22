@@ -14,6 +14,16 @@ class Terminal::Widgets::App {
     has        %!terminal;
     has        %!toplevel;
 
+
+    ### Stubbed hooks for subclasses
+
+    #| A terminal was just added
+    method terminal-added(Terminal::Widgets::Terminal:D $terminal) { }
+
+    #| A terminal was just removed
+    method terminal-removed(Terminal::Widgets::Terminal:D $terminal) { }
+
+
     #| Create a new Terminal container for a given named tty, add the new
     #| container to internal data structures, and return it.
     multi method add-terminal(Str:D $moniker,
@@ -57,6 +67,10 @@ class Terminal::Widgets::App {
                 if %!terminal{$moniker};
             %!terminal{$moniker} = $terminal;
         }
+
+        # Notify subclasses when a terminal is successfully added
+        self.terminal-added($terminal);
+        $terminal
     }
 
     #| add-terminal by IO::Path tty object on POSIX
@@ -118,6 +132,9 @@ class Terminal::Widgets::App {
         # XXXX: Disconnect/destroy matching toplevels?
 
         $terminal.quit;
+
+        # Notify subclasses when a terminal is successfully removed and quit
+        self.terminal-removed($terminal);
     }
 
     #| Shutdown and remove a terminal by terminal object
