@@ -1,6 +1,10 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Functionality]
+  - App now does Common
+  - App calls new terminal-added/removed hooks after performing those operations
+
 
 0.3.0  2026-01-22T14:26:06-08:00
   [BREAKING CHANGES]
