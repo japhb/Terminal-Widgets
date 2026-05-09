@@ -73,6 +73,7 @@ does Terminal::Widgets::Focusable {
     has Terminal::Widgets::WrapStyle:D $.wrap-style .= new(terminal => self.terminal);
 
     has &.process-click;
+    has &.cursor-moved;
 
     has %.selected-span-info;
     has $.cursor-x = 0;
@@ -905,6 +906,8 @@ does Terminal::Widgets::Focusable {
         # and also a scrollbar update if the scrolling was
         # shifted by the ensure-x/y-span-visible calls above
         self.full-refresh unless self.refresh-for-scroll;
+
+        $_($span, $!cursor-x, $!cursor-y) with &!cursor-moved;
 
         # Return the selected span for use by callers
         $span
