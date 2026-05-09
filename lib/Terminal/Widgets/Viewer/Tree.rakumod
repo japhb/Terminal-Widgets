@@ -206,7 +206,7 @@ class Terminal::Widgets::Viewer::Tree
     #| Flatten displayable lines for a given node into array @lines
     method node-lines($node, @lines) {
         @lines.push: [ self.prefix-string($node),
-                       self.node-content($node) ];
+                       |self.node-content($node) ];
         if $node.expanded {
             self.node-lines($_, @lines) for $node.children;
         }
@@ -233,7 +233,13 @@ class Terminal::Widgets::Viewer::Tree
     #| Displayed content for a given node itself, not including children
     method node-content($node) {
         my $color = $node === $!current-node ?? 'inverse ' !! '';
-        render-span($node.data.short-name, $color)
+        if $node.data.short-name ~~ Terminal::Widgets::TextContent::SemanticText {
+            self.terminal.locale.render:
+                span-tree($node.data.short-name, :$color);
+        }
+        else {
+            render-span($node.data.short-name, $color)
+        }
     }
 
     #| Arrow glyphs for given terminal capabilities
