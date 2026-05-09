@@ -48,7 +48,7 @@ my class DisplayParent does DisplayNode does Terminal::Widgets::Common {
     method refresh-children() {
         my $depth   = $!depth + 1;
         my &create := {
-            $_ ~~ VTree::Parent
+            $!tree.node-to-display-node{$_} = $_ ~~ VTree::Parent
             ?? do {
                 my $new = DisplayParent.new(parent => self, data => $_,
                                             :$depth, :$!tree, :&!sort-by);
@@ -102,6 +102,7 @@ class Terminal::Widgets::Viewer::Tree
     has               &.process-click;
 
     has %.previously-expanded;
+    has %.node-to-display-node;
 
     has @!flat-node-cache;
     has @!flat-line-cache;
@@ -115,8 +116,10 @@ class Terminal::Widgets::Viewer::Tree
     method !remap-root() {
         $!display-root = DisplayParent.new(data => $!root, depth => 0,
                                            tree => self, :&.sort-by);
+        %!node-to-display-node = $!root => $!display-root,;
+
         self.clear-caches;
-        self.select-node($!display-root);
+        self.select-display-node($!display-root);
     }
 
     # Clear caches when setting sort-by
@@ -279,14 +282,19 @@ class Terminal::Widgets::Viewer::Tree
 
     #| Select a given node as current, expanding parents if needed and
     #| processing a "click" on the node
-    method select-node($node, Bool:D :$refresh = True) {
-        note '…  select-node' if $.debug;
+    method select-node(VTree::Node:D $node,
+                       Bool:D :$refresh = True, Bool:D :$do-click = True) {
+        self.select-display-node(%!node-to-display-node{$node}, :$refresh, :$do-click)
+    }
+    method select-display-node(DisplayNode:D $node,
+                               Bool:D :$refresh = True, Bool:D :$do-click = True) {
+        note '…  select-display-node' if $.debug;
         if $!current-node !=== $node {
             self.remove-highlight($!current-node);
             $!current-node = $node;
             self.add-highlight($node);
             self.full-refresh if $refresh;
-            $_($node) with &!process-click;
+            $_($node) with $do-click && &!process-click;
             # XXXX: Ensure visible?
         }
     }
@@ -298,7 +306,7 @@ class Terminal::Widgets::Viewer::Tree
         return unless $line;
 
         if self.line-to-display-node($line - 1) -> $node {
-            self.select-node($node, :!refresh);
+            self.select-display-node($node, :!refresh);
             self.ensure-y-span-visible($line - 1, $line);
             self.refresh-for-scroll(:force);
         }
@@ -311,7 +319,7 @@ class Terminal::Widgets::Viewer::Tree
         return unless $line.defined;
 
         if self.line-to-display-node($line + 1) -> $node {
-            self.select-node($node, :!refresh);
+            self.select-display-node($node, :!refresh);
             self.ensure-y-span-visible($line, $line + 1);
             self.refresh-for-scroll(:force);
         }
@@ -404,7 +412,7 @@ class Terminal::Widgets::Viewer::Tree
                 my $node = self.line-to-display-node($clicked-line);
 
                 with $node {
-                    self.select-node($_);
+                    self.select-display-node($_);
                     self.toggle-node-expanded($_);
                 }
 
