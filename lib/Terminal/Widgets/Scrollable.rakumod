@@ -14,7 +14,9 @@ role Terminal::Widgets::Scrollable {
     has Bool:D $!scrolled = False;
     has %.scrollbars is SetHash;
 
-    #| Refresh all linked scrollbars and then self, iff a pending scroll
+    has &.scrolled;
+
+    #| Refresh all linked scrollbars and then self, if a pending scroll
     #| action is waiting, or $force is True.  Returns a Bool indicating
     #| whether the refresh was actually required.
     method refresh-for-scroll(Bool:D :$force = False --> Bool:D) {
@@ -27,6 +29,8 @@ role Terminal::Widgets::Scrollable {
             $!scrolled = False;
 
             self.debug-elapsed($t0);
+
+            $_($!x-scroll, $!y-scroll) with &!scrolled;
             True
         }
         else { False }
