@@ -163,10 +163,11 @@ class Terminal::Widgets::Viewer::Tree
             #       leaves too much performance on the table
             # my $max   = self.flat-line-cache.map({ .[0].width + .[1].width }).max;
 
-            my $max   = self.flat-line-cache.map({
+            my int $wc = +self.terminal.locale.wide-context;
+            my $max    =  self.flat-line-cache.map({
                 # Only prefix has low enough cardinality to cache
-                (%width-cache{.[0].text} //= duospace-width-core(.[0].text, 0))
-                + duospace-width-core(.[1].text, 0)
+                (%width-cache{.[0].text} //= duospace-width-core(.[0].text, $wc))
+                + duospace-width-core(.[1].text, $wc)
             }).max;
 
             self.debug-elapsed($t0, icon => '💲',

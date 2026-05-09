@@ -22,7 +22,8 @@ class Terminal::Widgets::Terminal
  does Terminal::Widgets::Common {
     has Terminal::Widgets::TopLevel       $.current-toplevel;
     has Terminal::Capabilities:D          $.caps   .= new;
-    has Terminal::Widgets::I18N::Locale:D $.locale .= new;
+    has Terminal::Widgets::I18N::Locale:D $.locale .= new(wide-context =>
+                                                          !$!caps.narrow-emoji-needs-space);
     has Terminal::Widgets::ColorTheme:D   $.color-theme = $DEFAULT-THEME;
     has Terminal::Widgets::ColorSet:D     $.colorset = self.default-theme-variant;
     has                                   %.ui-prefs;
@@ -226,7 +227,8 @@ class Terminal::Widgets::Terminal
 
     #| Change current terminal capabilities and relayout to match
     method set-caps(Terminal::Capabilities:D $!caps) {
-        self.set-toplevel($.current-toplevel);
+        self.set-locale($!locale.clone(wide-context =>
+                                       !$!caps.narrow-emoji-needs-space))
     }
 
     #| Change current locale and relayout to match

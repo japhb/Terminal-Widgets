@@ -8,7 +8,8 @@ constant ContentRenderer =
 
 #| Per-terminal user locale info and locale/language aware utility methods
 class Terminal::Widgets::I18N::Locale {
-    has ContentRenderer:D $.renderer .= new(locale => self);
+    has Bool:D            $.wide-context = False;
+    has ContentRenderer:D $.renderer    .= new(locale => self, :$!wide-context);
     has %.string-table;
 
     multi method translate(TranslatableString:D $string, :%vars) {
