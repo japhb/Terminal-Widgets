@@ -295,7 +295,9 @@ class Terminal::Widgets::Viewer::Tree
             $!current-node = $node;
             self.add-highlight($node);
             self.full-refresh if $refresh;
-            $_($node) with $do-click && &!process-click;
+            if $do-click {
+                $_($node) with &!process-click;
+            }
             # XXXX: Ensure visible?
         }
     }
