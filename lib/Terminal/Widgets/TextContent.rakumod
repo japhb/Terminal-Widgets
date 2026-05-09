@@ -36,17 +36,19 @@ class RenderSpan is export {
     has StringSpan $.string-span;
     has Str:D      $.color = '';
     has Str:D      $.text  = '';
+    has Bool:D     $.wide-context = False;
     has UInt       $!width;
 
     #| Lazily calculate and cache duospace width
     method width(--> UInt:D) {
-        $!width //= duospace-width-core($!text, 0)
+        $!width //= duospace-width-core($!text, +$!wide-context)
     }
 
     #| Break a single RenderSpan into list of RenderSpans, each containing only
     #| one line (delimited by textual newlines as usual for Str.lines)
     method lines(Bool:D :$chomp = True) {
-        $!text.lines(:$chomp).map({ RenderSpan.new(text => $_, :$!color, :$!string-span) })
+        $!text.lines(:$chomp).map({ RenderSpan.new(text => $_, :$!color,
+                                                   :$!string-span, :$!wide-context) })
     }
 
     #| Stringify to an SGR-escaped string instead of rendering into a widget's
@@ -82,9 +84,9 @@ class StringSpan does SemanticSpan {
     has       %.attributes;
 
     #| Render the string into a RenderSpan according to its attributes
-    method render(--> RenderSpan:D) {
+    method render(Bool:D $wide-context = False --> RenderSpan:D) {
         # XXXX: Hack: Just transfer over the color attribute
-        RenderSpan.new(string-span => self, text => $!string,
+        RenderSpan.new(string-span => self, text => $!string, :$wide-context,
                        color => %!attributes<color> // '')
     }
 
@@ -229,8 +231,9 @@ class MarkupString does SemanticText is export {
 
 #| Helper function to build a RenderSpan, ready for Widget.render-line-spans
 our sub render-span(Str:D $text = '', Str:D $color = '',
+                    Bool:D :$wide-context = False,
                     StringSpan :$string-span) is export {
-    RenderSpan.new(:$text, :$color, :$string-span)
+    RenderSpan.new(:$text, :$color, :$string-span, :$wide-context)
 }
 
 #| Helper function to return a cached StringSpan containing
@@ -273,6 +276,7 @@ our sub span-info($span is copy) is export {
         %info<color> = $span.color;
         %info<text>  = $span.text;
         %info<width> = $span.width;
+        %info<wide-context> = $span.wide-context;
 
         $span = $span.string-span;
     }
@@ -307,7 +311,8 @@ our sub span-info($span is copy) is export {
 
 #| Convert content step by step towards a list of RenderSpans
 class ContentRenderer {
-    has %.vars;
+    has Bool:D $.wide-context = False;
+    has        %.vars;
 
 
     ### span-tree: PARSE TO SpanTree AND STOP
@@ -387,25 +392,25 @@ class ContentRenderer {
     #| Convert SpanTree -> flattened list of RenderSpans
     multi method render(SpanTree:D $st) {
         $st.flatten.map({
-            .isa(InterpolantSpan) ?? .interpolate(%!vars).render
-                                  !! .render
+            .isa(InterpolantSpan) ?? .interpolate(%!vars).render($!wide-context)
+                                  !! .render($!wide-context)
         })
     }
 
     #| Convert a list of StringSpans -> a list of RenderSpans
     #  XXXX: This does not constrain the types of entries in @flat-ss
     multi method render(@flat-ss) {
-        @flat-ss.map(*.render)
+        @flat-ss.map(*.render($!wide-context))
     }
 
     #| Convert a single StringSpan -> a single RenderSpan
     multi method render(StringSpan:D $ss --> RenderSpan:D) {
-        $ss.render
+        $ss.render($!wide-context)
     }
 
     #| Convert a single Str -> a single RenderSpan (for compatibility)
     multi method render(Str:D $text) {
-        RenderSpan.new(:$text)
+        RenderSpan.new(:$text, :$!wide-context)
     }
 
 

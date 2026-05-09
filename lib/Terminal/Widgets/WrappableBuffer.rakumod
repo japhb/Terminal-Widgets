@@ -334,14 +334,16 @@ does Terminal::Widgets::Focusable {
                 else {
                     # Cache for creating span pieces (can't just clone
                     # because RenderSpan has lazily-updated private attrs)
-                    my $text        = $span.text;
-                    my $color       = $span.color;
-                    my $string-span = $span.string-span;
+                    my $text         = $span.text;
+                    my $color        = $span.color;
+                    my $string-span  = $span.string-span;
+                    my $wide-context = $span.wide-context;
 
                     # Check whether span is *entirely* monospace, to avoid
                     # having to check for every piece
+                    my int $wc      = +$wide-context;
                     my $all-mono    = $width == $text.chars
-                                   && is-monospace-core($text, 0);
+                                   && is-monospace-core($text, $wc);
 
                     my  @runs := string-runs($text);
                     for @runs -> $ws, $nws {
@@ -354,11 +356,13 @@ does Terminal::Widgets::Focusable {
                                 my $avail = $!wrap-width - $pos;
                                 my $width = $all-mono
                                              ?? $ws.chars
-                                             !! duospace-width-core($ws, 0);
+                                             !! duospace-width-core($ws, $wc);
 
                                 # Run fits, add it
                                 if $width <= $avail {
-                                    my $piece = $span.new(:$string-span, :$color,
+                                    my $piece = $span.new(:$string-span,
+                                                          :$wide-context,
+                                                          :$color,
                                                           text => $ws);
                                     $width < $avail ?? add-to-partial($piece, $width)
                                                     !! finish-line($piece);
@@ -366,7 +370,7 @@ does Terminal::Widgets::Focusable {
                                 # Need to split a run of whitespace, but can
                                 # optimize because it is all width-1 spaces
                                 elsif $all-mono || $width == $ws.chars
-                                                   && is-monospace-core($ws, 0) {
+                                                   && is-monospace-core($ws, $wc) {
                                     # Work through the whitespace, chopping off
                                     # pieces that finish lines (last line may be
                                     # partial)
@@ -374,7 +378,9 @@ does Terminal::Widgets::Focusable {
                                     while $remainder {
                                         my $avail = $!wrap-width - $pos;
                                         my $first = $remainder.substr(0, $avail);
-                                        my $piece = $span.new(:$string-span, :$color,
+                                        my $piece = $span.new(:$string-span,
+                                                              :$wide-context,
+                                                              :$color,
                                                               text => $first);
 
                                         $width = $first.chars;
@@ -407,8 +413,10 @@ does Terminal::Widgets::Focusable {
                                         # enough room?  Excellent, add it.
                                         if $more >= $length {
                                             my $piece = $span.new(:$string-span,
-                                                                  :$color, :$remainder);
-                                            $width = duospace-width-core($remainder, 0);
+                                                                  :$wide-context,
+                                                                  :$color,
+                                                                  text => $remainder);
+                                            $width = duospace-width-core($remainder, $wc);
 
                                             if $width == $avail {
                                                 finish-line($piece);
@@ -429,7 +437,7 @@ does Terminal::Widgets::Focusable {
                                             while $more > 0 && $chars < $length {
                                                 $chars += $more;
                                                 $first  = $remainder.substr(0, $chars);
-                                                $width  = duospace-width-core($first, 0);
+                                                $width  = duospace-width-core($first, $wc);
                                                 $more   = ($avail - $width) div 2;
                                             }
 
@@ -440,7 +448,7 @@ does Terminal::Widgets::Focusable {
                                                 my $try-text  =
                                                     $remainder.substr(0, $chars + 1);
                                                 my $try-width =
-                                                    duospace-width-core($try-text, 0);
+                                                    duospace-width-core($try-text, $wc);
 
                                                 # Break out if too wide now
                                                 last unless $avail >= $try-width;
@@ -456,6 +464,7 @@ does Terminal::Widgets::Focusable {
                                             if $first-length {
                                                 # Managed to fit some, make a piece
                                                 my $piece = $span.new(:$string-span,
+                                                                      :$wide-context,
                                                                       :$color,
                                                                       text => $first);
                                                 $remainder = $remainder.substr($first-length);
@@ -483,7 +492,7 @@ does Terminal::Widgets::Focusable {
                             elsif $squash == PartialSquash || !$after-ws {
                                 my $width = $all-mono
                                              ?? $ws.chars
-                                             !! duospace-width-core($ws, 0);
+                                             !! duospace-width-core($ws, $wc);
                                 if $width {
                                     # A single cell-width space must always fit
                                     # (otherwise the previous line would have been
@@ -498,7 +507,9 @@ does Terminal::Widgets::Focusable {
                                                      && $ws.contains("\x3000");
                                     my $space = $wants-ideo ?? "\x3000" !! ' ';
                                     my $need  = $wants-ideo + 1;
-                                    my $piece = $span.new(:$string-span, :$color,
+                                    my $piece = $span.new(:$string-span,
+                                                          :$wide-context,
+                                                          :$color,
                                                           text => $space);
 
                                     $need < $avail ?? add-to-partial($piece, $need)
@@ -517,11 +528,13 @@ does Terminal::Widgets::Focusable {
 
                             my $avail = $!wrap-width - $pos;
                             my $width = $all-mono ?? $nws.chars
-                                                  !! duospace-width-core($nws, 0);
+                                                  !! duospace-width-core($nws, $wc);
 
                             # Run fits, just add it
                             if $width <= $avail {
-                                my $piece = $span.new(:$string-span, :$color,
+                                my $piece = $span.new(:$string-span,
+                                                      :$wide-context,
+                                                      :$color,
                                                       text => $nws);
                                 $width < $avail ?? add-to-partial($piece, $width)
                                                 !! finish-line($piece);
@@ -530,7 +543,9 @@ does Terminal::Widgets::Focusable {
                             # fit on a line by itself, so finish current line and
                             # add this piece to the next line
                             elsif $word-mode && $width <= $max-wrapped {
-                                my $piece = $span.new(:$string-span, :$color,
+                                my $piece = $span.new(:$string-span,
+                                                      :$wide-context,
+                                                      :$color,
                                                       text => $nws);
                                 finish-line;
                                 if $width == $max-wrapped {
@@ -544,7 +559,7 @@ does Terminal::Widgets::Focusable {
                             # Need to split a run of NON-whitespace (a "word")
                             # across lines; check if it's monospace to use a
                             # faster splitting path
-                            elsif $all-mono || is-monospace-core($nws, 0) {
+                            elsif $all-mono || is-monospace-core($nws, $wc) {
                                 # Work through $nws, chopping off pieces that
                                 # finish lines (last line may be partial)
                                 my $remainder = $nws;
@@ -552,7 +567,9 @@ does Terminal::Widgets::Focusable {
                                     my $avail  = $!wrap-width - $pos;
                                     my $length = $remainder.chars;
                                     my $first  = $remainder.substr(0, $avail);
-                                    my $piece  = $span.new(:$string-span, :$color,
+                                    my $piece  = $span.new(:$string-span,
+                                                           :$wide-context,
+                                                           :$color,
                                                            text => $first);
                                     if $length >= $avail {
                                         finish-line($piece);
@@ -594,9 +611,11 @@ does Terminal::Widgets::Focusable {
                                     # line, just directly add the final piece
                                     # and fall out to next run
                                     if $more >= $length {
-                                        my $piece = $span.new(:$string-span, :$color,
+                                        my $piece = $span.new(:$string-span,
+                                                              :$wide-context,
+                                                              :$color,
                                                               text => $remainder);
-                                        $width = duospace-width-core($remainder, 0);
+                                        $width = duospace-width-core($remainder, $wc);
 
                                         if $width == $avail {
                                             finish-line($piece);
@@ -624,7 +643,7 @@ does Terminal::Widgets::Focusable {
                                         while $more > 0 && $chars < $length {
                                             $chars += $more;
                                             $first  = $remainder.substr(0, $chars);
-                                            $width  = duospace-width-core($first, 0);
+                                            $width  = duospace-width-core($first, $wc);
                                             $more   = ($avail - $width) div 2;
                                         }
 
@@ -636,7 +655,7 @@ does Terminal::Widgets::Focusable {
                                             my $try-text  =
                                                 $remainder.substr(0, $chars + 1);
                                             my $try-width =
-                                                duospace-width-core($try-text, 0);
+                                                duospace-width-core($try-text, $wc);
 
                                             # Break out if too wide now
                                             last unless $avail >= $try-width;
@@ -651,7 +670,9 @@ does Terminal::Widgets::Focusable {
                                         my $first-length = $first.chars;
                                         if $first-length {
                                             # Managed to fit some, make a piece
-                                            my $piece = $span.new(:$string-span, :$color,
+                                            my $piece = $span.new(:$string-span,
+                                                                  :$wide-context,
+                                                                  :$color,
                                                                   text => $first);
                                             $remainder = $remainder.substr($first-length);
 
@@ -857,13 +878,14 @@ does Terminal::Widgets::Focusable {
             # Found the right span, now look for proper cell
             if $pos <= $x < $next {
                 # Monospace spans don't have wide chars, so no second cells
-                my $text  = $span.text;
-                my $chars = $text.chars;
-                return False if $width == $chars && is-monospace-core($text, 0);
+                my $text   = $span.text;
+                my $chars  = $text.chars;
+                my int $wc = +$span.wide-context;
+                return False if $width == $chars && is-monospace-core($text, $wc);
 
                 # Duospace; march through span one character at a time
                 for $text.comb {
-                    my $w = duospace-width-core($_, 0);
+                    my $w = duospace-width-core($_, $wc);
                     return True if $w > 1 && $x == $pos + 1;
                     $pos += $w;
                 }

@@ -427,7 +427,7 @@ class Terminal::Widgets::Widget
         my $span-x = 0;
         for @line {
             my $next = $span-x + .width;
-            if is-monospace-core(.text, 0) {
+            if is-monospace-core(.text, +.wide-context) {
                 if $x-scroll <= $span-x && $next <= $x-scroll + $w  {
                     # Span fully visible and monospace; render entire span and
                     # move line-x the full width. This is the FASTEST span path.

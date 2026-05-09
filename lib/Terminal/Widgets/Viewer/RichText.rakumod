@@ -155,9 +155,11 @@ class Terminal::Widgets::Viewer::RichText
                                         # wrapping logic, that's already
                                         # happened previously.
 
-                                        my $loc = $cursor-x - $start-x;
+                                        my $wide-context = $span.wide-context;
+                                        my int $wc  = +$wide-context;
+                                        my $loc     = $cursor-x - $start-x;
                                         my $is-mono = $width == $chars
-                                                   && is-monospace-core($text, 0);
+                                                   && is-monospace-core($text, $wc);
 
                                         # Correct $loc if duospace span
                                         unless $is-mono {
@@ -165,7 +167,7 @@ class Terminal::Widgets::Viewer::RichText
                                             my $l = 0;
                                             while $x < $loc && $l < $chars {
                                                 my $c = substr($text, $l, 1);
-                                                $x += duospace-width-core($c, 0);
+                                                $x += duospace-width-core($c, $wc);
                                                 $l++;
                                             }
                                             $l-- if $x > $loc;
@@ -181,16 +183,19 @@ class Terminal::Widgets::Viewer::RichText
                                         my $string-span = $span.string-span;
                                         if $before {
                                             @line.push: $span.new(:$string-span,
+                                                                  :$wide-context,
                                                                   color => $span-c,
                                                                   text => $before);
                                         }
                                         if $highlit {
                                             @line.push: $span.new(:$string-span,
+                                                                  :$wide-context,
                                                                   color => $merged,
                                                                   text => $highlit);
                                         }
                                         if $after {
                                             @line.push: $span.new(:$string-span,
+                                                                  :$wide-context,
                                                                   color => $span-c,
                                                                   text => $after);
                                         }
