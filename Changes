@@ -2,7 +2,7 @@ Revision history for Terminal-Widgets
 
 {{$NEXT}}
   [Packaging]
-  - Bump Text::MiscUtils dependency to 0.0.12+ for duospace-width VS-16 fixes
+  - Bump Text::MiscUtils dependency to 0.0.13+ for duospace-width VS-16 fixes
 
 
 0.3.1  2026-03-22T17:57:22-07:00
