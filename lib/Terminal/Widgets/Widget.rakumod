@@ -435,83 +435,83 @@ class Terminal::Widgets::Widget
         grid.with-grid-lock: {
             grid.reset-grid-string;
 
-        for @line {
-            use Terminal::ANSIColor; # lexical imports FTW
+            for @line {
+                use Terminal::ANSIColor; # lexical imports FTW
 
-            my $next = $span-x + .width;
-            if is-monospace-core(.text, +.wide-context) {
-                if $x-scroll <= $span-x && $next <= $x-scroll + $w  {
-                    # Span fully visible and monospace; render entire span and
-                    # move line-x the full width. This is the FASTEST span path.
-                    my \sgr   = .color.contains(',')
-                                 ?? color(.color)
-                                 !! %!color-cache{.color} //= color(.color);
-                    my @cells = sgr ?? .text.comb.map({ $!Cell.fast-create-sgr($_, sgr) })
-                                    !! .text.comb;
-                    @row.splice($line-x, @cells.elems, @cells);
-                    $line-x += .width;
+                my $next = $span-x + .width;
+                if is-monospace-core(.text, +.wide-context) {
+                    if $x-scroll <= $span-x && $next <= $x-scroll + $w  {
+                        # Span fully visible and monospace; render entire span and
+                        # move line-x the full width. This is the FASTEST span path.
+                        my \sgr   = .color.contains(',')
+                                     ?? color(.color)
+                                     !! %!color-cache{.color} //= color(.color);
+                        my @cells = sgr ?? .text.comb.map({ $!Cell.fast-create-sgr($_, sgr) })
+                                        !! .text.comb;
+                        @row.splice($line-x, @cells.elems, @cells);
+                        $line-x += .width;
+                    }
+                    elsif $x-scroll < $next {
+                        # Span partially visible and monospace; render visible
+                        # substring and move line-x accordingly.  This is the
+                        # MEDIUM speed path.
+                        my $start   = 0 max $x-scroll - $span-x;
+                        my $max-len = 0 max $w - (0 max $span-x - $x-scroll);
+                        my $text    = substr(.text, $start, $max-len);
+
+                        my \sgr   = .color.contains(',')
+                                     ?? color(.color)
+                                     !! %!color-cache{.color} //= color(.color);
+                        my @cells = sgr ?? $text.comb.map({ $!Cell.fast-create-sgr($_, sgr) })
+                                        !! $text.comb;
+                        @row.splice($line-x, @cells.elems, @cells);
+                        $line-x += $text.chars;
+                    }
+                    # else monospace span is not visible, so don't draw this span
                 }
                 elsif $x-scroll < $next {
-                    # Span partially visible and monospace; render visible
-                    # substring and move line-x accordingly.  This is the
-                    # MEDIUM speed path.
-                    my $start   = 0 max $x-scroll - $span-x;
-                    my $max-len = 0 max $w - (0 max $span-x - $x-scroll);
-                    my $text    = substr(.text, $start, $max-len);
+                    # Span is duospaced and possibly visible, but may be cut off by
+                    # x-scroll or width; need to render cell-by-cell.  This is a
+                    # potentially SLOW path!
 
+                    # XXXX: Currently leaves untouched split character cells;
+                    #       should this overwrite with ' ' instead?
+
+                    my int $wide-context = +.wide-context;
                     my \sgr   = .color.contains(',')
                                  ?? color(.color)
                                  !! %!color-cache{.color} //= color(.color);
-                    my @cells = sgr ?? $text.comb.map({ $!Cell.fast-create-sgr($_, sgr) })
-                                    !! $text.comb;
-                    @row.splice($line-x, @cells.elems, @cells);
-                    $line-x += $text.chars;
-                }
-                # else monospace span is not visible, so don't draw this span
-            }
-            elsif $x-scroll < $next {
-                # Span is duospaced and possibly visible, but may be cut off by
-                # x-scroll or width; need to render cell-by-cell.  This is a
-                # potentially SLOW path!
 
-                # XXXX: Currently leaves untouched split character cells;
-                #       should this overwrite with ' ' instead?
+                    for .text.comb -> $char {
+                        my $width  = duospace-width-core($char, $wide-context);
+                        my $c-next = $line-x + $width;
 
-                my int $wide-context = +.wide-context;
-                my \sgr   = .color.contains(',')
-                             ?? color(.color)
-                             !! %!color-cache{.color} //= color(.color);
+                        # Wide char cut off (split) by drawing area width, done
+                        last if $c-next > $w;
 
-                for .text.comb -> $char {
-                    my $width  = duospace-width-core($char, $wide-context);
-                    my $c-next = $line-x + $width;
+                        if $x-scroll <= $span-x {
+                            # Character fully visible; update optionally-colored
+                            # first cell, empty second cell if character was wide,
+                            # and move line-x forward by full character width.
 
-                    # Wide char cut off (split) by drawing area width, done
-                    last if $c-next > $w;
+                            my $cell = sgr ?? $!Cell.fast-create-sgr($char, sgr) !! $char;
+                            @row.ASSIGN-POS($line-x, $cell);
+                            @row.ASSIGN-POS($line-x + 1, '') if $width > 1;
+                            $line-x = $c-next;
+                        }
+                        elsif $x-scroll == $span-x + 1 && $width == 2 {
+                            # Wide char split by x-scroll, skip forward 1 cell
+                            $line-x++;
+                        }
 
-                    if $x-scroll <= $span-x {
-                        # Character fully visible; update optionally-colored
-                        # first cell, empty second cell if character was wide,
-                        # and move line-x forward by full character width.
-
-                        my $cell = sgr ?? $!Cell.fast-create-sgr($char, sgr) !! $char;
-                        @row.ASSIGN-POS($line-x, $cell);
-                        @row.ASSIGN-POS($line-x + 1, '') if $width > 1;
-                        $line-x = $c-next;
+                        $span-x += $width;
                     }
-                    elsif $x-scroll == $span-x + 1 && $width == 2 {
-                        # Wide char split by x-scroll, skip forward 1 cell
-                        $line-x++;
-                    }
-
-                    $span-x += $width;
                 }
-            }
-            # else span has been scrolled past, so don't draw this span
+                # else span has been scrolled past, so don't draw this span
 
-            # Span complete, update span-x and check if any drawing width left
-            last if ($span-x = $next) - $x-scroll >= $w;
-        }
+                # Span complete, update span-x and check if any drawing width left
+                last if ($span-x = $next) - $x-scroll >= $w;
+            }
 
         }  # grid.with-grid-lock
     }
