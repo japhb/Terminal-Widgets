@@ -39,6 +39,9 @@ class Terminal::Widgets::Widget
     has Int $.y-offset;  #= Cumulative Y offset from screen root, + = down
     has Int $.z-offset;  #= Cumulative Z offset from screen root, + = nearer
 
+    has %!color-cache = '' => '',;  #= Cache of color string -> SGR code conversion
+    has $!Cell = self.grid.cell('', '').WHAT;  #= Type object for grid cell class
+
 
     submethod TWEAK() {
         self.init-themable;
@@ -403,12 +406,13 @@ class Terminal::Widgets::Widget
     #        control characters embedded in the string, such as BiDi overrides.
     #
     method draw-line-spans(UInt:D $line-x is copy, UInt:D $line-y,
-                           UInt:D $w, @line, UInt:D :$x-scroll = 0,
-                           :$locale = self.terminal.locale) {
+                           UInt:D $w, @line, UInt:D :$x-scroll = 0) {
 
         # This algorithm uses a lot of parameters and working variables;
         # here's a quick reference:
         #
+        # grid              A pre-deconted reference to this Widget's backing Grid
+        # @row              The Grid.grid row corresponding to $line-y
         # @line             Array of Spans to be drawn on this line
         # $_ (topic)        Current Span object within the @line array
         #
@@ -419,19 +423,32 @@ class Terminal::Widgets::Widget
         # $next             Cells expected processed *after* current Span is complete
         #
         # $char             Current character within current Span's text
-        # $locale           Locale in which to calculate character widths
         # $width            Width of current character
         # $c-next           Next $line-x after drawing the current character
+        # sgr               SGR escape code representation of span's color
         # $cell             Colored cell to be drawn in grid for current character
 
+        my \grid  := $.grid<>;
+        my @row   := grid.grid.AT-POS($line-y)<> // return;
         my $span-x = 0;
+
+        grid.with-grid-lock: {
+            grid.reset-grid-string;
+
         for @line {
+            use Terminal::ANSIColor; # lexical imports FTW
+
             my $next = $span-x + .width;
             if is-monospace-core(.text, +.wide-context) {
                 if $x-scroll <= $span-x && $next <= $x-scroll + $w  {
                     # Span fully visible and monospace; render entire span and
                     # move line-x the full width. This is the FASTEST span path.
-                    $.grid.set-span($line-x, $line-y, .text, .color);
+                    my \sgr   = .color.contains(',')
+                                 ?? color(.color)
+                                 !! %!color-cache{.color} //= color(.color);
+                    my @cells = sgr ?? .text.comb.map({ $!Cell.fast-create-sgr($_, sgr) })
+                                    !! .text.comb;
+                    @row.splice($line-x, @cells.elems, @cells);
                     $line-x += .width;
                 }
                 elsif $x-scroll < $next {
@@ -442,7 +459,12 @@ class Terminal::Widgets::Widget
                     my $max-len = 0 max $w - (0 max $span-x - $x-scroll);
                     my $text    = substr(.text, $start, $max-len);
 
-                    $.grid.set-span($line-x, $line-y, $text, .color);
+                    my \sgr   = .color.contains(',')
+                                 ?? color(.color)
+                                 !! %!color-cache{.color} //= color(.color);
+                    my @cells = sgr ?? $text.comb.map({ $!Cell.fast-create-sgr($_, sgr) })
+                                    !! $text.comb;
+                    @row.splice($line-x, @cells.elems, @cells);
                     $line-x += $text.chars;
                 }
                 # else monospace span is not visible, so don't draw this span
@@ -452,14 +474,16 @@ class Terminal::Widgets::Widget
                 # x-scroll or width; need to render cell-by-cell.  This is a
                 # potentially SLOW path!
 
-                # XXXX: Run this for loop with grid lock held and update
-                #       cells manually to avoid repeated call overhead?
-
                 # XXXX: Currently leaves untouched split character cells;
                 #       should this overwrite with ' ' instead?
 
+                my int $wide-context = +.wide-context;
+                my \sgr   = .color.contains(',')
+                             ?? color(.color)
+                             !! %!color-cache{.color} //= color(.color);
+
                 for .text.comb -> $char {
-                    my $width  = $locale.width($char);
+                    my $width  = duospace-width-core($char, $wide-context);
                     my $c-next = $line-x + $width;
 
                     # Wide char cut off (split) by drawing area width, done
@@ -470,10 +494,9 @@ class Terminal::Widgets::Widget
                         # first cell, empty second cell if character was wide,
                         # and move line-x forward by full character width.
 
-                        my $cell = .color ?? $.grid.cell($char, .color) !! $char;
-                        $.grid.change-cell($line-x,     $line-y, $cell);
-                        $.grid.change-cell($line-x + 1, $line-y, '')
-                            if $width > 1;
+                        my $cell = sgr ?? $!Cell.fast-create-sgr($char, sgr) !! $char;
+                        @row.ASSIGN-POS($line-x, $cell);
+                        @row.ASSIGN-POS($line-x + 1, '') if $width > 1;
                         $line-x = $c-next;
                     }
                     elsif $x-scroll == $span-x + 1 && $width == 2 {
@@ -489,6 +512,8 @@ class Terminal::Widgets::Widget
             # Span complete, update span-x and check if any drawing width left
             last if ($span-x = $next) - $x-scroll >= $w;
         }
+
+        }  # grid.with-grid-lock
     }
 
     #| Clip a rectangle to the content area of this widget

@@ -22,16 +22,14 @@ does Terminal::Widgets::Scrollable {
         my ($l, $t, $w, $h) = self.content-rect;
         return unless $w && $h;
 
-        # Grab a chunk of lines to render and the locale to render in
-        my $chunk  = self.span-line-chunk($.y-scroll, $h);
-        my $locale = self.terminal.locale;
+        # Grab a chunk of lines to render
+        my $chunk = self.span-line-chunk($.y-scroll, $h);
 
         # Render available lines
         my $y = 0;
         while $y < $h {
             my $line = $chunk[$y] // last;
-            self.draw-line-spans($l, $t + $y++, $w, $line,
-                                 :$.x-scroll, :$locale);
+            self.draw-line-spans($l, $t + $y++, $w, $line, :$.x-scroll);
         }
     }
 }
