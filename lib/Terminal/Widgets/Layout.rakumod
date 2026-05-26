@@ -309,9 +309,16 @@ class Node does Dynamic {
         $!computed = $style;
         note "Initial compute:\n" ~ self.gist ~ "\n" if $debug >= 2;
 
-        # Compute all children based on partial info so far
+        # Skip remainder if no children
         return unless @.children;
-        .compute-layout for @.children;
+
+        # Compute all children based on partial info so far, aggregating
+        # Failures into an X::CannotLayout::ChildFailures if needed
+        my @failed-children;
+        .compute-layout || @failed-children.push($_) for @.children;
+        fail X::CannotLayout::ChildFailures.new(failures => @failed-children)
+            if @failed-children;
+
         note "After children computed:\n" ~ self.gist ~ "\n" if $debug >= 2;
 
         # Cache box model corrections for our ContentBox
@@ -414,10 +421,20 @@ class Node does Dynamic {
                 $share  min= $before.max-w  if $before.max-w.defined;
                 $remain-w -= $share;
 
-                $node.computed = $before.clone(:set-w($share));
-                $node.compute-layout;
+                # Fix child width, tracking any Failures that occur
+                my $cloned = $before.clone(:set-w($share));
+                if $cloned ~~ Failure {
+                    @failed-children.push($cloned);
+                }
+                else {
+                    $node.computed = $cloned;
+                    my $computed = $node.compute-layout;
+                    @failed-children.push($computed) if $computed ~~ Failure;
+                }
             }
         }
+        fail X::CannotLayout::ChildFailures.new(failures => @failed-children)
+            if @failed-children;
 
         my @child-set-h = @child-style.grep(*.set-h.defined).map:
             { .set-h + .height-correction(MarginBox) };
@@ -454,10 +471,20 @@ class Node does Dynamic {
                 $share  min= $before.max-h if $before.max-h.defined;
                 $remain-h -= $share;
 
-                $node.computed = $before.clone(:set-h($share));
-                $node.compute-layout;
+                # Fix child width, tracking any Failures that occur
+                my $cloned = $before.clone(:set-h($share));
+                if $cloned ~~ Failure {
+                    @failed-children.push($cloned);
+                }
+                else {
+                    $node.computed = $cloned;
+                    my $computed = $node.compute-layout;
+                    @failed-children.push($computed) if $computed ~~ Failure;
+                }
             }
         }
+        fail X::CannotLayout::ChildFailures.new(failures => @failed-children)
+            if @failed-children;
 
         # Check for additional layout failures
         fail X::CannotLayout::SetMismatch.new(parent-w   => $set-w,
