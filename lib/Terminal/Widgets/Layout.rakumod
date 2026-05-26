@@ -499,8 +499,10 @@ class Node does Dynamic {
             if $remain-w < 0 || $remain-h < 0;
 
         # Assign final computed style
-        $!computed .= clone(:$min-w, :$set-w, :$max-w,
-                            :$min-h, :$set-h, :$max-h);
+        my $final   =  $!computed.clone(:$min-w, :$set-w, :$max-w,
+                                        :$min-h, :$set-h, :$max-h);
+        fail $final if $final ~~ Failure;
+        $!computed  =  $final;
 
         note "Final layout:\n" ~ self.gist ~ "\n" if $debug >= 2;
 
