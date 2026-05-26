@@ -72,11 +72,12 @@ class Style
     has UInt:D $.share-w = 1;
     has UInt:D $.share-h = 1;
 
-    # Force clone to call TWEAK, just like bless/new
+    # Force clone to call TWEAK (just like bless/new) and pass TWEAK Failures through
     method clone {
-        my $clone = callsame;
-        $clone.Style::TWEAK;
-        $clone
+        my $clone  = callsame;
+        my $result = $clone.Style::TWEAK;
+
+        $result ~~ Failure ?? $result !! $clone
     }
 
     submethod TWEAK() {
