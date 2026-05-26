@@ -20,16 +20,20 @@ class X::CannotLayout::TooSmall is X::CannotLayout {
     has UInt   $.set-h is required;
     has UInt   $.max-h is required;
 
-    has UInt:D $.need-w = self!need($!min-w // 0, $!set-w // 0, $!max-w // 0);
-    has UInt:D $.need-h = self!need($!min-h // 0, $!set-h // 0, $!max-h // 0);
+    has UInt:D $.need-w = self!need($!min-w, $!set-w, $!max-w);
+    has UInt:D $.need-h = self!need($!min-h, $!set-h, $!max-h);
 
-    method !need(UInt:D $min, UInt:D $set, UInt:D $max) {
+    method !need(UInt $min is copy, UInt $set is copy, UInt $max is copy) {
+        $min //= 0;
+        $set //= $min;
+        $max //= $min max $set;
+
         my $max-nx = $min max $max;
         my $min-nx = $min min $max;
 
-        $set >  $max-nx      ?? $set - $max !!
-        $set <  $min-nx      ?? $min - $set !!
-        $max <  $min         ?? $min - $max !! 0
+        $set > $max-nx ?? $set - $max !!
+        $set < $min-nx ?? $min - $set !!
+        $max < $min    ?? $min - $max !! 0
     }
 
     method message() {
@@ -315,7 +319,10 @@ class Node does Dynamic {
         # Compute all children based on partial info so far, aggregating
         # Failures into an X::CannotLayout::ChildFailures if needed
         my @failed-children;
-        .compute-layout || @failed-children.push($_) for @.children;
+        for @.children {
+            my $computed = .compute-layout;
+            @failed-children.push($computed) if $computed ~~ Failure;
+        }
         fail X::CannotLayout::ChildFailures.new(failures => @failed-children)
             if @failed-children;
 
