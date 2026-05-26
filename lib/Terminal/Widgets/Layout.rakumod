@@ -7,6 +7,52 @@ use Terminal::Widgets::WidgetRegistry;
 use Terminal::Widgets::Layout::BoxModel;
 
 
+#| General exception class for layout failures
+class X::CannotLayout is Exception { }
+
+#| X::CannotLayout subclass for extra space needed
+class X::CannotLayout::TooSmall is X::CannotLayout {
+    has UInt   $.min-w is required;
+    has UInt   $.set-w is required;
+    has UInt   $.max-w is required;
+
+    has UInt   $.min-h is required;
+    has UInt   $.set-h is required;
+    has UInt   $.max-h is required;
+
+    has UInt:D $.need-w = self!need($!min-w // 0, $!set-w // 0, $!max-w // 0);
+    has UInt:D $.need-h = self!need($!min-h // 0, $!set-h // 0, $!max-h // 0);
+
+    method !need(UInt:D $min, UInt:D $set, UInt:D $max) {
+        my $max-nx = $min max $max;
+        my $min-nx = $min min $max;
+
+        $set >  $max-nx      ?? $set - $max !!
+        $set <  $min-nx      ?? $min - $set !!
+        $max <  $min         ?? $min - $max !! 0
+    }
+
+    method message() {
+        my $need = (("+$.need-w width"  if $.need-w),
+                    ("+$.need-h height" if $.need-h)).join(' and ');
+
+        "Cannot layout because available space is too small; need $need"
+    }
+}
+
+#| X::CannotLayout subclass for conflicting parent/child sets
+class X::CannotLayout::SetMismatch is X::CannotLayout {
+    has UInt:D $.parent-w   is required;
+    has UInt:D $.parent-h   is required;
+    has UInt:D $.children-w is required;
+    has UInt:D $.children-h is required;
+
+    method message() {
+        "Cannot layout because computed parent node size (w: $.parent-w, h: $.parent-h) does not match computed children size (w: $.children-w, h: $.children-h)"
+    }
+}
+
+
 #| Style information (either requested or computed) for a layout node/leaf
 class Style
  does Terminal::Widgets::Layout::BoxModel::BoxModel {
