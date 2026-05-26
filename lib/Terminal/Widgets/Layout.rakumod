@@ -357,13 +357,21 @@ class Node does Dynamic {
                           !!  @child-set-w.sum;
         my $corrected-child-set-w = $child-set-w - $cwc;
 
+        # Error detection variables
+        my $fail-mismatch = False;
+        my $remain-w      = 0;
+        my $remain-h      = 0;
+
         if @.children == @child-set-w {
-            fail 'Set width in parent (' ~ $set-w ~ ') does not match width of children (' ~ $child-set-w ~ ')'
-                if $set-w.defined && $set-w != $corrected-child-set-w;
-            $set-w = $corrected-child-set-w;
+            if $set-w.defined && $set-w != $corrected-child-set-w {
+                $fail-mismatch = True;
+            }
+            else {
+                $set-w = $corrected-child-set-w;
+            }
         }
         elsif $set-w.defined {
-            my $remain-w = $set-w - $corrected-child-set-w;
+            $remain-w = $set-w - $corrected-child-set-w;
 
             # Need to use @.children instead of @child-style because will need to
             # recompute .computed in the while loop below
@@ -376,9 +384,8 @@ class Node does Dynamic {
                 my $node   = @unset-w.shift;
                 my $before = $node.computed;
                 $remain-w -= $before.width-correction(MarginBox);
-                fail 'Insufficient remaining width to distribute' if $remain-w < 0;
 
-                my $share  = floor($remain-w * $before.share-w / $sum);
+                my $share  = 0 max floor($remain-w * $before.share-w / $sum);
                 $share     = 0              if $before.minimize-w;
                 $share  max= $before.min-w  if $before.min-w.defined;
                 $share  min= $before.max-w  if $before.max-w.defined;
@@ -396,12 +403,15 @@ class Node does Dynamic {
         my $corrected-child-set-h = $child-set-h - $chc;
 
         if @.children == @child-set-h {
-            fail 'Set height in parent (' ~ $set-h ~ ') does not match height of children (' ~ $child-set-h ~ ')'
-                if $set-h.defined && $set-h != $corrected-child-set-h;
-            $set-h = $corrected-child-set-h;
+            if $set-h.defined && $set-h != $corrected-child-set-h {
+                $fail-mismatch = True;
+            }
+            else {
+                $set-h = $corrected-child-set-h;
+            }
         }
         elsif $set-h.defined {
-            my $remain-h = $set-h - $corrected-child-set-h;
+            $remain-h = $set-h - $corrected-child-set-h;
 
             # Need to use @.children instead of @child-style because will need to
             # recompute .computed in the while loop below
@@ -414,9 +424,8 @@ class Node does Dynamic {
                 my $node   = @unset-h.shift;
                 my $before = $node.computed;
                 $remain-h -= $before.height-correction(MarginBox);
-                fail 'Insufficient remaining height to distribute' if $remain-h < 0;
 
-                my $share  = floor($remain-h * $before.share-h / $sum);
+                my $share  = 0 max floor($remain-h * $before.share-h / $sum);
                 $share     = 0             if $before.minimize-h;
                 $share  max= $before.min-h if $before.min-h.defined;
                 $share  min= $before.max-h if $before.max-h.defined;
@@ -426,6 +435,18 @@ class Node does Dynamic {
                 $node.compute-layout;
             }
         }
+
+        # Check for additional layout failures
+        fail X::CannotLayout::SetMismatch.new(parent-w   => $set-w,
+                                              parent-h   => $set-h,
+                                              children-w => $corrected-child-set-w,
+                                              children-h => $corrected-child-set-h)
+            if $fail-mismatch;
+        fail X::CannotLayout::TooSmall.new(:$min-w, :$max-w,
+                                           :$min-h, :$max-h,
+                                           set-w => ($set-w || 0) - (0 min $remain-w),
+                                           set-h => ($set-h || 0) - (0 min $remain-w))
+            if $remain-w < 0 || $remain-h < 0;
 
         # Assign final computed style
         $!computed .= clone(:$min-w, :$set-w, :$max-w,
