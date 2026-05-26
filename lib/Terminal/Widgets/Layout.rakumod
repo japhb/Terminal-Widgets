@@ -327,16 +327,27 @@ class Node does Dynamic {
 
         # Check whether min/max are equal (and thus force set to be the same)
         # Note that minimums are always defined by this point (though may be 0)
+        my $fail-set = False;
         if $max-w.defined && $min-w == $max-w {
-            fail 'Width is set to ' ~ $set-w ~ ', outside of min/max ' ~ $min-w
-                if $set-w.defined && $set-w != $min-w;
-            $set-w = $min-w;
+            if $set-w.defined && $set-w != $min-w {
+                $fail-set = True;
+            }
+            else {
+                $set-w = $min-w;
+            }
         }
         if $max-h.defined && $min-h == $max-h {
-            fail 'Height is set to ' ~ $set-h ~ ', outside of min/max ' ~ $min-h
-                if $set-h.defined && $set-h != $min-h;
-            $set-h = $min-h;
+            if $set-h.defined && $set-h != $min-h {
+                $fail-set = True;
+            }
+            else {
+                $set-h = $min-h;
+            }
         }
+
+        # Check for min <= set <= max failures
+        fail X::CannotLayout::TooSmall.new(:$min-w, :$set-w, :$max-w,
+                                           :$min-h, :$set-h, :$max-h) if $fail-set;
 
         # Set values: subtract out and see what's left
         my @child-set-w = @child-style.grep(*.set-w.defined).map:
