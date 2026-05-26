@@ -91,23 +91,14 @@ class Style
         $!set-h //= $!min-h if $!min-h.defined && $!max-h.defined && $!min-h == $!max-h;
 
         # Prevent non-sensical styles
-        fail 'Cannot configure a style width with min (' ~ $!min-w
-           ~ ') and max (' ~ $!max-w ~ ') swapped'
-            if $!min-w.defined && $!max-w.defined && $!min-w > $!max-w;
-
-        fail 'Cannot configure a style height with min (' ~ $!min-h
-           ~ ') and max (' ~ $!max-h ~ ') swapped'
-            if $!min-h.defined && $!max-h.defined && $!min-h > $!max-h;
-
-        fail 'Cannot set a style width (' ~ $!set-w
-           ~ ') that is not between min (' ~ $!min-w ~ ') and max (' ~ $!max-w ~ ')'
-            if $!set-w.defined && $!min-w.defined && $!min-w > $!set-w
-            || $!set-w.defined && $!max-w.defined && $!max-w < $!set-w;
-
-        fail 'Cannot set a style height (' ~ $!set-h
-           ~ ') that is not between min (' ~ $!min-h ~ ') and max (' ~ $!max-h ~ ')'
-            if $!set-h.defined && $!min-h.defined && $!min-h > $!set-h
-            || $!set-h.defined && $!max-h.defined && $!max-h < $!set-h;
+        fail X::CannotLayout::TooSmall.new(:$!min-w, :$!set-w, :$!max-w,
+                                           :$!min-h, :$!set-h, :$!max-h)
+            if ($!min-w.defined && $!max-w.defined && $!min-w > $!max-w)
+            || ($!min-h.defined && $!max-h.defined && $!min-h > $!max-h)
+            || ($!set-w.defined && $!min-w.defined && $!min-w > $!set-w)
+            || ($!set-w.defined && $!max-w.defined && $!max-w < $!set-w)
+            || ($!set-h.defined && $!min-h.defined && $!min-h > $!set-h)
+            || ($!set-h.defined && $!max-h.defined && $!max-h < $!set-h);
     }
 
     multi method gist(Style:D:) {
