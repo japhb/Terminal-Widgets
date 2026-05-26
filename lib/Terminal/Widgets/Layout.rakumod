@@ -146,7 +146,9 @@ does Terminal::Widgets::Common {
 
     method update-requested(*%updates) {
         self.uncompute;
-        $!requested = $!requested.clone(|%updates);
+        my $clone   =  $!requested.clone(|%updates);
+        fail $clone if $clone ~~ Failure;
+        $!requested =  $clone;
     }
 
     method uncompute() {
@@ -228,7 +230,9 @@ class Leaf does Dynamic {
 
     multi method compute-layout(Leaf:D:) {
         # Use initial DWIM computations for final computed style
-        $!computed = self.initial-compute[0];
+        my $initial   =  self.initial-compute[0];
+        fail $initial if $initial ~~ Failure;
+        $!computed    =  $initial;
 
         self
     }
@@ -281,6 +285,8 @@ class Node does Dynamic {
         my ($style,
             $min-w, $set-w, $max-w,
             $min-h, $set-h, $max-h) = self.initial-compute;
+
+        fail $style if $style ~~ Failure;
 
         # Assign *partially* computed style to allow children to introspect this node
         $!computed = $style;
