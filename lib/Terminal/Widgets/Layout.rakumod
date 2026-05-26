@@ -47,11 +47,28 @@ class X::CannotLayout::SetMismatch is X::CannotLayout {
     has UInt:D $.children-w is required;
     has UInt:D $.children-h is required;
 
+    has UInt:D $.need-w = ($!parent-w - $!children-w).abs;
+    has UInt:D $.need-h = ($!parent-h - $!children-h).abs;
+
     method message() {
         "Cannot layout because computed parent node size (w: $.parent-w, h: $.parent-h) does not match computed children size (w: $.children-w, h: $.children-h)"
     }
 }
 
+#| X::CannotLayout subclass for combining multiple child failures
+class X::CannotLayout::ChildFailures is X::CannotLayout {
+    has @.failures is required;
+
+    has UInt:D $.need-w = @!failures.map(*.need-w).sum;
+    has UInt:D $.need-h = @!failures.map(*.need-h).sum;
+
+    method message() {
+        my $need = (("+$.need-w width"  if $.need-w),
+                    ("+$.need-h height" if $.need-h)).join(' and ');
+
+        "Cannot layout because child nodes failed to do so; need $need"
+    }
+}
 
 #| Style information (either requested or computed) for a layout node/leaf
 class Style
