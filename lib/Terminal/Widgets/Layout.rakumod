@@ -67,8 +67,8 @@ class X::CannotLayout::SetMismatch is X::CannotLayout {
 class X::CannotLayout::ChildFailures is X::CannotLayout {
     has @.failures is required;
 
-    has UInt:D $.need-w = @!failures.map(*.need-w).sum;
-    has UInt:D $.need-h = @!failures.map(*.need-h).sum;
+    has UInt:D $.need-w = @!failures.map(*.exception.need-w).sum;
+    has UInt:D $.need-h = @!failures.map(*.exception.need-h).sum;
 
     method message() {
         my $need = (("+$.need-w width"  if $.need-w),
