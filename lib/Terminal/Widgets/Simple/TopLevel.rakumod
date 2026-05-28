@@ -53,7 +53,23 @@ class Terminal::Widgets::Simple::TopLevel
 
         # Ask the layout model to compute its own layout details and
         # propagate positioning to children
-        $layout-root.compute-layout;
+        my $result =  $layout-root.compute-layout;
+        if $result ~~ Failure {
+            $result.handled = True;
+            my $ex = $result.exception;
+            if $ex.need-h || $ex.need-w {
+                # XXXX: Error translation?
+                my $need = (("+$ex.need-w() width"  if $ex.need-w),
+                            ("+$ex.need-h() height" if $ex.need-h)).join(', ');
+                note "Terminal too small; need $need";
+            }
+            else {
+                note $ex.message;
+            }
+            exit 1;   # XXXX: FOR NOW
+        }
+
+        # Set and propagate X/Y coords on computed layout nodes
         $layout-root.x  = $.x;
         $layout-root.y  = $.y;
         $layout-root.propagate-xy;
