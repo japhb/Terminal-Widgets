@@ -172,7 +172,10 @@ does Terminal::Widgets::Common {
     method update-requested(*%updates) {
         self.uncompute;
         my $clone   = $!requested.clone(|%updates);
-        fail $clone.exception.clone(layout-node => self) if $clone ~~ Failure;
+        if $clone  ~~ Failure {
+            $clone.handled = True;
+            fail $clone.exception.clone(layout-node => self);
+        }
         $!requested = $clone;
     }
 
@@ -255,9 +258,12 @@ class Leaf does Dynamic {
 
     multi method compute-layout(Leaf:D:) {
         # Use initial DWIM computations for final computed style
-        my $initial   =  self.initial-compute[0];
-        fail $initial.exception.clone(layout-node => self) if $initial ~~ Failure;
-        $!computed    =  $initial;
+        my $initial =  self.initial-compute[0];
+        if $initial ~~ Failure {
+            $initial.handled = True;
+            fail $initial.exception.clone(layout-node => self);
+        }
+        $!computed  =  $initial;
 
         self
     }
@@ -311,7 +317,10 @@ class Node does Dynamic {
             $min-w, $set-w, $max-w,
             $min-h, $set-h, $max-h) = self.initial-compute;
 
-        fail $style.exception.clone(layout-node => self) if $style ~~ Failure;
+        if $style  ~~ Failure {
+            $style.handled = True;
+            fail $style.exception.clone(layout-node => self);
+        }
 
         # Assign *partially* computed style to allow children to introspect this node
         $!computed = $style;
@@ -518,7 +527,10 @@ class Node does Dynamic {
         # Assign final computed style
         my $final  = $!computed.clone(:$min-w, :$set-w, :$max-w,
                                         :$min-h, :$set-h, :$max-h);
-        fail $final.exception.clone(layout-node => self) if $final ~~ Failure;
+        if $final ~~ Failure {
+            $final.handled = True;
+            fail $final.exception.clone(layout-node => self);
+        }
         $!computed = $final;
 
         note "Final layout:\n" ~ self.gist ~ "\n" if $debug >= 2;
