@@ -7,8 +7,12 @@ use Terminal::Widgets::WidgetRegistry;
 use Terminal::Widgets::Layout::BoxModel;
 
 
+role Dynamic { ... }
+
 #| General exception class for layout failures
-class X::CannotLayout is Exception { }
+class X::CannotLayout is Exception {
+    has Dynamic $.layout-node;
+}
 
 #| X::CannotLayout subclass for extra space needed
 class X::CannotLayout::TooSmall is X::CannotLayout {
@@ -94,7 +98,7 @@ class Style
     has UInt:D $.share-h = 1;
 
     # Force clone to call TWEAK (just like bless/new) and pass TWEAK Failures through
-    method clone {
+    method clone(Style:D:) {
         my $clone  = callsame;
         my $result = $clone.Style::TWEAK;
 
@@ -167,9 +171,9 @@ does Terminal::Widgets::Common {
 
     method update-requested(*%updates) {
         self.uncompute;
-        my $clone   =  $!requested.clone(|%updates);
-        fail $clone if $clone ~~ Failure;
-        $!requested =  $clone;
+        my $clone   = $!requested.clone(|%updates);
+        fail $clone.exception.clone(layout-node => self) if $clone ~~ Failure;
+        $!requested = $clone;
     }
 
     method uncompute() {
@@ -252,7 +256,7 @@ class Leaf does Dynamic {
     multi method compute-layout(Leaf:D:) {
         # Use initial DWIM computations for final computed style
         my $initial   =  self.initial-compute[0];
-        fail $initial if $initial ~~ Failure;
+        fail $initial.exception.clone(layout-node => self) if $initial ~~ Failure;
         $!computed    =  $initial;
 
         self
@@ -307,7 +311,7 @@ class Node does Dynamic {
             $min-w, $set-w, $max-w,
             $min-h, $set-h, $max-h) = self.initial-compute;
 
-        fail $style if $style ~~ Failure;
+        fail $style.exception.clone(layout-node => self) if $style ~~ Failure;
 
         # Assign *partially* computed style to allow children to introspect this node
         $!computed = $style;
@@ -323,7 +327,8 @@ class Node does Dynamic {
             my $computed = .compute-layout;
             @failed-children.push($computed) if $computed ~~ Failure;
         }
-        fail X::CannotLayout::ChildFailures.new(failures => @failed-children)
+        fail X::CannotLayout::ChildFailures.new(layout-node => self,
+                                                failures => @failed-children)
             if @failed-children;
 
         note "After children computed:\n" ~ self.gist ~ "\n" if $debug >= 2;
@@ -383,7 +388,8 @@ class Node does Dynamic {
         }
 
         # Check for min <= set <= max failures
-        fail X::CannotLayout::TooSmall.new(:$min-w, :$set-w, :$max-w,
+        fail X::CannotLayout::TooSmall.new(layout-node => self,
+                                           :$min-w, :$set-w, :$max-w,
                                            :$min-h, :$set-h, :$max-h) if $fail-set;
 
         # Set values: subtract out and see what's left
@@ -440,7 +446,8 @@ class Node does Dynamic {
                 }
             }
         }
-        fail X::CannotLayout::ChildFailures.new(failures => @failed-children)
+        fail X::CannotLayout::ChildFailures.new(layout-node => self,
+                                                failures => @failed-children)
             if @failed-children;
 
         my @child-set-h = @child-style.grep(*.set-h.defined).map:
@@ -490,26 +497,29 @@ class Node does Dynamic {
                 }
             }
         }
-        fail X::CannotLayout::ChildFailures.new(failures => @failed-children)
+        fail X::CannotLayout::ChildFailures.new(layout-node => self,
+                                                failures => @failed-children)
             if @failed-children;
 
         # Check for additional layout failures
-        fail X::CannotLayout::SetMismatch.new(parent-w   => $set-w,
-                                              parent-h   => $set-h,
-                                              children-w => $corrected-child-set-w,
-                                              children-h => $corrected-child-set-h)
+        fail X::CannotLayout::SetMismatch.new(layout-node => self,
+                                              parent-w    => $set-w,
+                                              parent-h    => $set-h,
+                                              children-w  => $corrected-child-set-w,
+                                              children-h  => $corrected-child-set-h)
             if $fail-mismatch;
-        fail X::CannotLayout::TooSmall.new(:$min-w, :$max-w,
+        fail X::CannotLayout::TooSmall.new(layout-node => self,
+                                           :$min-w, :$max-w,
                                            :$min-h, :$max-h,
                                            set-w => ($set-w || 0) - (0 min $remain-w),
                                            set-h => ($set-h || 0) - (0 min $remain-w))
             if $remain-w < 0 || $remain-h < 0;
 
         # Assign final computed style
-        my $final   =  $!computed.clone(:$min-w, :$set-w, :$max-w,
+        my $final  = $!computed.clone(:$min-w, :$set-w, :$max-w,
                                         :$min-h, :$set-h, :$max-h);
-        fail $final if $final ~~ Failure;
-        $!computed  =  $final;
+        fail $final.exception.clone(layout-node => self) if $final ~~ Failure;
+        $!computed = $final;
 
         note "Final layout:\n" ~ self.gist ~ "\n" if $debug >= 2;
 
