@@ -108,6 +108,13 @@ class Terminal::Widgets::Widget
         #       go with Leaf or Widget respectively?
         my $layout    = Terminal::Widgets::Layout::Leaf.new(:$requested, :$parent,
                                                             :$.x, :$.y);
+
+        # NOTE: Intentionally ignoring Failure possibility, because the above
+        #       creation of $requested and $layout cannot fail -- a Style with
+        #       only set-w/h defined will auto-fill its other attributes in a
+        #       way that always makes sense, and initial-compute on a Style
+        #       auto-filled in this way trivially does nothing but make an
+        #       identical Style clone.
         $layout.compute-layout
     }
 
