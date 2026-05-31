@@ -16,6 +16,8 @@ class Terminal::Widgets::Simple::TopLevel
  does Terminal::Widgets::TopLevel
  does Terminal::Widgets::WidgetRegistry {
     has Terminal::Widgets::Layout::Builder:U $.layout-builder-class;
+    has $.layout-error;
+
 
     ### Stubbed hooks for subclass
 
@@ -47,32 +49,39 @@ class Terminal::Widgets::Simple::TopLevel
 
     #| Compute the full UI layout according to its constraints
     method compute-root-layout() {
+        # Clear layout error before attempting to generate, update, or compute
+        # the layout model so that the error can serve as a flag as well
+        $!layout-error = Nil;
+
         # Build a layout model (or reuse an existing one) for this Widget
         my $layout-root = $.layout ?? self.updated-layout-model
                                    !! self.layout-model;
 
-        # Ask the layout model to compute its own layout details and
-        # propagate positioning to children
+        # Ask the layout model to compute its own layout details, converting
+        # any layout failure into $!layout-error
         my $result =  $layout-root.compute-layout;
         if $result ~~ Failure {
             $result.handled = True;
-            my $ex = $result.exception;
-            if $ex.need-h || $ex.need-w {
+            my $ex =  $result.exception;
+            if $ex ~~ X::CannotLayout && ($ex.need-h || $ex.need-w) {
+                # XXXX: Store full exception instead?
+                # $!layout-error = $ex;
+
                 # XXXX: Error translation?
                 my $need = (("+$ex.need-w() width"  if $ex.need-w),
                             ("+$ex.need-h() height" if $ex.need-h)).join(', ');
-                note "Terminal too small; need $need";
+                $!layout-error = "Terminal too small; need $need";
             }
             else {
-                note $ex.message;
+                $!layout-error = $ex.message;
             }
-            exit 1;   # XXXX: FOR NOW
         }
 
-        # Set and propagate X/Y coords on computed layout nodes
-        $layout-root.x  = $.x;
-        $layout-root.y  = $.y;
-        $layout-root.propagate-xy;
+        # Set and propagate X/Y coords on computed layout nodes, skipping
+        # the propagation phase if the layout computation errored out
+        $layout-root.x = $.x;
+        $layout-root.y = $.y;
+        $layout-root.propagate-xy unless $!layout-error;
 
         $layout-root
     }
@@ -144,23 +153,45 @@ class Terminal::Widgets::Simple::TopLevel
         my $is-rebuild  = ?$.layout;
         my $layout-root = self.compute-root-layout;
         self.set-layout($layout-root);
-
-        # Actually build widgets and recalculate coordinate offsets recursively
         my $t1 = nano;
-        self.build-children($layout-root, self);
-        my $t2 = nano;
-        self.recalc-coord-offsets($.x, $.y, $.z);
-        my $t3 = nano;
 
-        if $.debug {
-            self.debug-elapsed($t0, $t1, desc => '1:compute-root-layout');
-            self.debug-elapsed($t1, $t2, desc => '2:build-children');
-            self.debug-elapsed($t2, $t3, desc => '3:recalc-coord-offsets');
-            self.debug-elapsed($t0, $t3);
-            note $layout-root.gist.indent(3).subst('   ', '=> ');
+        # Layout computation errored out; just report debug info
+        if $!layout-error {
+            if $.debug {
+                self.debug-elapsed($t0, $t1, desc => '1:compute-root-layout -> ERROR');
+                note $!layout-error.gist.indent(3).subst('   ', '!! ');
+                note $layout-root\ .gist.indent(3).subst('   ', '=> ');
+            }
+        }
+        # Actually build widgets and recalculate coordinate offsets recursively
+        else {
+            self.build-children($layout-root, self);
+            my $t2 = nano;
+            self.recalc-coord-offsets($.x, $.y, $.z);
+            my $t3 = nano;
+
+            if $.debug {
+                self.debug-elapsed($t0, $t1, desc => '1:compute-root-layout');
+                self.debug-elapsed($t1, $t2, desc => '2:build-children');
+                self.debug-elapsed($t2, $t3, desc => '3:recalc-coord-offsets');
+                self.debug-elapsed($t0, $t3);
+                note $layout-root.gist.indent(3).subst('   ', '=> ');
+            }
         }
 
         # Return is-rebuild for subclasses
         $is-rebuild
+    }
+
+    #| Handle composite with layout error specially; otherwise fall back to
+    #| normal Widget.composite() path
+    method composite(|) {
+        # If no error, just fall back
+        nextsame unless $!layout-error;
+
+        # Otherwise, handle layout error rendering specially
+        $.grid.clear;
+        $.grid.set-span-text(0, 0, $!layout-error);
+        callsame;
     }
 }
