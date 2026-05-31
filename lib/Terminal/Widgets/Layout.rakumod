@@ -526,7 +526,7 @@ class Node does Dynamic {
 
         # Assign final computed style
         my $final  = $!computed.clone(:$min-w, :$set-w, :$max-w,
-                                        :$min-h, :$set-h, :$max-h);
+                                      :$min-h, :$set-h, :$max-h);
         if $final ~~ Failure {
             $final.handled = True;
             fail $final.exception.clone(layout-node => self);
