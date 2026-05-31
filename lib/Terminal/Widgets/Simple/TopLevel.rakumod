@@ -2,6 +2,9 @@
 
 use nano;
 
+use Text::MiscUtils::Layout;
+use Terminal::Capabilities;
+
 use Terminal::Widgets::WidgetRegistry;
 use Terminal::Widgets::Layout;
 use Terminal::Widgets::TopLevel;
@@ -189,9 +192,31 @@ class Terminal::Widgets::Simple::TopLevel
         # If no error, just fall back
         nextsame unless $!layout-error;
 
-        # Otherwise, handle layout error rendering specially
+        # Otherwise, clear grid and handle layout error rendering specially
         $.grid.clear;
-        $.grid.set-span-text(0, 0, $!layout-error);
+        self.set-all-dirty;
+
+        # Handle terminal too small to even display error message directly
+        if $.w > 0 && $.h > 0 {
+            my $glyph  = $.terminal.caps.symbol-set
+                      >= Terminal::Capabilities::SymbolSet::CP1252 ?? '…' !! '>';
+
+            my @wrapped   = wrap-text($.w, $!layout-error);
+            my $max-lines = +@wrapped min $.h;
+
+            for ^$max-lines -> $y {
+                my $text = @wrapped[$y];
+
+                # XXXX: Assumes monospace layout error message
+                $text.subst-rw($.w - 1) = $glyph if $text.chars > $.w;
+
+                $.grid.set-span-text(0, $y, $text);
+            }
+
+            $.grid.set-span-text($.w - 1, $.h - 1, $glyph) if $.h < @wrapped;
+        }
+
+        # Composite the error message grid normally
         callsame;
     }
 }
