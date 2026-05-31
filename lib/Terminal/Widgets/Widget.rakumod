@@ -258,6 +258,7 @@ class Terminal::Widgets::Widget
             # XXXX: Does not currently save old contents at all
             my $new-grid = $.grid.WHAT.new($w, $h);
             self.replace-grid($new-grid);
+            self.set-all-dirty;
         }
 
         $.parent.add-dirty-rect($x, $y, $w, $h) if $add-dirt;
