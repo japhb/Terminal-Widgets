@@ -410,9 +410,9 @@ class Node does Dynamic {
         my $corrected-child-set-w = $child-set-w - $cwc;
 
         # Error detection variables
-        my $fail-mismatch = False;
-        my $remain-w      = 0;
-        my $remain-h      = 0;
+        my Bool:D $fail-mismatch = False;
+        my Int:D  $remain-w      = 0;
+        my Int:D  $remain-h      = 0;
 
         if @.children == @child-set-w {
             if $set-w.defined && $set-w != $corrected-child-set-w {
@@ -517,12 +517,15 @@ class Node does Dynamic {
                                               children-w  => $corrected-child-set-w,
                                               children-h  => $corrected-child-set-h)
             if $fail-mismatch;
-        fail X::CannotLayout::TooSmall.new(layout-node => self,
-                                           :$min-w, :$max-w,
-                                           :$min-h, :$max-h,
-                                           set-w => ($set-w || 0) - (0 min $remain-w),
-                                           set-h => ($set-h || 0) - (0 min $remain-w))
-            if $remain-w < 0 || $remain-h < 0;
+
+        if $remain-w < 0 || $remain-h < 0 {
+            $set-w -= 0 min $remain-w if $set-w.defined;
+            $set-h -= 0 min $remain-h if $set-h.defined;
+
+            fail X::CannotLayout::TooSmall.new(layout-node => self,
+                                               :$min-w, :$set-w, :$max-w,
+                                               :$min-h, :$set-h, :$max-h);
+        }
 
         # Assign final computed style
         my $final  = $!computed.clone(:$min-w, :$set-w, :$max-w,
