@@ -650,7 +650,9 @@ class Terminal::Widgets::Widget
         }
 
         if $.parent ~~ Terminal::Widgets::Widget:D {
-            if $.parent.is-current-toplevel && $.parent.grid === $*TERMINAL.current-grid {
+            if $.parent.is-current-toplevel
+            && $.parent.grid === $*TERMINAL.current-grid
+            && !$.parent.?layout-error {
                 note '⎙  Printing to content area: ' ~ $.gist if $!debug;
                 note self.debug-grid.indent(3) if $!debug >= 2;
 
