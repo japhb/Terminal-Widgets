@@ -75,7 +75,7 @@ class Terminal::Widgets::Simple::App is Terminal::Widgets::App {
         $PROCESS::DEBUG //= +(%*ENV<TW_DEBUG> // 0);
 
         # Provide hook for subclasses to perform boot-time initialization
-        self.boot-init(|c);
+        my $boot-result = self.boot-init(|c);
 
         # Ready to switch to alternate screen, cleanup boot message if any
         if PROCESS::<$BOOTSTRAP_MESSAGE> -> $message {
@@ -85,6 +85,9 @@ class Terminal::Widgets::Simple::App is Terminal::Widgets::App {
 
         # Record end of bootup
         $!bootup-instant = now;
+
+        # Pass back result from boot-init (if any, otherwise Nil)
+        $boot-result
     }
 
     #| Display a loading screen on a raw (but initialized) Terminal

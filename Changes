@@ -1,6 +1,8 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+
+0.3.2  2026-06-04T18:13:08-07:00
   [Bug Fixes]
   - Fix several obscure errors in layout handling
 
