@@ -41,12 +41,17 @@ my class DisplayParent does DisplayNode does Terminal::Widgets::Common {
     has Terminal::Widgets::Viewer::Tree:D $.tree is required;
 
     has DisplayNode:D @.children;
+    has Bool:D        $.flatten = False;
     has Bool:D        $.expanded = False;
     has               &.sort-by;
 
+    method TWEAK() {
+        self.set-expanded(True) if $!flatten;
+    }
+
     #| Refresh children from volatile data and recreate DisplayNodes as needed
     method refresh-children() {
-        my $depth   = $!depth + 1;
+        my $depth   = $!depth + ($!flatten ?? 0 !! 1);
         my &create := {
             $!tree.node-to-display-node{$_} = $_ ~~ VTree::Parent
             ?? do {
@@ -68,6 +73,7 @@ my class DisplayParent does DisplayNode does Terminal::Widgets::Common {
 
     #| Set expanded state, refreshing or emptying children as appropriate
     method set-expanded($!expanded) {
+        $!expanded = True if $!flatten;
         note "⚙️  Starting set-expanded to $!expanded for dir {$!data.short-name.raku}" if $!debug;
         my $t0 = nano;
 
@@ -86,8 +92,9 @@ my class DisplayParent does DisplayNode does Terminal::Widgets::Common {
 
     #| Number of nodes in visible child branches, including self
     method branch-size(--> UInt:D) {
-        $!expanded ?? 1 + @!children.map(*.branch-size).sum
-                   !! 1
+        ($!flatten ?? 0 !! 1) +
+        ($!expanded ?? @!children.map(*.branch-size).sum
+                    !! 0)
     }
 }
 
@@ -100,6 +107,7 @@ class Terminal::Widgets::Viewer::Tree
     has DisplayNode   $.current-node is built(False);
     has               &.sort-by;
     has               &.process-click;
+    has Bool:D        $.flatten-root = False;
 
     has %.previously-expanded;
     has %.node-to-display-node;
@@ -115,7 +123,8 @@ class Terminal::Widgets::Viewer::Tree
     method set-root(VTree::Node:D $!root) { self!remap-root }
     method !remap-root() {
         $!display-root = DisplayParent.new(data => $!root, depth => 0,
-                                           tree => self, :&.sort-by);
+                                           tree => self, :&.sort-by,
+                                           flatten => $!flatten-root);
         %!node-to-display-node = $!root => $!display-root,;
 
         self.clear-caches;
@@ -205,8 +214,10 @@ class Terminal::Widgets::Viewer::Tree
 
     #| Flatten displayable lines for a given node into array @lines
     method node-lines($node, @lines) {
-        @lines.push: [ self.prefix-string($node),
-                       |self.node-content($node) ];
+        unless $node ~~ DisplayParent && $node.flatten {
+            @lines.push: [ self.prefix-string($node),
+                           |self.node-content($node) ];
+        }
         if $node.expanded {
             self.node-lines($_, @lines) for $node.children;
         }
@@ -214,7 +225,9 @@ class Terminal::Widgets::Viewer::Tree
 
     #| Flatten displayable nodes starting at a given node into array @nodes
     method flattened-nodes($node, @nodes) {
-        @nodes.push: $node;
+        unless $node ~~ DisplayParent && $node.flatten {
+            @nodes.push: $node;
+        }
         if $node.expanded {
             self.flattened-nodes($_, @nodes) for $node.children;
         }
