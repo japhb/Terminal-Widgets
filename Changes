@@ -1,8 +1,35 @@
 Revision history for Terminal-Widgets
 
 {{$NEXT}}
+  [Bug Fixes]
+  - Fix several obscure errors in layout handling
+
+  [Error Handling]
+  - Completely rework layout failure handling to use proper X::CannotLayout::*
+    exceptions, bubbled up via aggregating Failure wrappers
+  - Associate actual failing layout nodes with layout exceptions where possible
+  - Show user-friendly error message when unable to layout widget tree due to
+    lack of terminal width or height
+
+  [Functionality]
+  > Thanks to Patrick Böker for many of the following improvements!
+  - Support live terminal resizing
+  - Much better duospace wide-context handling based on terminal.caps
+  - Split Viewer::Tree.select-{,display-}node
+  - Support SemanticText rendering in Viewer::Tree
+  - Add WrappableBuffer.cursor-moved hook
+  - Add Scrollable.scrolled hook
+
   [Packaging]
   - Bump Text::MiscUtils dependency to 0.0.13+ for duospace-width VS-16 fixes
+  - Bump Terminal::Capabilities dependency to 0.0.21+ for many autodetection
+    improvements plus narrow-emoji-needs-space quirk detection
+
+  [Performance]
+  - Micro-optimize Widget.draw-line-spans
+
+  [Refactoring]
+  - Refactor and simplify Layout and Style failure rules
 
 
 0.3.1  2026-03-22T17:57:22-07:00
