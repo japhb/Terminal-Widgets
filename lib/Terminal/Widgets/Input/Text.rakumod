@@ -17,7 +17,10 @@ class Terminal::Widgets::Layout::TextInput
     method builder-name() { 'text-input' }
     method input-class()  { ::('Terminal::Widgets::Input::Text') }
 
-    method default-styles() { hash(set-h => 1) }
+    method default-styles(:$locale!, Str:D :$prompt-string = '>') {
+        hash(set-h => 1,
+             min-w => $locale.width($prompt-string) + 3)
+    }
 }
 
 
@@ -78,7 +81,7 @@ class Terminal::Widgets::Input::Text
             my ($x, $y, $w, $h) = self.content-rect;
             my $prompt-width    = $locale.width($.prompt-string);
             my $field-start     = $x + $prompt-width;
-            my $display-width   = $w - $prompt-width;
+            my $display-width   = 3 max $w - $prompt-width;
 
             # Create a new input field using the new metrics
             # XXXX: Should we support masked inputs?
