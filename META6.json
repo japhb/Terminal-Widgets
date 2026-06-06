@@ -10,7 +10,7 @@
     "Terminal::ANSIColor:ver<0.14+>:auth<zef:raku-community-modules>",
     "Terminal::Capabilities:auth<zef:japhb>:ver<0.0.21+>",
     "Terminal::LineEditor:auth<zef:japhb>:ver<0.0.23+>",
-    "Terminal::Print:auth<zef:terminal-printers>:ver<0.977+>",
+    "Terminal::Print:auth<zef:terminal-printers>:ver<0.978+>",
     "Text::MiscUtils:auth<zef:japhb>:ver<0.0.13+>",
     "nano:auth<zef:lizmat>:ver<0.0.2+>"
   ],
