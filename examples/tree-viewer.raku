@@ -37,6 +37,7 @@ class TreeViewerDemo is TopLevel {
             .node(
                 .with-scrollbars(style => (:minimize-w),
                     .tree-viewer(id => 'tree', style => %(set-w => 15),
+                                 flatten-root => True,
                                  process-click => -> $node {
                                         my $click-log = %.by-id<click-log>;
                                         $click-log.add-entry:
