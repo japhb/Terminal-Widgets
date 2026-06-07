@@ -19,7 +19,6 @@ class Terminal::Widgets::Simple::TopLevel
  does Terminal::Widgets::TopLevel
  does Terminal::Widgets::WidgetRegistry {
     has Terminal::Widgets::Layout::Builder:U $.layout-builder-class;
-    has $.layout-error;
 
 
     ### Stubbed hooks for subclass

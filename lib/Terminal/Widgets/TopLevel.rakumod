@@ -13,6 +13,7 @@ role Terminal::Widgets::TopLevel
     has         $.terminal is required;
     has Str     $.title;
     has Array:D %.named-group;
+    has         $.layout-error;
 
     has Terminal::Widgets::Widget:D %.by-id;
     has Terminal::Widgets::Widget   $.focused-widget;
@@ -126,7 +127,7 @@ role Terminal::Widgets::TopLevel
 
         # Set focus if needed, redraw the entire widget tree, and composite the TopLevel
         self.gain-focus(:!redraw) if $focus;
-        self.redraw-all;
+        self.redraw-all unless $.layout-error;
         self.composite;
 
         self.debug-elapsed($t0);
