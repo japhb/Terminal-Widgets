@@ -85,6 +85,12 @@ class Terminal::Widgets::Simple::TopLevel
         $layout-root.y = $.y;
         $layout-root.propagate-xy unless $!layout-error;
 
+        # If the layout root couldn't fully compute, mark it as a
+        # layout-error even if a Failure was not detected above
+        unless $layout-root.all-set {
+            $!layout-error //= "Layout could not fully compute; layout tree has undefined nodes or XYWH placement attributes";
+        }
+
         $layout-root
     }
 
