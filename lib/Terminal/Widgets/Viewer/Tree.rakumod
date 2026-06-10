@@ -198,7 +198,7 @@ class Terminal::Widgets::Viewer::Tree
     method fix-scroll-maxes() {
         note "…  Fixing Viewer::Tree scroll maxes" if $.debug;
 
-        self.set-x-max(self.max-line-width);
+        self.set-x-max(self.max-line-width max 0);
         self.set-y-max($.display-root.branch-size);
     }
 
