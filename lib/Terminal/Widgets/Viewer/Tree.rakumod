@@ -122,10 +122,12 @@ class Terminal::Widgets::Viewer::Tree
     # Keep root and display-root in sync
     method set-root(VTree::Node:D $!root) { self!remap-root }
     method !remap-root() {
+        # DisplayParent.new potentially adds to %!node-to-display-node.
+        %!node-to-display-node = ();
         $!display-root = DisplayParent.new(data => $!root, depth => 0,
                                            tree => self, :&.sort-by,
                                            flatten => $!flatten-root);
-        %!node-to-display-node = $!root => $!display-root,;
+        %!node-to-display-node{$!root} = $!display-root;
 
         self.clear-caches;
         self.select-display-node($!display-root);
