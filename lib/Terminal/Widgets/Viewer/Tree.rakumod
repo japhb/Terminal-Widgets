@@ -58,7 +58,9 @@ my class DisplayParent does DisplayNode does Terminal::Widgets::Common {
                 my $new = DisplayParent.new(parent => self, data => $_,
                                             :$depth, :$!tree, :&!sort-by);
                 my $id  = .id;
-                $new.set-expanded(True) if $id && $!tree.previously-expanded{$id};
+                if $!tree.get-previously-expanded($id) {
+                    $new.set-expanded(True);
+                }
                 $new
             }
             !! DisplayLeaf.new(parent => self, data => $_, :$depth)
@@ -83,7 +85,7 @@ my class DisplayParent does DisplayNode does Terminal::Widgets::Common {
             self.refresh-children;
         }
         else {
-            $!tree.previously-expanded{$id}:delete if $id;
+            $!tree.previously-expanded{$id} = False if $id;
             @!children = Empty;
         }
 
@@ -108,6 +110,7 @@ class Terminal::Widgets::Viewer::Tree
     has               &.sort-by;
     has               &.process-click;
     has Bool:D        $.flatten-root = False;
+    has Bool:D        $.expand-by-default = False;
 
     has %.previously-expanded;
     has %.node-to-display-node;
@@ -116,6 +119,11 @@ class Terminal::Widgets::Viewer::Tree
     has @!flat-line-cache;
     has $!max-line-width;
 
+    method get-previously-expanded($id) {
+        my $has-expanded-state = %!previously-expanded{$id}:exists;
+        $id && (%!previously-expanded{$id} ||
+                $!expand-by-default && !$has-expanded-state)
+    }
 
     method layout-class() { Terminal::Widgets::Layout::TreeViewer }
 
@@ -127,6 +135,9 @@ class Terminal::Widgets::Viewer::Tree
         $!display-root = DisplayParent.new(data => $!root, depth => 0,
                                            tree => self, :&.sort-by,
                                            flatten => $!flatten-root);
+        if self.get-previously-expanded($!root.id) {
+            $!display-root.set-expanded(True);
+        }
         %!node-to-display-node{$!root} = $!display-root;
 
         self.clear-caches;
