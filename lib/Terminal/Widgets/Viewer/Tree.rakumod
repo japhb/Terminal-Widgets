@@ -120,9 +120,16 @@ class Terminal::Widgets::Viewer::Tree
     has $!max-line-width;
 
     method get-previously-expanded($id) {
-        my $has-expanded-state = %!previously-expanded{$id}:exists;
-        $id && (%!previously-expanded{$id} ||
-                $!expand-by-default && !$has-expanded-state)
+        with $id {
+            my $has-expanded-state = %!previously-expanded{$id}:exists;
+
+            $!expand-by-default && !$has-expanded-state
+            || %!previously-expanded{$id}
+        }
+        else {
+            $!expand-by-default
+        }
+
     }
 
     method layout-class() { Terminal::Widgets::Layout::TreeViewer }
