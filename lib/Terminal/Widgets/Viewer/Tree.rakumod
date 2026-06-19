@@ -273,13 +273,12 @@ class Terminal::Widgets::Viewer::Tree
 
     #| Displayed content for a given node itself, not including children
     method node-content($node) {
-        my $color = $node === $!current-node ?? 'inverse ' !! '';
         if $node.data.short-name ~~ Terminal::Widgets::TextContent::SemanticText {
             self.terminal.locale.render:
-                span-tree($node.data.short-name, :$color);
+                span-tree($node.data.short-name);
         }
         else {
-            render-span($node.data.short-name, $color)
+            render-span($node.data.short-name)
         }
     }
 
