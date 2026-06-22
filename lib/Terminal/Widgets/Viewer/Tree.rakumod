@@ -117,6 +117,7 @@ class Terminal::Widgets::Viewer::Tree
 
     has @!flat-node-cache;
     has @!flat-line-cache;
+    has %!highlighted-lines;
     has $!max-line-width;
 
     method get-previously-expanded($id) {
@@ -209,6 +210,7 @@ class Terminal::Widgets::Viewer::Tree
 
         @!flat-node-cache = Empty;
         @!flat-line-cache = Empty;
+        %!highlighted-lines = Empty;
         $!max-line-width  = 0;
     }
 
@@ -228,8 +230,14 @@ class Terminal::Widgets::Viewer::Tree
 
         self.fix-scroll-maxes;
 
-        $count > $end ?? @lines[$start .. $end]
-                      !! @lines[$start .. *]
+        my @wanted = $count > $end ?? @lines[$start .. $end]
+                                   !! @lines[$start .. *];
+        for ^@wanted -> $pos {
+            if %!highlighted-lines{$start + $pos}:exists {
+                @wanted[$pos] = %!highlighted-lines{$start + $pos};
+            }
+        }
+        @wanted
     }
 
     #| Flatten displayable lines for a given node into array @lines
@@ -265,13 +273,12 @@ class Terminal::Widgets::Viewer::Tree
 
     #| Displayed content for a given node itself, not including children
     method node-content($node) {
-        my $color = $node === $!current-node ?? 'inverse ' !! '';
         if $node.data.short-name ~~ Terminal::Widgets::TextContent::SemanticText {
             self.terminal.locale.render:
-                span-tree($node.data.short-name, :$color);
+                span-tree($node.data.short-name);
         }
         else {
-            render-span($node.data.short-name, $color)
+            render-span($node.data.short-name)
         }
     }
 
@@ -302,10 +309,7 @@ class Terminal::Widgets::Viewer::Tree
         my $line = self.display-node-to-line($node);
         return unless $line.defined;
 
-        my @line-spans := self.flat-line-cache[$line];
-        my $span        = @line-spans[1];
-        my $color       = $span.color.subst('inverse ', '');
-        @line-spans[1]  = $span.clone(:$color);
+        %!highlighted-lines{$line}:delete;
     }
 
     #| Add a highlight to a node
@@ -314,10 +318,19 @@ class Terminal::Widgets::Viewer::Tree
         my $line = self.display-node-to-line($node);
         return unless $line.defined;
 
-        my @line-spans := self.flat-line-cache[$line];
-        my $span        = @line-spans[1];
-        my $color       = 'inverse ' ~ $span.color;
-        @line-spans[1]  = $span.clone(:$color);
+        my @line-spans  = self.flat-line-cache[$line]<>;
+        my $is-indent = True;
+        @line-spans .= map: -> $span {
+            if $is-indent {
+                $is-indent = False;
+                $span
+            }
+            else {
+                my $color = 'inverse ' ~ $span.color;
+                $span.clone(:$color)
+            }
+        };
+        %!highlighted-lines{$line} = @line-spans;
     }
 
     #| Select a given node as current, expanding parents if needed and
