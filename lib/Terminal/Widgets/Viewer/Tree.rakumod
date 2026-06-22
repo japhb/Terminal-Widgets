@@ -197,7 +197,7 @@ class Terminal::Widgets::Viewer::Tree
                 # Only prefix has low enough cardinality to cache
                 (%width-cache{.[0].text} //= duospace-width-core(.[0].text, $wc))
                 + duospace-width-core(.[1].text, $wc)
-            }).max;
+            }).max max 0;
 
             self.debug-elapsed($t0, icon => '💲',
                 desc => "Recalc max-line-width ({cache-size @!flat-line-cache})");
@@ -216,7 +216,7 @@ class Terminal::Widgets::Viewer::Tree
     method fix-scroll-maxes() {
         note "…  Fixing Viewer::Tree scroll maxes" if $.debug;
 
-        self.set-x-max(self.max-line-width max 0);
+        self.set-x-max(self.max-line-width);
         self.set-y-max($.display-root.branch-size);
     }
 
