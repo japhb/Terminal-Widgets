@@ -34,6 +34,7 @@ class Terminal::Widgets::Input::Text
     has $.input-field;
 
     has &.get-completions;
+    has &.process-change;
 
     has      $!completions;
     has UInt $!completion-index;
@@ -122,6 +123,11 @@ class Terminal::Widgets::Input::Text
         my $edited = $insert.defined ?? $.input-field.edit-insert-string($insert)
                                      !! $.input-field."edit-$action"();
 
+        if $edited {
+            my $input  = $.input-field.buffer.contents;
+               $input .= trim if $.trim-input;
+            $_($input) with &.process-change;
+        }
         self.refresh-input-field($force-refresh || $edited);
         self.composite(:$print);
     }
