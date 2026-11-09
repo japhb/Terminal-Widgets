@@ -78,23 +78,23 @@ role Terminal::Widgets::Scrollable {
         self.set-y-scroll($!y-scroll + $y-change);
     }
 
-    method ensure-x-span-visible(UInt:D $x1, UInt:D $x2) {
+    method ensure-x-span-visible(Int:D $x1, Int:D $x2) {
         # If widget can show entirety of X span at once, ensure that happens;
         # otherwise, show as much as possible of the X span, preferring to
         # show the left edge at $x1.
         my $old-right = $!x-max min $!x-scroll + self.content-width - 1;
         my $new-right = $!x-max min $x2;
-        my $new-x     = $x1 min $!x-scroll + (0 max $new-right - $old-right);
+        my $new-x     = (0 max $x1) min $!x-scroll + (0 max $new-right - $old-right);
         self.set-x-scroll($new-x);
     }
 
-    method ensure-y-span-visible(UInt:D $y1, UInt:D $y2) {
+    method ensure-y-span-visible(Int:D $y1, Int:D $y2) {
         # If widget can show entirety of Y span at once, ensure that happens;
         # otherwise, show as much as possible of the Y span, preferring to
         # show the top edge at $y1.
         my $old-bottom = $!y-max min $!y-scroll + self.content-height - 1;
         my $new-bottom = $!y-max min $y2;
-        my $new-y      = $y1 min $!y-scroll + (0 max $new-bottom - $old-bottom);
+        my $new-y      = (0 max $y1) min $!y-scroll + (0 max $new-bottom - $old-bottom);
         self.set-y-scroll($new-y);
     }
 

@@ -43,6 +43,7 @@
     "Terminal::Widgets::Layout": "lib/Terminal/Widgets/Layout.rakumod",
     "Terminal::Widgets::Layout::BoxModel": "lib/Terminal/Widgets/Layout/BoxModel.rakumod",
     "Terminal::Widgets::PlainText": "lib/Terminal/Widgets/PlainText.rakumod",
+    "Terminal::Widgets::RichText": "lib/Terminal/Widgets/RichText.rakumod",
     "Terminal::Widgets::Progress::Tracker": "lib/Terminal/Widgets/Progress/Tracker.rakumod",
     "Terminal::Widgets::ScrollBar": "lib/Terminal/Widgets/ScrollBar.rakumod",
     "Terminal::Widgets::Scrollable": "lib/Terminal/Widgets/Scrollable.rakumod",

@@ -34,6 +34,7 @@ class Terminal::Widgets::Input::Text
     has $.input-field;
 
     has &.get-completions;
+    has &.process-change;
 
     has      $!completions;
     has UInt $!completion-index;
@@ -41,6 +42,7 @@ class Terminal::Widgets::Input::Text
     has Bool:D $!literal-mode    = False;
     has Bool:D $.trim-input      = True;
     has Bool:D $.clear-on-finish = True;
+    has Bool:D $.enable-history  = True;
     has Str:D  $.prompt-string   = '>';
     has Str:D  $.disabled-string = '';
 
@@ -116,12 +118,21 @@ class Terminal::Widgets::Input::Text
         self.composite(:$print);
     }
 
+    method process-change-method($input) {
+            $_($input) with &.process-change;
+    }
+
     #| Do edit in current input field, then print and flush the full refresh string
     method do-edit($action, $insert?, Bool:D :$force-refresh = False,
                    Bool:D :$print = True) {
         my $edited = $insert.defined ?? $.input-field.edit-insert-string($insert)
                                      !! $.input-field."edit-$action"();
 
+        if $edited {
+            my $input  = $.input-field.buffer.contents;
+               $input .= trim if $.trim-input;
+            $.process-change-method($input);
+        }
         self.refresh-input-field($force-refresh || $edited);
         self.composite(:$print);
     }
@@ -274,6 +285,10 @@ class Terminal::Widgets::Input::Text
         self.reset-entry-state;
     }
 
+    method process-input-method($input) {
+        $_($input) with &.process-input;
+    }
+
     #| Finish entry in progress
     method finish-entry() {
         my $input  = $.input-field.buffer.contents;
@@ -281,8 +296,8 @@ class Terminal::Widgets::Input::Text
 
         self.reset-entry-state($.clear-on-finish ?? '' !! $input);
 
-        self.add-history($input) if $input;
-        $_($input) with &.process-input;
+        self.add-history($input) if $.enable-history && $input;
+        self.process-input-method($input);
     }
 
     #| Clear entry state, clear input field, and refresh
