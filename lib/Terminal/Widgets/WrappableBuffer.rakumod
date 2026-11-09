@@ -1011,6 +1011,10 @@ does Terminal::Widgets::Focusable {
         }
     }
 
+    method process-click-method($span, $cursor-x, $cursor-y) {
+        $_($span, $cursor-x, $cursor-y) with &!process-click;
+    }
+
     #| Handle keyboard events
     multi method handle-event(Terminal::Widgets::Events::KeyboardEvent:D
                               $event where *.key.defined, AtTarget) {
@@ -1049,7 +1053,7 @@ does Terminal::Widgets::Focusable {
                 my $span = self.set-cursor-pos($.x-scroll + $x,
                                                $.y-scroll + $y);
 
-                $_($span, $!cursor-x, $!cursor-y) with &!process-click;
+                self.process-click-method($span, $!cursor-x, $!cursor-y);
 
                 # set-cursor-pos already did a refresh; skip the outer one
                 return;
