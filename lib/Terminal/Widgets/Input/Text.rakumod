@@ -42,6 +42,7 @@ class Terminal::Widgets::Input::Text
     has Bool:D $!literal-mode    = False;
     has Bool:D $.trim-input      = True;
     has Bool:D $.clear-on-finish = True;
+    has Bool:D $.enable-history  = True;
     has Str:D  $.prompt-string   = '>';
     has Str:D  $.disabled-string = '';
 
@@ -287,7 +288,7 @@ class Terminal::Widgets::Input::Text
 
         self.reset-entry-state($.clear-on-finish ?? '' !! $input);
 
-        self.add-history($input) if $input;
+        self.add-history($input) if $.enable-history && $input;
         $_($input) with &.process-input;
     }
 
