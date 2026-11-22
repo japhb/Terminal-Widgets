@@ -914,6 +914,7 @@ does Terminal::Widgets::Focusable {
     #| the line, it will be reduced to the end.  (Neither X nor Y can go
     #| negative; they will stay in the UInt range.)
     method set-cursor-pos(UInt:D $x, UInt:D $y) {
+        return if self.empty;
         $!cursor-y = 0 max ($y min $.y-max - 1);
         my $line   = self.rendered-line($!cursor-y);
         $!cursor-x = $x min self.end-of-line($line);
